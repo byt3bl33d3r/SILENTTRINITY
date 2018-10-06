@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2027
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SILENTTRINITY", "SILENTTRINITY\SILENTTRINITY.csproj", "{31E2A8D0-AC11-419C-8E60-0ECA79789BDB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SILENTTRINITY_DLL", "SILENTTRINITY_DLL\SILENTTRINITY_DLL.csproj", "{77ACD2E7-009F-4965-B318-A4D83EAD7758}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{31E2A8D0-AC11-419C-8E60-0ECA79789BDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31E2A8D0-AC11-419C-8E60-0ECA79789BDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31E2A8D0-AC11-419C-8E60-0ECA79789BDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31E2A8D0-AC11-419C-8E60-0ECA79789BDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77ACD2E7-009F-4965-B318-A4D83EAD7758}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77ACD2E7-009F-4965-B318-A4D83EAD7758}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77ACD2E7-009F-4965-B318-A4D83EAD7758}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77ACD2E7-009F-4965-B318-A4D83EAD7758}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D446FA9D-AB3A-40EF-9CF5-0D0B7A6CCBD8}
+	EndGlobalSection
+EndGlobal

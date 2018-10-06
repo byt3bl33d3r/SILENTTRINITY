@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+
+[packages]
+netifaces = "*"
+quart = "*"
+docopt = "*"
+termcolor = "*"
+terminaltables = "*"
+prompt-toolkit = ">=2"
+
+[requires]
+python_version = "3.7"
