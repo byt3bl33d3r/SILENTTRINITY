@@ -131,3 +131,14 @@ class Modules(Loader):
                 self.selected.options[name]['Value'] = value
             except KeyError:
                 print_bad(f"Unknown option '{name}'")
+
+    @command
+    def reload(self):
+        """
+        Reload all modules
+
+        Usage: reload [-h]
+
+        """
+
+        self.get_loadables()
