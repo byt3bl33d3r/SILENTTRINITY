@@ -9,6 +9,11 @@
 - Server requires Python >= 3.7
 - SILENTTRINITY C# implant requires .NET >= 4.5
 
+## How it works
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/5151193/46646842-cd2b0580-cb49-11e8-9218-73226e977d58.png" alt="ST"/>
+</p>
+
 ## Notes
 
 ### .NET runtime support
