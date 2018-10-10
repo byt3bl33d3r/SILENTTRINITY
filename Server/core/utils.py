@@ -65,9 +65,12 @@ def get_ipaddress(interface=None):
     if interface and (interface in get_interfaces()):
         return netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']
     else:
-        for iface in ['eth0', 'en0']:
+        for iface in netifaces.interfaces():
             try:
-                return netifaces.ifaddresses(iface)[netifaces.AF_INET][0]['addr']
+                netif = netifaces.ifaddresses(iface)
+                if netif[netifaces.AF_INET][0]['addr'] == '127.0.0.1':
+                    continue
+                return netif[netifaces.AF_INET][0]['addr']
             except (ValueError, KeyError):
                 continue
 
