@@ -63,6 +63,7 @@ def validate_listener(listener):
 
     for l in listeners.loaded:
         if l.name == listener.name:
+            l['BindIP'] = listener['BindIP']
             l['Port'] = listener['Port']
             return l
 
