@@ -53,12 +53,11 @@ class CmdLoop:
 
     def __init__(self):
         self.name = 'main'
-        self.completer = WordCompleter(['listeners', 'sessions', 'modules', 'stagers', 'exit'], ignore_case=True)
         self.prompt_session = PromptSession(
             'ST ≫ ',
             bottom_toolbar=bottom_toolbar,
-            completer=self.completer,
-            auto_suggest=AutoSuggestFromHistory()
+            auto_suggest=AutoSuggestFromHistory(),
+            enable_history_search=True
             #rprompt=get_rprompt,
             #style=rprompt_style
         )
@@ -69,6 +68,9 @@ class CmdLoop:
             Modules(self.prompt_session),
             Stagers(self.prompt_session)
         ]
+
+        self.prompt_session.completer = WordCompleter([ctx.name for ctx in self.contexts] + ['exit'], ignore_case=True)
+        self.prompt_session.contexts = self.contexts
 
         self.current_context = self
 

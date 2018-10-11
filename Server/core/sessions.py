@@ -5,20 +5,22 @@ from core.job import Job
 from time import gmtime, strftime
 from queue import Queue, Empty
 from prompt_toolkit.formatted_text import HTML
-from prompt_toolkit.completion import WordCompleter
-from core.utils import command, print_info, print_good
+from core.utils import command, register_cli_commands, print_info, print_good
+from core.completers import STCompleter
 from core.events import NEW_SESSION, SESSION_STAGED, SESSION_CHECKIN, NEW_JOB, JOB_RESULT
 from core.ipcserver import ipc_server
 from terminaltables import AsciiTable
 
 
+@register_cli_commands
 class Sessions:
     def __init__(self, prompt_session):
         self.name = 'sessions'
         self.prompt = HTML('ST (<ansired>sessions</ansired>) ≫ ')
-        self.completer = WordCompleter(['info', 'list', 'stagers', 'listeners', 'modules', 'exit'])
+        self.completer = STCompleter(self)
         self.prompt_session = prompt_session
 
+        self.selected = None
         self.sessions = []
 
         ipc_server.attach(NEW_SESSION, self.__add_session)

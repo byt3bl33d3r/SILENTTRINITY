@@ -28,9 +28,6 @@ def validate_stager(stager):
     stagers = Loader()
     stagers.type = "stager"
     stagers.paths = ["stagers/"]
-    stagers.name = 'stagers'
-
-    stagers.selected = None
 
     stagers.get_loadables()
 
@@ -57,7 +54,6 @@ def validate_listener(listener):
     listeners = Loader()
     listeners.type = "listener"
     listeners.paths = ["listeners/"]
-    listeners.name = 'listeners'
 
     listeners.get_loadables()
 
@@ -69,25 +65,15 @@ def validate_listener(listener):
 
     return None
 
-
-def generate_stager(stager, listener):
-    stager.generate(listener)
-
-
 def generate_resource_file(stager, listener):
-    filename = "{}.res".format(stager)
-
-    resource_file = open(filename, 'w')
-    resource_file.write("listeners\n")
-    resource_file.write("use {}\n".format(listener.name))
-    resource_file.write("set BindIP {}\n".format(listener['BindIP']))
-    resource_file.write("set Port {}\n".format(listener['Port']))
-    resource_file.write("start")
-    resource_file.close()
+    with open(f"{stager}.res", 'w') as resource_file:
+        resource_file.write("listeners\n")
+        resource_file.write(f"use {listener.name}\n")
+        resource_file.write(f"set BindIP {listener['BindIP']}\n")
+        resource_file.write(f"set Port {listener['Port']}\n")
+        resource_file.write("start")
 
     print_good(f"Generated resource file: {filename}")
-    print_info(f"Launch with 'python3.7 st.py -r {filename}'")
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -112,7 +98,7 @@ if __name__ == "__main__":
         print_bad("ERROR: Invalid listener.")
         sys.exit(1)
 
-    generate_stager(stager, listener)
+    stager.generate(listener)
 
     filename = stager.name
     if args.file is not None:

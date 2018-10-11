@@ -2,13 +2,14 @@ import core.state as state
 from core.events import GET_LISTENERS
 from core.ipcserver import ipc_server
 from prompt_toolkit.formatted_text import HTML
-from prompt_toolkit.completion import WordCompleter
-from core.utils import command, print_good, print_bad, print_good
+from core.utils import command, register_cli_commands, print_good, print_bad, print_good
+from core.completers import STCompleter
 from core.loader import Loader
 from terminaltables import AsciiTable
 from copy import deepcopy
 
 
+@register_cli_commands
 class Listeners(Loader):
     def __init__(self, prompt_session):
         Loader.__init__(self)
@@ -18,7 +19,7 @@ class Listeners(Loader):
 
         self.name = 'listeners'
         self.prompt = HTML('ST (<ansired>listeners</ansired>) ≫ ')
-        self.completer = WordCompleter(['start', 'set', 'sessions', 'modules', 'stagers', 'options', 'use', 'exit', 'list'], ignore_case=True)
+        self.completer = STCompleter(self)
         self.prompt_session = prompt_session
 
         self.selected = None

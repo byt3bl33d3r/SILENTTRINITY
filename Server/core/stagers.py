@@ -2,15 +2,16 @@ import functools
 from core.loader import Loader
 from typing import List
 from core.events import GET_LISTENERS
-from core.utils import command
+from core.utils import command, register_cli_commands
 from core.ipcserver import ipc_server
+from core.completers import STCompleter
 from prompt_toolkit.formatted_text import HTML
-from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.application import run_in_terminal
 from terminaltables import AsciiTable
 from core.utils import print_bad, print_info, print_bad
 
 
+@register_cli_commands
 class Stagers(Loader):
 
     def __init__(self, prompt_session):
@@ -21,7 +22,7 @@ class Stagers(Loader):
         self.name = 'stagers'
         self.prompt = HTML('ST (<ansired>stagers</ansired>) ≫ ')
 
-        self.completer = WordCompleter(['use', 'set', 'options', 'sessions', 'list', 'modules', 'listeners', 'generate', 'exit'], ignore_case=True)
+        self.completer = STCompleter(self)
         self.prompt_session = prompt_session
 
         self.selected = None
