@@ -14,6 +14,7 @@ class CmdError(Exception):
 
 
 def command(func):
+    func._command = True
     @wraps(func)
     def wrapper(*args, **kwargs):
         cmd_args = docopt(func.__doc__.strip(), argv=kwargs["args"])
@@ -41,6 +42,13 @@ def command(func):
         return func(args[0], **validated_args)
     return wrapper
 
+def register_cli_commands(cls):
+    cls._cmd_registry = []
+    for methodname in dir(cls):
+        method = getattr(cls, methodname)
+        if hasattr(method, '_command'):
+            cls._cmd_registry.append(methodname)
+    return cls
 
 def check_valid_guid(func):
     @wraps(func)

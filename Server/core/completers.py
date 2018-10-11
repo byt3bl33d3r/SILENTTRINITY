@@ -1,0 +1,35 @@
+from prompt_toolkit.completion import Completer, Completion
+from shlex import split
+
+
+class STCompleter(Completer):
+
+    def __init__(self, cli_menu):
+        self.cli_menu = cli_menu
+
+    def get_completions(self, document, complete_event):
+        word_before_cursor = document.get_word_before_cursor()
+
+        # This can't be the best way of doing this, just can't seem to find the right method on the document object
+        if len(split(document.current_line)):
+            if split(document.current_line)[0].lower() == 'use':
+                for module in self.cli_menu.loaded:
+                    if module.name.startswith(word_before_cursor):
+                        yield Completion(module.name, -len(word_before_cursor))
+
+                return
+
+            elif self.cli_menu.selected and split(document.current_line)[0].lower() == 'set':
+                for k in self.cli_menu.selected.options.keys():
+                    if k.startswith(word_before_cursor):
+                        yield Completion(k, -len(word_before_cursor))
+
+                return
+
+        for ctx in self.cli_menu.prompt_session.contexts:
+            if ctx.name.startswith(word_before_cursor) and ctx.name is not self.cli_menu.name:
+                yield Completion(ctx.name, -len(word_before_cursor))
+
+        for cmd in self.cli_menu._cmd_registry:
+            if cmd.startswith(word_before_cursor):
+                yield Completion(cmd, -len(word_before_cursor))

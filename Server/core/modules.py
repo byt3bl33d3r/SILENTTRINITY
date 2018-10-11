@@ -1,15 +1,16 @@
 from core.loader import Loader
 from typing import List
-from core.utils import command
+from core.utils import command, register_cli_commands
 from core.job import Job
 from core.events import NEW_JOB
 from core.ipcserver import ipc_server
 from prompt_toolkit.formatted_text import HTML
-from prompt_toolkit.completion import WordCompleter
+from core.completers import STCompleter
 from terminaltables import AsciiTable
 from core.utils import print_bad, print_info, print_bad
 
 
+@register_cli_commands
 class Modules(Loader):
 
     def __init__(self, prompt_session):
@@ -19,8 +20,7 @@ class Modules(Loader):
 
         self.name = 'modules'
         self.prompt = HTML('ST (<ansired>modules</ansired>) ≫ ')
-
-        self.completer = WordCompleter(['set', 'use', 'run', 'sessions', 'stagers', 'list', 'listeners', 'options', 'exit'], ignore_case=True)
+        self.completer = STCompleter(self)
         self.prompt_session = prompt_session
 
         self.selected = None
