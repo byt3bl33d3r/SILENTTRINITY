@@ -5,7 +5,7 @@ class STModule:
         self.author = '@byt3bl33d3r - @davidtavarez'
         self.options = {
             'Dumpfile': {
-                'Description': 'The Path of the directory from which to execute the ShellCommand',
+                'Description': 'The Path of the dumpfile',
                 'Required': False,
                 'Value': "C:\\\\WINDOWS\\\\Temp\\\\debug.bin"
             },
