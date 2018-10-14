@@ -5,7 +5,7 @@ from core.job import Job
 from time import gmtime, strftime
 from queue import Queue, Empty
 from prompt_toolkit.formatted_text import HTML
-from core.utils import command, register_cli_commands, print_info, print_good, decode_job_response
+from core.utils import command, register_cli_commands, print_info, print_good, decode_job_response, print_bad
 from core.completers import STCompleter
 from core.events import NEW_SESSION, SESSION_STAGED, SESSION_CHECKIN, NEW_JOB, JOB_RESULT
 from core.ipcserver import ipc_server
@@ -135,8 +135,15 @@ class Sessions:
         self.jobs_queue[guid].append((job_id, module))
 
     def process_results(self, guid, response):
+        delete_job = False
         for job in self.jobs_queue[guid]:
             job_id, module = job
             if job_id == response['id']:
-                module.process(response['result'])
+                try:
+                    module.process(response['result'])
+                except Exception as e:
+                    print_bad(str(e))
+                delete_job = True
                 break
+        if delete_job:
+            self.jobs_queue[guid].remove(job)
