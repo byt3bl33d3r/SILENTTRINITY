@@ -2,21 +2,25 @@ import os
 from base64 import b64encode
 from shlex import split
 
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        Module.__init__(self)
         self.name = 'execute-assembly'
         self.description = 'Execute a .NET assembly in memory'
         self.author = '@byt3bl33d3r'
         self.options = {
             'Assembly': {
-                'Description'   :   'Path to assembly',
-                'Required'      :   True,
-                'Value'         :   ''
+                'Description': 'Path to assembly',
+                'Required': True,
+                'Value': ''
             },
             'Arguments': {
-                'Description'   :   'Arguments to pass to the assembly on runtime',
-                'Required'      :   False,
-                'Value'         :   ""
+                'Description': 'Arguments to pass to the assembly on runtime',
+                'Required': False,
+                'Value': ""
             }
         }
 

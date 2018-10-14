@@ -1,17 +1,21 @@
 import os
 from base64 import b64encode
 
+from core.module import Module
 
-class STModule:
+
+class STModule(Module):
     def __init__(self):
+        Module.__init__(self)
         self.name = 'msilshellexec'
-        self.description = 'Executes shellcode by using specially crafted MSIL opcodes to overwrite a JITed dummy method.\nC# code that injects shellcode is dynamically compiled through the pyDLR'
+        self.description = 'Executes shellcode by using specially crafted MSIL opcodes to overwrite a JITed ' \
+                           'dummy method.\nC# code that injects shellcode is dynamically compiled through the pyDLR'
         self.author = '@byt3bl33d3r'
         self.options = {
             'Shellcode': {
-                'Description'   :   'Path to raw shellcode.',
-                'Required'      :   True,
-                'Value'         :   ''
+                'Description': 'Path to raw shellcode.',
+                'Required': True,
+                'Value': ''
             }
         }
 

@@ -1,13 +1,17 @@
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        Module.__init__(self)
         self.name = 'powershell'
         self.description = 'Execute arbitrary PowerShell in an un-managed runspace'
         self.author = '@byt3bl33d3r'
         self.options = {
             'Command': {
-                'Description'   :   'The ShellCommand to execute, including any arguments',
-                'Required'      :   True,
-                'Value'         :   ''
+                'Description': 'The ShellCommand to execute, including any arguments',
+                'Required': True,
+                'Value': ''
             }
         }
 

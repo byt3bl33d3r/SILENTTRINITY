@@ -1,13 +1,17 @@
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        Module.__init__(self)
         self.name = 'mimikatz'
         self.description = 'Loads Mimikatz in memory and executes the specified command'
         self.author = '@byt3bl33d3r'
         self.options = {
             'Command': {
-                'Description'   :   'Mimikatz command to run',
-                'Required'      :   False,
-                'Value'         :   'privilege::debug sekurlsa::logonpasswords'
+                'Description': 'Mimikatz command to run',
+                'Required': False,
+                'Value': 'privilege::debug sekurlsa::logonpasswords'
             }
         }
 

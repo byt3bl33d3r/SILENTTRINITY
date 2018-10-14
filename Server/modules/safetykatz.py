@@ -1,7 +1,12 @@
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        Module.__init__(self)
         self.name = 'safetykatz'
-        self.description = 'Creates a minidump of LSASS via Win32 API Calls, loads Mimikatz in memory and parses the dump for creds'
+        self.description = 'Creates a minidump of LSASS via Win32 API Calls, loads Mimikatz in memory and parses ' \
+                           'the dump for creds'
         self.author = '@byt3bl33d3r, @davidtavarez'
         self.options = {
             'Dumpfile': {

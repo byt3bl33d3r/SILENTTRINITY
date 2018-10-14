@@ -1,39 +1,45 @@
+from core.module import Module
 
-class STModule:
+
+class STModule(Module):
     def __init__(self):
+        Module.__init__(self)
         self.name = 'internalmonologue'
-        self.description = 'Executes the Internal Monologue attack.\nIf admin, this will give you the Net-NTLMv1 hashes of all logged on users'
+        self.description = 'Executes the Internal Monologue attack.\nIf admin, this will give you the' \
+                           ' Net-NTLMv1 hashes of all logged on users'
         self.author = '@byt3bl33d3r'
         self.options = {
             'Impersonate': {
-                'Description'   :   'Specifies whether to try to impersonate all other available users or not',
-                'Required'      :   False,
-                'Value'         :   True
+                'Description': 'Specifies whether to try to impersonate all other available users or not',
+                'Required': False,
+                'Value': True
             },
             'Threads': {
-                'Description'   :   'Specifies whether to try to locate tokens to impersonate from threads or not',
-                'Required'      :   False,
-                'Value'         :   False,
+                'Description': 'Specifies whether to try to locate tokens to impersonate from threads or not',
+                'Required': False,
+                'Value': False,
             },
             'Downgrade': {
-                'Description'   :   'Specifies whether to perform an NTLM downgrade or not',
-                'Required'      :   False,
-                'Value'         :   True,
+                'Description': 'Specifies whether to perform an NTLM downgrade or not',
+                'Required': False,
+                'Value': True,
             },
             'Restore': {
-                'Description'   :   'Specifies whether to restore the original values from before the NTLM downgrade or not',
-                'Required'      :   False,
-                'Value'         :   True,
+                'Description': 'Specifies whether to restore the original values from before the NTLM downgrade'
+                               ' or not',
+                'Required': False,
+                'Value': True,
             },
             'Challenge': {
-                'Description'   :   'Specifies the NTLM challenge to be used. An 8-byte long value in ascii-hex representation',
-                'Required'      :   False,
-                'Value'         :   "1122334455667788",
+                'Description': 'Specifies the NTLM challenge to be used. An 8-byte long value in ascii-hex '
+                               'representation',
+                'Required': False,
+                'Value': "1122334455667788",
             },
             'Verbose': {
-                'Description'   :   'Specifies whether print verbose output or not',
-                'Required'      :   False,
-                'Value'         :   True,
+                'Description': 'Specifies whether print verbose output or not',
+                'Required': False,
+                'Value': True,
             }
         }
 

@@ -1,18 +1,22 @@
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        Module.__init__(self)
         self.name = 'msgbox'
         self.description = 'Pop a message box'
         self.author = '@byt3bl33d3r'
         self.options = {
             'Title': {
-                'Description'   :   'Window title',
-                'Required'      :   False,
-                'Value'         :   'Pwned'
+                'Description': 'Window title',
+                'Required': False,
+                'Value': 'Pwned'
             },
             'Text': {
-                'Description'   :   'Window text',
-                'Required'      :   False,
-                'Value'         :   "I'm in your computerz"
+                'Description': 'Window text',
+                'Required': False,
+                'Value': "I'm in your computerz"
             }
         }
 

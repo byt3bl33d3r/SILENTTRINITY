@@ -1,18 +1,20 @@
 import os
+
+from core.module import Module
 from core.utils import convert_shellcode
-from base64 import b64encode
 
 
-class STModule:
+class STModule(Module):
     def __init__(self):
+        Module.__init__(self)
         self.name = 'excelshellinject'
         self.description = 'Executes arbitrary shellcode using Excel COM objects'
         self.author = '@byt3bl33d3r'
         self.options = {
             'Shellcode': {
-                'Description'   :   'Path to shellcode in ASCII hex format (e.g.: 31c0c3)',
-                'Required'      :   True,
-                'Value'         :   ''
+                'Description': 'Path to shellcode in ASCII hex format (e.g.: 31c0c3)',
+                'Required': True,
+                'Value': ''
             }
         }
 
