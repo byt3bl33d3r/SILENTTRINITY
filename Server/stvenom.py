@@ -21,7 +21,7 @@ import sys
 
 from core.listener import Listener
 from core.loader import Loader
-from core.utils import print_good, print_info, print_bad, get_ipaddress
+from core.utils import print_good, print_bad, get_ipaddress
 
 
 def validate_stager(stager):
@@ -50,6 +50,7 @@ def generate_listener(ip, port):
         'Port': {'Description': 'Port for the listener.', 'Required': True, 'Value': port}}
     return listener
 
+
 def validate_listener(listener):
     listeners = Loader()
     listeners.type = "listener"
@@ -65,8 +66,10 @@ def validate_listener(listener):
 
     return None
 
+
 def generate_resource_file(stager, listener):
-    with open(f"{stager}.res", 'w') as resource_file:
+    filename = f"{stager}.res"
+    with open(filename, 'w') as resource_file:
         resource_file.write("listeners\n")
         resource_file.write(f"use {listener.name}\n")
         resource_file.write(f"set BindIP {listener['BindIP']}\n")
@@ -74,6 +77,7 @@ def generate_resource_file(stager, listener):
         resource_file.write("start")
 
     print_good(f"Generated resource file: {filename}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
