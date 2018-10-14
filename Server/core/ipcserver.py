@@ -43,11 +43,11 @@ class IPCServer(Thread):
     def detach(self, event, func):
         raise NotImplemented
 
-    def publish(self, topic, msg):
+    def publish(self, topic, msg, module):
         if topic in self.subscribers:
             for sub in self.subscribers[topic]:
                 #run_in_terminal(functools.partial(sub, msg))
-                return sub(msg)
+                return sub(msg, module)
 
     def serve(self, client):
         logging.debug(f"connection accepted from {self.listener.last_accepted}")

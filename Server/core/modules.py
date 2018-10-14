@@ -67,7 +67,7 @@ class Modules(Loader):
         """
         job = Job(self.selected)
         for guid in guids:
-            ipc_server.publish(NEW_JOB, (guid, job.encode()))
+            ipc_server.publish(NEW_JOB, (guid, job.encode()), (job.id, job.module))
 
     @command
     def use(self, name: str):

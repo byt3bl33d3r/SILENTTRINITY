@@ -5,7 +5,7 @@ from core.job import Job
 from time import gmtime, strftime
 from queue import Queue, Empty
 from prompt_toolkit.formatted_text import HTML
-from core.utils import command, register_cli_commands, print_info, print_good
+from core.utils import command, register_cli_commands, print_info, print_good, decode_job_response
 from core.completers import STCompleter
 from core.events import NEW_SESSION, SESSION_STAGED, SESSION_CHECKIN, NEW_JOB, JOB_RESULT
 from core.ipcserver import ipc_server
@@ -22,6 +22,8 @@ class Sessions:
 
         self.selected = None
         self.sessions = []
+
+        self.jobs_queue = {} # Something to storage the job's module.
 
         ipc_server.attach(NEW_SESSION, self.__add_session)
         ipc_server.attach(SESSION_STAGED, self.__notify_session_staged)
@@ -52,21 +54,30 @@ class Sessions:
         print_info(f"Re-attaching orphaned session from {remote_addr} ...")
         self.__add_session(Session(guid, remote_addr, {}))
 
-    def __add_job(self, job_tuple):
+    def __add_job(self, job_tuple, module_tuple):
         guid, job = job_tuple
+        job_id, module = module_tuple
+
         if guid.lower() == 'all':
             for session in self.sessions:
                 session.add_job(job)
-        else:
-            for session in self.sessions:
-                if session.guid == guid:
-                    session.add_job(job)
+                self.add_job_module_queue(session.guid, job_id, module)
+            return
+
+        for session in self.sessions:
+            if session.guid == guid:
+                session.add_job(job)
+                self.add_job_module_queue(session.guid, job_id, module)
+        return
 
     def __job_result(self, result):
         guid, data = result
-        decoded = Job.decode(data)
+        decoded = decode_job_response(data)
         print_good(f"{guid} returned job result (id: {decoded['id']})")
-        print(decoded['result'])
+
+        self.process_results(guid, decoded)
+
+        # print(decoded['result'])
 
     @command
     def list(self, guid: str):
@@ -117,3 +128,15 @@ class Sessions:
                     table_data.append([k.capitalize(), v])
                 table = AsciiTable(table_data)
                 print(table.table)
+
+    def add_job_module_queue(self, guid, job_id, module):
+        if guid not in self.jobs_queue:
+            self.jobs_queue[guid] = []
+        self.jobs_queue[guid].append((job_id, module))
+
+    def process_results(self, guid, response):
+        for job in self.jobs_queue[guid]:
+            job_id, module = job
+            if job_id == response['id']:
+                module.process(response['result'])
+                break

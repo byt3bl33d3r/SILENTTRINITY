@@ -26,14 +26,3 @@ class Job:
         junk['data'] = b64encode(bytes(malform)).decode()
 
         return junk
-
-    @staticmethod
-    def decode(response):
-        data = b64decode(response['data'])
-        good_gzip = bytearray(data)
-        good_gzip[:2] = b"\x1f\x8b"
-
-        stream = BytesIO(bytes(good_gzip))
-
-        with gzip.open(stream, 'rb') as f:
-            return json.loads(f.read())

@@ -40,3 +40,6 @@ class STModule:
             src = src.replace("DOMAIN", self.options['Domain']['Value'])
             src = src.replace("PASSWORD", self.options['Password']['Value'])
             return src.encode()
+
+    def process(self, result):
+        print(result)

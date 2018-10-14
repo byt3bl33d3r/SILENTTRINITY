@@ -1,6 +1,10 @@
+import gzip
+import json
 import netifaces
 import random
 import string
+from base64 import b64decode
+from io import BytesIO
 from typing import get_type_hints, List, Dict
 from functools import wraps
 from docopt import docopt
@@ -100,6 +104,17 @@ def convert_shellcode(shellcode):
             decis.append(str(deci))
 
     return ",".join(decis)
+
+
+def decode_job_response(response):
+    data = b64decode(response['data'])
+    good_gzip = bytearray(data)
+    good_gzip[:2] = b"\x1f\x8b"
+
+    stream = BytesIO(bytes(good_gzip))
+
+    with gzip.open(stream, 'rb') as f:
+        return json.loads(f.read())
 
 
 def print_good(msg):
