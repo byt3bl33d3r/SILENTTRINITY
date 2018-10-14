@@ -17,6 +17,8 @@ import core.state as state
 import traceback
 from shlex import split
 from docopt import docopt, DocoptExit
+
+from core.helpers import parse_internal_helpers
 from core.listeners import Listeners
 from core.sessions import Sessions
 from core.modules import Modules
@@ -87,6 +89,8 @@ class CmdLoop:
         if len(result):
             if not self.switched_context(result):
                 command = split(result)
+                if parse_internal_helpers(command[0]):
+                    return None
                 try:
                     logging.debug(f"command: {command[0]} args: {command[1:]} ctx: {self.current_context.name}")
 
