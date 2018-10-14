@@ -75,6 +75,7 @@ def generate_resource_file(stager, listener):
         resource_file.write(f"set BindIP {listener['BindIP']}\n")
         resource_file.write(f"set Port {listener['Port']}\n")
         resource_file.write("start")
+        resource_file.write("modules")
 
     print_good(f"Generated resource file: {filename}")
 
