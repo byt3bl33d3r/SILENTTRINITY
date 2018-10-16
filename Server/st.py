@@ -10,27 +10,28 @@ Options:
     -d, --debug                  Enable debug output
 """
 
-import logging
 import functools
+import logging
 import os
-import core.state as state
 import traceback
 from shlex import split
+
 from docopt import docopt, DocoptExit
-from core.listeners import Listeners
-from core.sessions import Sessions
-from core.modules import Modules
-from core.stagers import Stagers
-from core.utils import command, print_bad, print_good, print_info
-from terminaltables import AsciiTable
 from prompt_toolkit import PromptSession
-from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.formatted_text import HTML
-from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.styles import Style
 from termcolor import colored
+
+import core.state as state
+from core.listeners import Listeners
+from core.modules import Modules
+from core.sessions import Sessions
+from core.stagers import Stagers
+from core.utils import print_bad
+
 
 rprompt_style = Style.from_dict({
     'rprompt': 'bg:#ff0066 #ffffff',
@@ -58,8 +59,8 @@ class CmdLoop:
             bottom_toolbar=bottom_toolbar,
             auto_suggest=AutoSuggestFromHistory(),
             enable_history_search=True
-            #rprompt=get_rprompt,
-            #style=rprompt_style
+            # rprompt=get_rprompt,
+            # style=rprompt_style
         )
 
         self.contexts = [
@@ -120,7 +121,6 @@ class CmdLoop:
 
 
 if __name__ == "__main__":
-
     codename = "Ánima"
     version = "0.0.1dev"
 

@@ -55,3 +55,11 @@ We might want to implement a fully fledged RPC that proxies objects between C# a
 - https://pythonhosted.org/Pyro4/pyrolite.html
 
 - https://thrift.apache.org/
+
+### Development Environment
+
+You can refer to the [Wiki](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki/Setting-up-your-development-environment) If you need some help setting up your environment.
+
+### Reporting issues
+
+Reporting any issue will be appreciated, but please, feel free to use this [ISSUE_TEMPLATE](https://github.com/byt3bl33d3r/SILENTTRINITY/blob/master/.github/ISSUE_TEMPLATE.md).
