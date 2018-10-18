@@ -92,6 +92,12 @@ if __name__ == "__main__":
 
     stager = validate_stager(args.stager)
 
+    stager_file = None
+    resource_file = stager.name
+    if args.file is not None:
+        resource_file = args.file
+        stager_file = args.file
+
     if stager is None:
         print_bad("ERROR: Invalid stager.")
         sys.exit(1)
@@ -103,12 +109,8 @@ if __name__ == "__main__":
         print_bad("ERROR: Invalid listener.")
         sys.exit(1)
 
-    stager.generate(listener)
+    stager.generate(listener, stager_file)
 
-    filename = stager.name
-    if args.file is not None:
-        filename = args.file
-
-    generate_resource_file(filename, listener)
+    generate_resource_file(resource_file, listener)
 
     sys.exit(0)
