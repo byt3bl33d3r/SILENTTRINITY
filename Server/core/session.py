@@ -1,5 +1,5 @@
-from prompt_toolkit.application import run_in_terminal
 from time import time
+
 
 class Session:
     def __init__(self, guid, remote_address, data):
@@ -16,6 +16,9 @@ class Session:
 
     def last_check_in(self):
         return time() - self.checkin_time
+
+    def rename(self, name):
+        self.guid = name
 
     def __str__(self):
         return f"<Session guid: {self.guid} address: {self.address}>"

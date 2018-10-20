@@ -1,15 +1,16 @@
-import functools
-import core.state as state
-from core.session import Session
-from core.job import Job
-from time import gmtime, strftime
 from queue import Queue, Empty
+from time import gmtime, strftime
+
 from prompt_toolkit.formatted_text import HTML
-from core.utils import command, register_cli_commands, print_info, print_good
+from terminaltables import AsciiTable
+
+import core.state as state
 from core.completers import STCompleter
 from core.events import NEW_SESSION, SESSION_STAGED, SESSION_CHECKIN, NEW_JOB, JOB_RESULT
 from core.ipcserver import ipc_server
-from terminaltables import AsciiTable
+from core.job import Job
+from core.session import Session
+from core.utils import command, register_cli_commands, print_info, print_good, print_bad
 
 
 @register_cli_commands
@@ -68,6 +69,12 @@ class Sessions:
         print_good(f"{guid} returned job result (id: {decoded['id']})")
         print(decoded['result'])
 
+    def __get_session(self, guid):
+        for session in self.sessions:
+            if session.guid == guid:
+                return session
+        return  None
+
     @command
     def list(self, guid: str):
         """
@@ -85,7 +92,8 @@ class Sessions:
 
         for session in self.sessions:
             try:
-                username = f"*{session.data['username']}@{session.data['domain']}" if session.data['high_integrity'] else f"{session.data['username']}@{session.data['domain']}"
+                username = f"*{session.data['username']}@{session.data['domain']}" if session.data[
+                    'high_integrity'] else f"{session.data['username']}@{session.data['domain']}"
             except KeyError:
                 username = ''
 
@@ -110,10 +118,36 @@ class Sessions:
             guid  filter by session's guid
         """
 
-        for session in self.sessions:
-            if session.guid == guid:
-                table_data = [["Name", "Value"]]
-                for k, v in session.data.items():
-                    table_data.append([k.capitalize(), v])
-                table = AsciiTable(table_data)
-                print(table.table)
+        session = self.__get_session(guid)
+
+        if session is not None:
+            table_data = [["Name", "Value"]]
+            for k, v in session.data.items():
+                table_data.append([k.capitalize(), v])
+            table = AsciiTable(table_data)
+            print(table.table)
+
+    @command
+    def rename(self, guid: str, name: str):
+        """
+        Set a name for a session
+
+        Usage: rename <guid> <name> [-h]
+
+        Arguments:
+            guid  filter by session's guid
+            name name for the session
+        """
+
+        if self.__get_session(name) is not None:
+            print_bad("New name should be unique. No agent was renamed.")
+            return False
+
+        session = self.__get_session(guid)
+
+        if session is not None:
+            session.rename(name)
+            self.info(name)
+            return True
+
+        return False
