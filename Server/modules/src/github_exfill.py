@@ -8,7 +8,6 @@ clr.AddReference('System.Web.Extensions')
 import System.Web.Script.Serialization as json
 
 def web_put(url,data,token):
-    print 'Web put'
     System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12
     client = WebClient()
     client.Headers.Add('User-Agent','Iron Python')
@@ -29,7 +28,6 @@ def github_upload(user,PAT,repo,repo_path,repo_file,local_file):
     }
     json_serial = json.JavaScriptSerializer()
     json_data = json_serial.Serialize(data)
-    print json_data
     result = web_put(ghapi_url,json_data,token)
     print 'File uploaded'
 
