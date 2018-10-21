@@ -42,13 +42,15 @@ class Sessions:
 
     def __session_checked_in(self, checkin_tuple):
         guid, remote_addr = checkin_tuple
-        for session in self.sessions:
-            if session.guid == guid:
-                session.checked_in()
-                try:
-                    return session.queue.get(block=False)
-                except Empty:
-                    return
+
+        session = self.__get_session(guid)
+
+        if session is not None:
+            session.checked_in()
+            try:
+                return session.queue.get(block=False)
+            except Empty:
+                return
 
         print_info(f"Re-attaching orphaned session from {remote_addr} ...")
         self.__add_session(Session(guid, remote_addr, {}))
@@ -66,24 +68,22 @@ class Sessions:
     def __job_result(self, result):
         guid, data = result
         decoded = Job.decode(data)
-        print_good(f"{guid} returned job result (id: {decoded['id']})")
+        session = self.__get_session(guid)
+        print_good(f"{session.guid} returned job result (id: {decoded['id']})")
         print(decoded['result'])
 
     def __get_session(self, guid):
         for session in self.sessions:
-            if session.guid == guid:
+            if session.is_valid(guid):
                 return session
         return  None
 
     @command
-    def list(self, guid: str):
+    def list(self):
         """
         Get available sessions
 
-        Usage: list [<guid>] [-h]
-
-        Arguments:
-            guid  filter by session's guid
+        Usage: list [-h]
         """
 
         table_data = [
@@ -136,18 +136,19 @@ class Sessions:
 
         Arguments:
             guid  filter by session's guid
-            name name for the session
+            name  the new name for the session
         """
 
         if self.__get_session(name) is not None:
             print_bad("New name should be unique. No agent was renamed.")
-            return False
+            return
 
         session = self.__get_session(guid)
 
         if session is not None:
-            session.rename(name)
-            self.info(name)
-            return True
+            self.sessions.remove(session)
+            session.guid = name
+            self.sessions.append(session)
+            return
 
-        return False
+        return
