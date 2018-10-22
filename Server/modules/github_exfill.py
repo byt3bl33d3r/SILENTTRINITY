@@ -1,38 +1,42 @@
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        Module.__init__(self)
         self.name = 'github_exfill'
         self.description = 'Backs up files to a github repo'
         self.author = 'Tristan Messner'
         self.options = {
             'Username': {
-                'Description'   :   'The username of your github account',
-                'Required'      :   True,
-                'Value'         :   ''
+                'Description': 'The username of your github account',
+                'Required': True,
+                'Value': ''
             },
             'PAT': {
-                'Description'   :   'Your github personal access token',
-                'Required'      :   True,
-                'Value'         :   ''
+                'Description': 'Your github personal access token',
+                'Required': True,
+                'Value': ''
             },
             'Repo': {
-                'Description'   :   'The github repo to exfilltrate data to',
-                'Required'      :   True,
-                'Value'         :   ''
+                'Description': 'The github repo to exfilltrate data to',
+                'Required': True,
+                'Value': ''
             },
             'Repo_path': {
-                'Description'   :   'The file path to store the backup file. should end with a /',
-                'Required'      :   True,
-                'Value'         :   ''
+                'Description': 'The file path to store the backup file. should end with a /',
+                'Required': True,
+                'Value': ''
             },
             'Repo_file': {
-                'Description'   :   'The name to store the backup file under',
-                'Required'      :   True,
-                'Value'         :   ''
+                'Description': 'The name to store the backup file under',
+                'Required': True,
+                'Value': ''
             },
             'Local_file': {
-                'Description'   :   'The path to the local file to backup',
-                'Required'      :   True,
-                'Value'         :   ''
+                'Description': 'The path to the local file to backup',
+                'Required': True,
+                'Value': ''
             }
         }
 
