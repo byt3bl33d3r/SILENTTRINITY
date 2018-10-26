@@ -163,9 +163,9 @@ def print_banner(codename, version):
     """
     version = f"""
                                                         Codename : {colored(codename, "green")}
-                                                        Version  : {colored(version, "yellow")}
+                                                        Version  : {colored(version, "green")}
     """
 
     print(colored(logo, "green"))
-    print(colored(banner, "yellow"))
+    print(colored(banner, "white"))
     print(version)
