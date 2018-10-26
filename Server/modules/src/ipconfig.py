@@ -51,6 +51,6 @@ def ipconfig():
     for iface in interfaces:
         response += interfaceSummary(iface)
 
-    print response
+    return response
 
-ipconfig()
+print ipconfig()
