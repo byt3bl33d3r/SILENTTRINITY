@@ -30,11 +30,11 @@ from core.listeners import Listeners
 from core.modules import Modules
 from core.sessions import Sessions
 from core.stagers import Stagers
-from core.utils import print_bad
-
+from core.utils import print_bad, print_banner
 
 rprompt_style = Style.from_dict({
     'rprompt': 'bg:#ff0066 #ffffff',
+    '':'#ffffff'
 })
 
 
@@ -58,9 +58,9 @@ class CmdLoop:
             'ST ≫ ',
             bottom_toolbar=bottom_toolbar,
             auto_suggest=AutoSuggestFromHistory(),
-            enable_history_search=True
+            enable_history_search=True,
             # rprompt=get_rprompt,
-            # style=rprompt_style
+            style=rprompt_style
         )
 
         self.contexts = [
@@ -124,16 +124,6 @@ if __name__ == "__main__":
     codename = "Ánima"
     version = "0.0.1dev"
 
-    banner = f"""
-   _____ ______    _______   __________________  _____   ______________  __
-  / ___//  _/ /   / ____/ | / /_  __/_  __/ __ \/  _/ | / /  _/_  __/\ \/ /
-  \__ \ / // /   / __/ /  |/ / / /   / / / /_/ // //  |/ // /  / /    \  /
- ___/ // // /___/ /___/ /|  / / /   / / / _, _// // /|  // /  / /     / /
-/____/___/_____/_____/_/ |_/ /_/   /_/ /_/ |_/___/_/ |_/___/ /_/     /_/
-
-                         Codename: {colored(codename, "yellow")}
-                         Version: {colored(version, "yellow")}
-"""
     args = docopt(__doc__, version=f"{codename} - {version}")
 
     state.args = args
@@ -147,6 +137,7 @@ if __name__ == "__main__":
 
     logging.info(args)
 
-    print(banner)
+    print_banner(codename, version)
+
     loop = CmdLoop()
     loop()
