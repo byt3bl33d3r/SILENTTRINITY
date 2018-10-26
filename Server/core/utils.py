@@ -1,12 +1,13 @@
 import netifaces
 import random
 import string
-from typing import get_type_hints, List, Dict
 from functools import wraps
-from docopt import docopt
-from termcolor import colored
-from quart import jsonify
+from typing import get_type_hints, List
 from uuid import UUID
+
+from docopt import docopt
+from quart import jsonify
+from termcolor import colored
 
 
 class CmdError(Exception):
@@ -15,6 +16,7 @@ class CmdError(Exception):
 
 def command(func):
     func._command = True
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         cmd_args = docopt(func.__doc__.strip(), argv=kwargs["args"])
@@ -40,7 +42,9 @@ def command(func):
                     raise NotImplemented(f"Casting for type '{hint}' has not been implemented")
 
         return func(args[0], **validated_args)
+
     return wrapper
+
 
 def register_cli_commands(cls):
     cls._cmd_registry = []
@@ -50,6 +54,7 @@ def register_cli_commands(cls):
             cls._cmd_registry.append(methodname)
     return cls
 
+
 def check_valid_guid(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -58,6 +63,7 @@ def check_valid_guid(func):
         except Exception:
             return jsonify({}), 400
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -112,3 +118,54 @@ def print_bad(msg):
 
 def print_info(msg):
     print(f"{colored('[*]', 'blue')} {msg}")
+
+
+def print_banner(codename, version):
+    logo = """
+                                         ........                                   
+                                    .':ldxkkkkkxdoc,.                               
+                                  .cdOOOOOOOOOOOOOOOxl,.                            
+                                .ckOOOOOOOOOOOOOOOOOOOko'                           
+                               .dOOOOOOOOOOOOOOOOOOOOOOOx;                          
+                              .oOOOOOOOOOOOOOOOOOOOOOOOOOx,                         
+                              :OOOOOOOOOOOOOOOOOOOOOOOOOOOo.                        
+                             .lOOOOxoccldOOOOOOOxoccldkOOOd'                        
+                              cOOkc'.,,..;xOOOkc'.,;..;dOOd.                        
+                              ,kOl.'cccl;.;kOOl.'cccl;.;kOc.                        
+                              .cOl..:cc:'.:kOOo..:cc:,.:kd.                         
+                               .oko,.''.'cxl;cdo,.',.'cxx,                          
+                                .oOOxoodkOd;',lOOxoodkOx,                           
+                                 .oOxdocc:;;;;;::cloxkx,                            
+                                  .'.               .'.                             
+                          .......                       .......                     
+                   ..;:looddxxkkk;         .''.        .dkkxxdddolc;'.              
+                 'cdkOOxc;,,,cdOOo.       'dOk:        :OOxl;,,,:dOOOxl,.           
+               .lkOOOOd'.;::;'.lOO:       .cOd.       ,xOx,.,::;'.lOOOOOd,          
+              ,xOOOOOOc.;o:;o: ;kkx;       ;oc.      'okOl.,oc;oc.,kOOOOOkc.        
+             ,xOOOOOOOd,.,;;,..ox;,l:.              'l;,ox,.,;;;'.lOOOOOOOOc.       
+            .oOOOOOOOOOkl;,,;cxOdc:okl.           .:xdc:oOkl;,,;cdOOOOOOOOOk,       
+            ,xOOOOOOOOOOOOOOOkdc;;:okOx:.        ,okkdc:;:okOOOOOOOOOOOOOOOOc       
+            ,kOOOOOOOOOOOOOOx;.';;'.,dOOd:.    'okOx:..;;'.'oOOOOOOOOOOOOOOOc       
+            .dOOOOOOOOOOOOOOc.,oc:o: ;kOkc.    ,xOOl.,oc;o:.,kOOOOOOOOOOOOOk;       
+             ;kOOOOOOOOOOOOOo..;cc:'.cOx;       .oOd..;cc:'.cOOOOOOOOOOOOOOl.       
+             .:kOOOOOOOOOOOOOd;',,',oko.         .cxd:',,',lkOOOOOOOOOOOOOo.        
+               ,dOOOOOOOOOOOOOOkxxkOx;.            'okkxxkOOOOOOOOOOOOOOx:.         
+                .;okOOOOOOOOOOOOOkd:.               .,lxOOOOOOOOOOOOOkd:.           
+                   .,cldxxkkxdoc;.                     .,cldxxkkxdoc;'.             
+                        ......                              ......                  
+    """
+    banner = """
+        _____ ______    _______   __________________  _____   ______________  __
+       / ___//  _/ /   / ____/ | / /_  __/_  __/ __ \/  _/ | / /  _/_  __/\ \/ /
+       \__ \ / // /   / __/ /  |/ / / /   / / / /_/ // //  |/ // /  / /    \  /
+      ___/ // // /___/ /___/ /|  / / /   / / / _, _// // /|  // /  / /     / /
+     /____/___/_____/_____/_/ |_/ /_/   /_/ /_/ |_/___/_/ |_/___/ /_/     /_/
+    """
+    version = f"""
+                                                        Codename : {colored(codename, "green")}
+                                                        Version  : {colored(version, "yellow")}
+    """
+
+    print(colored(logo, "green"))
+    print(colored(banner, "yellow"))
+    print(version)
