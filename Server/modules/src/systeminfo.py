@@ -9,7 +9,7 @@ def getSystemInfo():
     summary += "Domain: {0}\n".format(Env.UserDomainName)
     summary += "User: \t{0}\n".format(Env.UserName)
     summary += "Date: \t{0}\n".format(DateTime.Now.ToString())
-    print summary
+    return summary
 
-getSystemInfo()
+print getSystemInfo()
 
