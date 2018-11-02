@@ -1,6 +1,6 @@
 class STModule:
     def __init__(self):
-        self.name = 'downloader'
+        self.name = 'webdownloader'
         self.description = 'Download a file to a destination path.'
         self.author = '@b2az'
         self.options = {
@@ -23,7 +23,7 @@ class STModule:
             print_bad("Please provide a URL.")
             return None
 
-        with open('modules/src/downloader.py', 'r') as module_src:
+        with open('modules/src/webdownloader.py', 'r') as module_src:
             src = module_src.read()
             src = src.replace("URL", self.options['URL']['Value'])
             src = src.replace("DESTINATION", self.options['Destination']['Value'])
