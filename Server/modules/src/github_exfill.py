@@ -4,6 +4,7 @@ import System.Convert
 import System.Text.Encoding as Encoding
 import System.Net.Security
 import System.Net
+import System.Environment as Env
 clr.AddReference('System.Web.Extensions')
 import System.Web.Script.Serialization as json
 
@@ -16,7 +17,8 @@ def web_put(url,data,token):
 
 
 def github_upload(user,PAT,repo,repo_path,repo_file,local_file):
-    ghapi_url = 'https://api.github.com/repos/' + user + '/' + repo + '/contents/' + repo_path + repo_file
+    fixed_file = Env.MachineName + '-' + repo_file
+    ghapi_url = 'https://api.github.com/repos/' + user + '/' + repo + '/contents/' + repo_path + fixed_file
     a = open(local_file,'r')
     token_gen = user + ':' + PAT
     token = System.Convert.ToBase64String(Encoding.UTF8.GetBytes(token_gen))
