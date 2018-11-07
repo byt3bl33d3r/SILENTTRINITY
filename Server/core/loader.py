@@ -20,6 +20,7 @@ class Loader:
         return module
 
     def get_loadables(self):
+        self.loaded = []
         for path in self.paths:
             for module in os.listdir(path):
                 if module[-3:] == '.py' and not module.startswith("example"):
