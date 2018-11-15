@@ -8,4 +8,4 @@ class STModule:
     def payload(self):
         with open('modules/src/systeminfo.py', 'r') as module_src:
             src = module_src.read()
-            return src.encode()
+            return src

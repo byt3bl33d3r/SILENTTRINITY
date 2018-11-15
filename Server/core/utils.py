@@ -4,10 +4,9 @@ import string
 from functools import wraps
 from typing import get_type_hints, List
 from uuid import UUID
-
+from termcolor import colored
 from docopt import docopt
 from quart import jsonify
-from termcolor import colored
 
 
 class CmdError(Exception):
@@ -162,10 +161,10 @@ def print_banner(codename, version):
      /____/___/_____/_____/_/ |_/ /_/   /_/ /_/ |_/___/_/ |_/___/ /_/     /_/
     """
     version = f"""
-                                                        Codename : {colored(codename, "green")}
-                                                        Version  : {colored(version, "green")}
+                                 Codename : {colored(codename, "yellow")}
+                                 Version  : {colored(version, "yellow")}
     """
 
-    print(colored(logo, "green"))
-    print(colored(banner, "white"))
+    print(logo)
+    print(banner)
     print(version)

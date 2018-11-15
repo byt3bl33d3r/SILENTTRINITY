@@ -55,7 +55,7 @@ class Modules(Loader):
         """
         Run a module
 
-        Usage: 
+        Usage:
             run <guids>...
             run -h | --help
 
@@ -65,9 +65,10 @@ class Modules(Loader):
         Options:
             -h, --help   Show dis
         """
+
         job = Job(self.selected)
         for guid in guids:
-            ipc_server.publish(NEW_JOB, (guid, job.encode()))
+            ipc_server.publish(NEW_JOB, (guid, job))
 
     @command
     def use(self, name: str):

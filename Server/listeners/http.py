@@ -80,8 +80,7 @@ class STListener(Listener):
         http_blueprint.after_request(self.make_normal)
 
         http_blueprint.add_url_rule('/stage.zip', 'stage', self.stage, methods=['GET'])
-        http_blueprint.add_url_rule('/<GUID>', 'first_checkin', self.first_checkin, methods=['POST'])
-        http_blueprint.add_url_rule('/<GUID>/jobs', 'jobs', self.jobs, methods=['GET'])
+        http_blueprint.add_url_rule('/<GUID>/jobs', 'jobs', self.jobs, methods=['POST'])
         http_blueprint.add_url_rule('/<GUID>/jobs/<job_id>', 'job_result', self.job_result, methods=['POST'])
 
         # Add a catch all route
@@ -124,26 +123,23 @@ class STListener(Listener):
             return Response(stage_file.getvalue(), content_type='application/zip')
 
     @check_valid_guid
-    async def first_checkin(self, GUID):
-        data = json.loads(await request.data)
-        self.dispatch_event(NEW_SESSION, Session(GUID, request.remote_addr, data))
-        return jsonify({}), 200
-
-    @check_valid_guid
     async def jobs(self, GUID):
+        data = json.loads(await request.data)
+
         self.app.logger.debug(f"Session {GUID} ({request.remote_addr}) checked in")
-        job = self.dispatch_event(SESSION_CHECKIN, (GUID, request.remote_addr))
+        job = self.dispatch_event(SESSION_CHECKIN, (GUID, request.remote_addr, data))
         if job:
             return jsonify(job), 200
 
         self.app.logger.debug(f"No jobs to give {GUID}")
+
         return jsonify({}), 200
 
     @check_valid_guid
     async def job_result(self, GUID, job_id):
         self.app.logger.debug(f"Session {GUID} posted results of job {job_id}")
         data = json.loads(await request.data)
-        self.dispatch_event(JOB_RESULT, (GUID, data))
+        self.dispatch_event(JOB_RESULT, (GUID, job_id, data))
 
         return jsonify({}), 200
 

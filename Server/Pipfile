@@ -13,6 +13,7 @@ docopt = "*"
 termcolor = "*"
 terminaltables = "*"
 prompt-toolkit = ">=2"
+cryptography = "*"
 
 [requires]
 python_version = "3.7"

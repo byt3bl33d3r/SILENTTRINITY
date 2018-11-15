@@ -3,7 +3,6 @@ import core.state as state
 from core.session import Session
 from core.job import Job
 from time import gmtime, strftime
-from queue import Queue, Empty
 from prompt_toolkit.formatted_text import HTML
 from core.utils import command, register_cli_commands, print_info, print_good
 from core.completers import STCompleter
@@ -23,34 +22,26 @@ class Sessions:
         self.selected = None
         self.sessions = []
 
-        ipc_server.attach(NEW_SESSION, self.__add_session)
         ipc_server.attach(SESSION_STAGED, self.__notify_session_staged)
         ipc_server.attach(SESSION_CHECKIN, self.__session_checked_in)
         ipc_server.attach(NEW_JOB, self.__add_job)
         ipc_server.attach(JOB_RESULT, self.__job_result)
 
-    def __add_session(self, session_obj):
-        print_good(f"New session {session_obj.guid} connected! ({session_obj.address})")
-        # We can't pickle an object with a queue, so we need to add it after we receive it. Ugly.
-        session_obj.queue = Queue()
-        self.sessions.append(session_obj)
-        state.SESSIONS = len(self.sessions)
-
     def __notify_session_staged(self, msg):
         print_info(msg)
 
     def __session_checked_in(self, checkin_tuple):
-        guid, remote_addr = checkin_tuple
+        guid, remote_addr, data = checkin_tuple
         for session in self.sessions:
             if session.guid == guid:
                 session.checked_in()
-                try:
-                    return session.queue.get(block=False)
-                except Empty:
-                    return
+                return session.get_job(data)
 
-        print_info(f"Re-attaching orphaned session from {remote_addr} ...")
-        self.__add_session(Session(guid, remote_addr, {}))
+        session = Session(guid, remote_addr)
+        print_good(f"New session {session.guid} connected! ({session.address})")
+        self.sessions.append(session)
+        state.SESSIONS = len(self.sessions)
+        return session.get_job(data)
 
     def __add_job(self, job_tuple):
         guid, job = job_tuple
@@ -63,10 +54,14 @@ class Sessions:
                     session.add_job(job)
 
     def __job_result(self, result):
-        guid, data = result
-        decoded = Job.decode(data)
-        print_good(f"{guid} returned job result (id: {decoded['id']})")
-        print(decoded['result'])
+        guid, job_id, data = result
+        for session in self.sessions:
+            if session.guid == guid:
+                job = session.get_job_by_id(job_id)
+                results = job.get_results(data)
+
+                print_good(f"{guid} returned job result (id: {job_id})")
+                print(results['result'])
 
     @command
     def list(self, guid: str):

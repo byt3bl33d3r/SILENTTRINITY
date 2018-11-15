@@ -48,6 +48,10 @@ Possibly could modify [httpimports](https://github.com/operatorequals/httpimport
 
 https://www.codeproject.com/Articles/607352/Injecting-Net-Assemblies-Into-Unmanaged-Processes
 
+We actually might not need to do any of that cause of some fantastic research from @xpn!
+
+https://blog.xpnsec.com/rundll32-your-dotnet/
+
 ### RPC
 
 We might want to implement a fully fledged RPC that proxies objects between C# and Python. This could be interesting...

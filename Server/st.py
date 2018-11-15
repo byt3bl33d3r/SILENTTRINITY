@@ -34,7 +34,6 @@ from core.utils import print_bad, print_banner
 
 rprompt_style = Style.from_dict({
     'rprompt': 'bg:#ff0066 #ffffff',
-    '':'#ffffff'
 })
 
 
@@ -60,7 +59,7 @@ class CmdLoop:
             auto_suggest=AutoSuggestFromHistory(),
             enable_history_search=True,
             # rprompt=get_rprompt,
-            style=rprompt_style
+            # style=rprompt_style
         )
 
         self.contexts = [
