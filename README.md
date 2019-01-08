@@ -9,6 +9,28 @@
 - Server requires Python >= 3.7
 - SILENTTRINITY C# implant requires .NET >= 4.5
 
+## Quick install guide
+
+Tested on Ubuntu 18.04.1 LTS, using virtualenv
+~~~~
+mkdir -r /pentest/av-bypass
+cd /pentest/av-bypass
+git clone https://github.com/byt3bl33d3r/SILENTTRINITY.git
+cd SILENTTRINITY/Server
+sudo apt install python3.7 python3.7-venv python3.7-dev
+mkdir python37
+python3.7 -m venv python37
+. python37/bin/activate
+pip install -r requirements.txt
+~~~~
+
+Once it is installed, next time you want to use it, just use: 
+~~~~
+cd /pentest/av-bypass/SILENTTRINITY/Server
+. /python37/bin/activate
+python stvenom.py --help  
+~~~~
+
 ## How it works
 <p align="center">
   <img src="https://user-images.githubusercontent.com/5151193/46646842-cd2b0580-cb49-11e8-9218-73226e977d58.png" alt="ST"/>
