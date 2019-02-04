@@ -1,7 +1,7 @@
 from core.loader import Loader
 from typing import List
-from core.utils import command, register_cli_commands
 from core.job import Job
+from core.utils import command, register_cli_commands
 from core.events import NEW_JOB
 from core.ipcserver import ipc_server
 from prompt_toolkit.formatted_text import HTML
@@ -16,7 +16,7 @@ class Modules(Loader):
     def __init__(self, prompt_session):
         Loader.__init__(self)
         self.type = "module"
-        self.paths = ["modules/"]
+        self.paths = ["modules/ipy", "modules/boo"]
 
         self.name = 'modules'
         self.prompt = HTML('ST (<ansired>modules</ansired>) ≫ ')
@@ -66,9 +66,8 @@ class Modules(Loader):
             -h, --help   Show dis
         """
 
-        job = Job(self.selected)
         for guid in guids:
-            ipc_server.publish(NEW_JOB, (guid, job))
+            ipc_server.publish(NEW_JOB, (guid, Job(self.selected)))
 
     @command
     def use(self, name: str):
@@ -84,10 +83,7 @@ class Modules(Loader):
         for m in self.loaded:
             if m.name == name.lower():
                 self.selected = m
-
-                new_prompt = HTML(f"ST (<ansired>modules</ansired>)(<ansired>{m.name}</ansired>) ≫ ")
-                self.prompt_session.message = new_prompt
-                self.prompt = new_prompt
+                self.prompt_session.message = self.prompt = HTML(f"ST (<ansired>modules</ansired>)(<ansired>{m.name}</ansired>) ≫ ")
                 return
 
         print_bad(f"No module named '{name}'")

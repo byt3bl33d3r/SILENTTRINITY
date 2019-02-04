@@ -1,4 +1,6 @@
 NEW_SESSION = 'new_session'
+KEX = 'kex'
+ENCRYPT_STAGE = 'encrypt_stage'
 NEW_USER = 'new_user'
 NEW_JOB = 'new_job'
 SESSION_STAGED = 'session_staged'

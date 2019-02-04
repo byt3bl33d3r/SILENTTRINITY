@@ -75,7 +75,7 @@ class STListener(Listener):
 
         loop = asyncio.get_event_loop()
 
-        http_blueprint = Blueprint(__name__, 'http')
+        http_blueprint = Blueprint(__name__, 'http2')
         http_blueprint.before_request(self.check_if_naughty)
         http_blueprint.after_request(self.make_normal)
 
@@ -90,8 +90,8 @@ class STListener(Listener):
 
         self.app = Quart(__name__)
 
-        logging.getLogger('quart.app').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
-        logging.getLogger('quart.serving').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
+        #logging.getLogger('quart.app').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
+        #logging.getLogger('quart.serving').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
 
         self.app.register_blueprint(http_blueprint)
         self.app.run(host=self['BindIP'],

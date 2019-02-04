@@ -1,6 +1,7 @@
 import netifaces
 import random
 import string
+from core.ipcserver import ipc_server
 from functools import wraps
 from typing import get_type_hints, List
 from uuid import UUID
@@ -11,6 +12,13 @@ from quart import jsonify
 
 class CmdError(Exception):
     pass
+
+
+def subscribe(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        ipc_server.attach(args[0], func)
+    return wrapper
 
 
 def command(func):
@@ -64,6 +72,10 @@ def check_valid_guid(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def to_byte_array(data):
+    return list(map(int, data))
 
 
 def gen_random_string(length=8):

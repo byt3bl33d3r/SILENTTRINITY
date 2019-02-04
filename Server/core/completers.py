@@ -26,6 +26,13 @@ class STCompleter(Completer):
 
                 return
 
+            elif split(document.current_line)[0].lower() in ['run', 'info']:
+                for session in self.cli_menu.prompt_session.contexts[1].sessions:
+                    if str(session.guid).startswith(word_before_cursor):
+                        yield Completion(str(session.guid), -len(word_before_cursor))
+
+                return
+
         for ctx in self.cli_menu.prompt_session.contexts:
             if ctx.name.startswith(word_before_cursor) and ctx.name is not self.cli_menu.name:
                 yield Completion(ctx.name, -len(word_before_cursor))

@@ -14,6 +14,7 @@ import functools
 import logging
 import os
 import traceback
+import sys
 from shlex import split
 
 from docopt import docopt, DocoptExit
@@ -120,22 +121,22 @@ class CmdLoop:
 
 
 if __name__ == "__main__":
-    codename = "Ánima"
-    version = "0.0.1dev"
+    codename = ""
+    version = "0.1.0dev"
 
     args = docopt(__doc__, version=f"{codename} - {version}")
-
     state.args = args
 
-    os.system('cls' if os.name == 'nt' else 'clear')
-
+    log_format = "%(asctime)s %(process)d %(threadName)s - [%(levelname)s] %(filename)s: %(funcName)s - %(message)s"
     logging.basicConfig(
-        format="%(asctime)s %(process)d %(threadName)s - [%(levelname)s] %(filename)s: %(funcName)s - %(message)s",
+        format=log_format,
         level=logging.DEBUG if args['--debug'] else logging.INFO
+        #filename='st.log',
+        #filemode='a+'
     )
+    logging.debug(args)
 
-    logging.info(args)
-
+    os.system('cls' if os.name == 'nt' else 'clear')
     print_banner(codename, version)
 
     loop = CmdLoop()

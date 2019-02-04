@@ -79,10 +79,7 @@ class Stagers(Loader):
         for s in self.loaded:
             if s.name == name.lower():
                 self.selected = s
-
-                new_prompt = HTML(f"ST (<ansired>stagers</ansired>)(<ansired>{s.name}</ansired>) ≫ ")
-                self.prompt_session.message = new_prompt
-                self.prompt = new_prompt
+                self.prompt_session.message = self.prompt = HTML(f"ST (<ansired>stagers</ansired>)(<ansired>{s.name}</ansired>) ≫ ")
 
     @command
     def set(self, name: str, value: str):

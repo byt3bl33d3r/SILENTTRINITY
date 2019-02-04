@@ -14,6 +14,7 @@ termcolor = "*"
 terminaltables = "*"
 prompt-toolkit = ">=2"
 cryptography = "*"
+defusedxml = "*"
 
 [requires]
 python_version = "3.7"

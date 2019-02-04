@@ -1,8 +1,9 @@
 import core.state as state
+import core.events as events
 from core.events import GET_LISTENERS
 from core.ipcserver import ipc_server
 from prompt_toolkit.formatted_text import HTML
-from core.utils import command, register_cli_commands, print_good, print_bad, print_good
+from core.utils import command, register_cli_commands, print_good, print_bad, print_good, subscribe
 from core.completers import STCompleter
 from core.loader import Loader
 from terminaltables import AsciiTable
@@ -24,10 +25,11 @@ class Listeners(Loader):
 
         self.selected = None
 
-        ipc_server.attach(GET_LISTENERS, self.__get_running_listeners)
+        ipc_server.attach(events.GET_LISTENERS, self.__get_running_listeners)
 
         self.get_loadables()
 
+    #@subscribe(events.GET_LISTENERS)
     def __get_running_listeners(self, msg):
         return self.listeners
 
@@ -81,10 +83,7 @@ class Listeners(Loader):
         for l in self.loaded:
             if l.name == name.lower():
                 self.selected = deepcopy(l)
-
-                new_prompt = HTML(f"ST (<ansired>listeners</ansired>)(<ansired>{l.name}</ansired>) ≫ ")
-                self.prompt_session.message = new_prompt
-                self.prompt = new_prompt
+                self.prompt_session.message = self.prompt = HTML(f"ST (<ansired>listeners</ansired>)(<ansired>{l.name}</ansired>) ≫ ")
 
     @command
     def options(self):

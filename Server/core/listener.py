@@ -28,6 +28,8 @@ class Listener:
 
     def dispatch_event(self, event, msg):
         self.__conn.send((event, msg))
+        data = ()
+
         try:
             data = self.__conn.recv()
         except EOFError:
