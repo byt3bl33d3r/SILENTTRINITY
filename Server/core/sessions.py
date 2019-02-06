@@ -1,10 +1,12 @@
 import logging
+import json
 import core.state as state
 import core.events as events
 from core.session import Session
+from core.job import Job
 from time import gmtime, strftime
 from prompt_toolkit.formatted_text import HTML
-from core.utils import command, register_cli_commands, print_info, print_good, subscribe
+from core.utils import command, register_cli_commands, print_info, print_good
 from core.completers import STCompleter
 from core.ipcserver import ipc_server
 from terminaltables import AsciiTable
@@ -21,16 +23,25 @@ class Sessions:
         self.selected = None
         self.sessions = set()
 
-        ipc_server.attach(events.KEX, self.__kex)
-        ipc_server.attach(events.ENCRYPT_STAGE, self.__gen_encrypted_stage)
-        ipc_server.attach(events.SESSION_STAGED, self.__notify_session_staged)
-        ipc_server.attach(events.SESSION_CHECKIN, self.__session_checked_in)
-        ipc_server.attach(events.NEW_JOB, self.__add_job)
-        ipc_server.attach(events.JOB_RESULT, self.__job_result)
+        """
+        The following code sucks.
 
+        We can probably pull some really fancy stuff here like registring functions 
+        using decorators in each Session object so when an event is published
+        it gets routed directly to the right session with the appropriate GUID.
+        This would be ideal as it would remove almost all of these __helper functions.
 
-    #@subscribe(events.KEX)
-    def __kex(self, kex_tuple):
+        I've tried doing this but it resulted in me drinking a lot with very little success.
+        """
+
+        ipc_server.attach(events.KEX, self.kex)
+        ipc_server.attach(events.ENCRYPT_STAGE, self.gen_encrypted_stage)
+        ipc_server.attach(events.SESSION_STAGED, self.notify_session_staged)
+        ipc_server.attach(events.SESSION_CHECKIN, self.session_checked_in)
+        ipc_server.attach(events.NEW_JOB, self.add_job)
+        ipc_server.attach(events.JOB_RESULT, self.job_result)
+
+    def kex(self, kex_tuple):
         guid, remote_addr, pubkey_xml = kex_tuple
         try:
             session = list(filter(lambda x: x == guid, self.sessions))[0]
@@ -43,26 +54,22 @@ class Sessions:
 
         return session.public_key
 
-    #@subscribe(events.ENCRYPT_STAGE)
-    def __gen_encrypted_stage(self, info_tuple):
+    def gen_encrypted_stage(self, info_tuple):
         guid, remote_addr = info_tuple
         session = list(filter(lambda x: x == guid, self.sessions))[0]
         return session.get_encrypted_stage()
 
-    #@subscribe(events.SESSION_STAGED)
-    def __notify_session_staged(self, msg):
+    def notify_session_staged(self, msg):
         print_info(msg)
 
-    #@subscribe(events.SESSION_CHECKIN)
-    def __session_checked_in(self, checkin_tuple):
+    def session_checked_in(self, checkin_tuple):
         guid, remote_addr = checkin_tuple
         session = list(filter(lambda x: x == guid, self.sessions))[0]
         session.checked_in()
 
         return session.get_job()
 
-    #@subscribe(events.NEW_JOB)
-    def __add_job(self, job_tuple):
+    def add_job(self, job_tuple):
         guid, job = job_tuple
         if guid.lower() == 'all':
             for session in self.sessions:
@@ -72,8 +79,7 @@ class Sessions:
                 if session == guid:
                     session.add_job(job)
 
-    #@subscribe(events.JOB_RESULT)
-    def __job_result(self, result_tuple):
+    def job_result(self, result_tuple):
         guid, job_id, data = result_tuple
         session = list(filter(lambda x: x == guid, self.sessions))[0]
 
@@ -85,9 +91,25 @@ class Sessions:
 
         for session in self.sessions:
             if session == guid:
-                results = session.crypto.decrypt(data)
+                results = json.loads(session.crypto.decrypt(data))
                 print_good(f"{guid} returned job result (id: {job_id})")
-                print(results)
+                print(results['result'])
+
+    @command
+    def sleep(self, guid: str, interval: int):
+        """
+        Set the checkin interval for an agent
+
+        Usage: sleep <guid> <interval> [-h]
+
+        Arguments:
+            guid  filter by session's guid
+            interval  checkin interval in milliseconds
+        """
+
+        for session in self.sessions:
+            if session == guid:
+                session.add_job(Job(command=('sleep', int(interval))))
 
     @command
     def list(self, guid: str):

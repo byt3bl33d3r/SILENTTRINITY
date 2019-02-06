@@ -5,6 +5,7 @@ import os
 import logging
 import core.state as state
 import core.events as events
+from core.crypto import create_self_signed_cert
 from core.listener import Listener
 from core.session import Session
 from core.utils import get_ipaddress, gen_random_string
@@ -16,9 +17,9 @@ from quart.logging import default_handler, serving_handler
 class STListener(Listener):
     def __init__(self):
         Listener.__init__(self)
-        self.name = 'http'
+        self.name = 'https'
         self.author = '@byt3bl33d3r'
-        self.description = 'HTTP listener'
+        self.description = 'HTTPS listener'
 
         self.options = {
             # format:
@@ -27,7 +28,7 @@ class STListener(Listener):
             'Name': {
                 'Description'   :   'Name for the listener.',
                 'Required'      :   True,
-                'Value'         :   'http'
+                'Value'         :   'https'
             },
             #'StageURL': {
             #    'Description'   :   'URL for staging.',
@@ -42,11 +43,31 @@ class STListener(Listener):
             'Port': {
                 'Description'   :   'Port for the listener.',
                 'Required'      :   True,
-                'Value'         :   80
+                'Value'         :   443
+            },
+            'Cert': {
+                'Description'   :   'SSL Certificate file',
+                'Required'      :   False,
+                'Value'         :   'data/cert.pem'
+            },
+            'Key': {
+                'Description'   :   'SSL Key file',
+                'Required'      :    False,
+                'Value'         :   'data/key.pem'
             }
         }
 
     def run(self):
+
+        #ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        #ssl_context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1 | ssl.OP_NO_COMPRESSION
+        #ssl_context.set_ciphers('ECDHE+AESGCM')
+        #ssl_context.load_cert_chain(, )
+        #ssl_context.set_alpn_protocols(['http/1.1', 'h2'])
+
+        if (self['Key'] == 'data/key.pem') and (self['Cert'] == 'data/cert.pem'):
+            if not os.path.exists(self['Key']) or not os.path.exists(self['Cert']):
+                create_self_signed_cert()
 
         """
         While we could use the standard decorators to register these routes, 
@@ -56,7 +77,7 @@ class STListener(Listener):
 
         loop = asyncio.get_event_loop()
 
-        http_blueprint = Blueprint(__name__, 'http')
+        http_blueprint = Blueprint(__name__, 'https')
         http_blueprint.before_request(self.check_if_naughty)
         #http_blueprint.after_request(self.make_normal)
 
@@ -81,6 +102,9 @@ class STListener(Listener):
         self.app.run(host=self['BindIP'],
                      port=self['Port'],
                      debug=False,
+                     #ssl=ssl_context,
+                     certfile=self['Cert'],
+                     keyfile=self['Key'],
                      use_reloader=False,
                      #access_log_format=,
                      loop=loop)

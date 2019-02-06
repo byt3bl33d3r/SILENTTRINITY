@@ -1,14 +1,11 @@
 import functools
 from core.loader import Loader
 from typing import List
-from core.events import GET_LISTENERS
-from core.utils import command, register_cli_commands
-from core.ipcserver import ipc_server
+from core.utils import command, register_cli_commands, print_bad, print_info, print_bad
 from core.completers import STCompleter
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.application import run_in_terminal
 from terminaltables import AsciiTable
-from core.utils import print_bad, print_info, print_bad
 
 
 @register_cli_commands
@@ -57,9 +54,7 @@ class Stagers(Loader):
         """
 
         if self.selected:
-            listeners = ipc_server.publish(GET_LISTENERS, '')
-
-            for l in listeners:
+            for l in self.prompt_session.contexts[0].listeners:
                 if l['Name'] == listener_name.lower():
                     self.selected.generate(l)
         else:

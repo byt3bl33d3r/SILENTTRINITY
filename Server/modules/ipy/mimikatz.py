@@ -13,7 +13,7 @@ class STModule:
         }
 
     def payload(self):
-        with open('modules/src/mimikatz.py', 'r') as module_src:
+        with open('modules/ipy/src/mimikatz.py', 'r') as module_src:
             src = module_src.read()
             src = src.replace("MIMIKATZ_COMMAND", self.options['Command']['Value'])
             return src

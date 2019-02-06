@@ -1,13 +1,10 @@
 from core.loader import Loader
-from typing import List
 from core.job import Job
-from core.utils import command, register_cli_commands
-from core.events import NEW_JOB
-from core.ipcserver import ipc_server
-from prompt_toolkit.formatted_text import HTML
+from core.utils import command, register_cli_commands, print_bad, print_info, print_bad
 from core.completers import STCompleter
+from typing import List
+from prompt_toolkit.formatted_text import HTML
 from terminaltables import AsciiTable
-from core.utils import print_bad, print_info, print_bad
 
 
 @register_cli_commands
@@ -67,7 +64,7 @@ class Modules(Loader):
         """
 
         for guid in guids:
-            ipc_server.publish(NEW_JOB, (guid, Job(self.selected)))
+            self.prompt_session.contexts[1].add_job((guid, Job(module=self.selected)))
 
     @command
     def use(self, name: str):

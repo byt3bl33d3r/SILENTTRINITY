@@ -1,4 +1,5 @@
 import json
+from core.job import Job
 from core.crypto import ECDHE
 from uuid import UUID
 from time import time
@@ -15,6 +16,8 @@ class Session:
         self.checkin_time = None
         self.crypto = ECDHE(pubkey_xml)
         self.jobs = Queue()
+
+        self.add_job(Job(command=('checkin', '')))
 
     @property
     def public_key(self):
@@ -40,7 +43,7 @@ class Session:
         return time() - self.checkin_time
 
     def set_session_info(self, data):
-        self.data = json.loads(self.crypto.decrypt(data))
+        self.data = json.loads(self.crypto.decrypt(data))['result']
 
     def get_encrypted_stage(self):
         with open('data/stage.zip', 'rb') as stage_file:

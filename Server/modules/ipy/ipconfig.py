@@ -1,7 +1,7 @@
 class STModule:
     def __init__(self):
         self.name = 'ipy/ipconfig'
-        self.langyage = 'ipy'
+        self.language = 'ipy'
         self.description = 'Enumerates network interfaces.'
         self.author = '@daddycocoaman'
         self.options = {}

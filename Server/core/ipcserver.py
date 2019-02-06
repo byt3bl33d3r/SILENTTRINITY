@@ -35,7 +35,6 @@ class IPCServer(Thread):
             t.start()
 
     def attach(self, event, func):
-        logging.debug(f"Registring {event} => {func}")
         if event not in self.subscribers:
             self.subscribers[event] = set()
             self.subscribers[event].add(func)

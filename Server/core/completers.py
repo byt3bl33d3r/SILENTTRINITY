@@ -26,7 +26,7 @@ class STCompleter(Completer):
 
                 return
 
-            elif split(document.current_line)[0].lower() in ['run', 'info']:
+            elif split(document.current_line)[0].lower() in ['run', 'info', 'sleep']:
                 for session in self.cli_menu.prompt_session.contexts[1].sessions:
                     if str(session.guid).startswith(word_before_cursor):
                         yield Completion(str(session.guid), -len(word_before_cursor))
