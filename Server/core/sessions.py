@@ -29,7 +29,7 @@ class Sessions:
         We can probably pull some really fancy stuff here like registring functions 
         using decorators in each Session object so when an event is published
         it gets routed directly to the right session with the appropriate GUID.
-        This would be ideal as it would remove almost all of these __helper functions.
+        This would be ideal as it would remove almost all of these helper functions.
 
         I've tried doing this but it resulted in me drinking a lot with very little success.
         """

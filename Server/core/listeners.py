@@ -1,4 +1,6 @@
 import core.state as state
+import core.events as events
+from core.ipcserver import ipc_server
 from prompt_toolkit.formatted_text import HTML
 from core.utils import command, register_cli_commands, print_good, print_bad, print_good
 from core.completers import STCompleter
@@ -22,7 +24,18 @@ class Listeners(Loader):
 
         self.selected = None
 
+        ipc_server.attach(events.GET_LISTENERS, self.get_listeners)
+
         self.get_loadables()
+
+    def get_listeners(self, name):
+        if name:
+            try:
+                return list(filter(lambda listener: listener.name == name, self.listeners))[0]
+            except IndexError:
+                return
+        else:
+            return self.listeners
 
     @command
     def list(self, name: str, running: bool, available: bool):

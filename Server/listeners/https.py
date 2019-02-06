@@ -54,6 +54,11 @@ class STListener(Listener):
                 'Description'   :   'SSL Key file',
                 'Required'      :    False,
                 'Value'         :   'data/key.pem'
+            },
+            'RegenCert': {
+                'Description'   :   'Regenerate TLS cert',
+                'Required'      :    False,
+                'Value'         :    False
             }
         }
 
@@ -66,7 +71,7 @@ class STListener(Listener):
         #ssl_context.set_alpn_protocols(['http/1.1', 'h2'])
 
         if (self['Key'] == 'data/key.pem') and (self['Cert'] == 'data/cert.pem'):
-            if not os.path.exists(self['Key']) or not os.path.exists(self['Cert']):
+            if not os.path.exists(self['Key']) or not os.path.exists(self['Cert']) or self['RegenCert']:
                 create_self_signed_cert()
 
         """
@@ -128,7 +133,7 @@ class STListener(Listener):
     async def key_exchange(self, GUID):
         data = await request.data
         pub_key = self.dispatch_event(events.KEX, (GUID, request.remote_addr, data))
-        return pub_key, 200
+        return Response(pub_key, content_type='application/xml')
 
     async def stage(self, GUID):
         stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (GUID, request.remote_addr))

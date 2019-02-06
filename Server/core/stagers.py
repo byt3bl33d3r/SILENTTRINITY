@@ -1,4 +1,6 @@
 import functools
+import core.events as events
+from core.ipcserver import ipc_server
 from core.loader import Loader
 from typing import List
 from core.utils import command, register_cli_commands, print_bad, print_info, print_bad
@@ -23,7 +25,19 @@ class Stagers(Loader):
         self.prompt_session = prompt_session
 
         self.selected = None
+
+        ipc_server.attach(events.GET_STAGERS, self.get_stagers)
+
         self.get_loadables()
+
+    def get_stagers(self, name):
+        if name:
+            try:
+                return list(filter(lambda stager: stager.name == name, self.loaded))[0]
+            except IndexError:
+                return
+        else:
+            return self.loaded
 
     @command
     def list(self):
@@ -90,7 +104,7 @@ class Stagers(Loader):
 
         if self.selected:
             try:
-                self.selected[name] = value
+                self.selected.options[name]['Value'] = value
             except KeyError:
                 print_bad(f"Unknown option '{name}'")
 

@@ -104,7 +104,7 @@ class STListener(Listener):
     async def key_exchange(self, GUID):
         data = await request.data
         pub_key = self.dispatch_event(events.KEX, (GUID, request.remote_addr, data))
-        return pub_key, 200
+        return Response(pub_key, content_type='application/xml')
 
     async def stage(self, GUID):
         stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (GUID, request.remote_addr))

