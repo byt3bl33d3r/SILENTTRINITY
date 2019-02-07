@@ -18,6 +18,7 @@ class Listeners(Loader):
         self.listeners = []
 
         self.name = 'listeners'
+        self.description = 'Listener menu'
         self.prompt = HTML('ST (<ansired>listeners</ansired>) ≫ ')
         self.completer = STCompleter(self)
         self.prompt_session = prompt_session

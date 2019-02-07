@@ -16,6 +16,7 @@ class Modules(Loader):
         self.paths = ["modules/ipy", "modules/boo"]
 
         self.name = 'modules'
+        self.description = 'Module menu'
         self.prompt = HTML('ST (<ansired>modules</ansired>) ≫ ')
         self.completer = STCompleter(self)
         self.prompt_session = prompt_session

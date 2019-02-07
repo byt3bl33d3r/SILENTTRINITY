@@ -16,6 +16,7 @@ from terminaltables import AsciiTable
 class Sessions:
     def __init__(self, prompt_session):
         self.name = 'sessions'
+        self.description = 'Session menu'
         self.prompt = HTML('ST (<ansired>sessions</ansired>) ≫ ')
         self.completer = STCompleter(self)
         self.prompt_session = prompt_session

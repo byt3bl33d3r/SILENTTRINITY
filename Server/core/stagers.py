@@ -19,6 +19,7 @@ class Stagers(Loader):
         self.paths = ["stagers/"]
 
         self.name = 'stagers'
+        self.description = 'Stager menu'
         self.prompt = HTML('ST (<ansired>stagers</ansired>) ≫ ')
 
         self.completer = STCompleter(self)

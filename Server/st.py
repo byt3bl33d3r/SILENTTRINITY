@@ -25,6 +25,7 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.styles import Style
 from termcolor import colored
+from terminaltables import AsciiTable
 
 import core.state as state
 from core.listeners import Listeners
@@ -116,6 +117,25 @@ class CmdLoop:
             result = self.prompt_session.prompt()
             if result == 'exit':
                 break
+            elif result == 'help':
+                table_data = [
+                    ["Command", "Description"]
+                ]
+
+                try:
+                    for cmd in self.current_context._cmd_registry:
+                        table_data.append([cmd, getattr(self.current_context, cmd).__doc__.split('\n', 2)[1].strip()])
+
+                    for menu in self.contexts:
+                        if menu.name != self.current_context.name:
+                            table_data.append([menu.name, menu.description])
+                except AttributeError:
+                    for menu in self.contexts:
+                        table_data.append([menu.name, menu.description])
+
+                table = AsciiTable(table_data)
+                print(table.table)
+                continue
 
             self.parse_result(result)
 
