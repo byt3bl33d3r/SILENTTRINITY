@@ -361,7 +361,7 @@ class STJob(Serializable):
         return engine_stream.string
 
     def run_boo_script(self, args):
-        interpreter = InteractiveInterpreter(RememberLastValue=True)
+        interpreter = InteractiveInterpreter()
         interpreter.Eval(args)
         return interpreter.GetValue("output")
 

