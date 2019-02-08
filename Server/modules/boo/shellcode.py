@@ -38,7 +38,6 @@ class STModule:
                         src = module_src.read()
                         src = src.replace('BYTES', shellcode)
                         src = src.replace('PROCESS', self.options['Process']['Value'])
-                        print(src)
                         return src
 
                 elif self.options['InjectionMethod']['Value'] == 'QueueUserAPC':
