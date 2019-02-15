@@ -1,17 +1,27 @@
 import netifaces
 import random
 import string
+from core.ipcserver import ipc_server
 from functools import wraps
 from typing import get_type_hints, List
-from uuid import UUID
-
-from docopt import docopt
-from quart import jsonify
 from termcolor import colored
+from docopt import docopt
 
 
 class CmdError(Exception):
     pass
+
+
+# http://scottlobdell.me/2015/04/decorators-arguments-python/
+def subscribe(event):
+    def real_decorator(func):
+        func._subscription = event
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            print(args, kwargs)
+            return func(*args, **kwargs)
+        return wrapper
+    return real_decorator
 
 
 def command(func):
@@ -46,6 +56,14 @@ def command(func):
     return wrapper
 
 
+def register_event_subscriptions(cls):
+    for methodname in dir(cls):
+        method = getattr(cls, methodname)
+        if hasattr(method, '_subscription'):
+            ipc_server.attach(method._subscription, method)
+    return cls
+
+
 def register_cli_commands(cls):
     cls._cmd_registry = []
     for methodname in dir(cls):
@@ -55,16 +73,8 @@ def register_cli_commands(cls):
     return cls
 
 
-def check_valid_guid(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            UUID(kwargs["GUID"])
-        except Exception:
-            return jsonify({}), 400
-        return func(*args, **kwargs)
-
-    return wrapper
+def to_byte_array(data):
+    return list(map(int, data))
 
 
 def gen_random_string(length=8):
@@ -162,10 +172,10 @@ def print_banner(codename, version):
      /____/___/_____/_____/_/ |_/ /_/   /_/ /_/ |_/___/_/ |_/___/ /_/     /_/
     """
     version = f"""
-                                                        Codename : {colored(codename, "green")}
-                                                        Version  : {colored(version, "green")}
+                                    Codename : {colored(codename, "yellow")}
+                                   Version  : {colored(version, "yellow")}
     """
 
-    print(colored(logo, "green"))
-    print(colored(banner, "white"))
+    print(logo)
+    print(banner)
     print(version)

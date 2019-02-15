@@ -1,8 +1,13 @@
+import os
+import base64
+
+
 class STModule:
     def __init__(self):
-        self.name = 'uploader'
+        self.name = 'ipy/uploader'
+        self.language = 'ipy'
         self.description = 'Upload a file to a destination path.'
-        self.author = '@davidtavarez'
+        self.author = '@davidtavarez, @byt3bl33d3r'
         self.options = {
             'File': {
                 'Description': 'The absolute path of the file.',
@@ -20,9 +25,6 @@ class STModule:
         if self.options['File']['Value'] is None:
             return None
 
-        import os
-        import base64
-
         if not os.path.exists(self.options['File']['Value']):
             from core.utils import print_bad
             print_bad("Selected file do not exists.")
@@ -31,9 +33,9 @@ class STModule:
         with open(self.options['File']['Value'], "rb") as file:
             encoded_string = base64.b64encode(file.read()).decode("utf-8")
 
-        with open('modules/src/uploader.py', 'r') as module_src:
+        with open('modules/ipy/src/uploader.py', 'r') as module_src:
             src = module_src.read()
             src = src.replace("FILENAME", os.path.basename(self.options['File']['Value']))
             src = src.replace("DESTINATION", self.options['Destination']['Value'])
             src = src.replace("DATA", encoded_string)
-            return src.encode()
+            return src

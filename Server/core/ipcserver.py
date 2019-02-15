@@ -1,6 +1,7 @@
 import logging
 import functools
 import asyncio
+from core.state import ipc_pass
 from time import sleep
 from prompt_toolkit.application import run_in_terminal
 from multiprocessing.connection import Listener
@@ -16,7 +17,7 @@ class IPCServer(Thread):
     Why? Cause miss me with that zeromq shit.
     """
 
-    def __init__(self, address=('localhost', 60000), authkey=b'silenttrinity'):
+    def __init__(self, address=('localhost', 60000), authkey=ipc_pass):
         Thread.__init__(self)
         self.name = 'IPCServer'
         self.address = address

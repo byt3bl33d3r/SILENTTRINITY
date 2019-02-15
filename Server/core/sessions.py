@@ -1,13 +1,13 @@
-import functools
+import logging
+import json
 import core.state as state
+import core.events as events
 from core.session import Session
 from core.job import Job
 from time import gmtime, strftime
-from queue import Queue, Empty
 from prompt_toolkit.formatted_text import HTML
 from core.utils import command, register_cli_commands, print_info, print_good
 from core.completers import STCompleter
-from core.events import NEW_SESSION, SESSION_STAGED, SESSION_CHECKIN, NEW_JOB, JOB_RESULT
 from core.ipcserver import ipc_server
 from terminaltables import AsciiTable
 
@@ -16,57 +16,101 @@ from terminaltables import AsciiTable
 class Sessions:
     def __init__(self, prompt_session):
         self.name = 'sessions'
+        self.description = 'Session menu'
         self.prompt = HTML('ST (<ansired>sessions</ansired>) ≫ ')
         self.completer = STCompleter(self)
         self.prompt_session = prompt_session
 
         self.selected = None
-        self.sessions = []
+        self.sessions = set()
 
-        ipc_server.attach(NEW_SESSION, self.__add_session)
-        ipc_server.attach(SESSION_STAGED, self.__notify_session_staged)
-        ipc_server.attach(SESSION_CHECKIN, self.__session_checked_in)
-        ipc_server.attach(NEW_JOB, self.__add_job)
-        ipc_server.attach(JOB_RESULT, self.__job_result)
+        """
+        The following code sucks.
 
-    def __add_session(self, session_obj):
-        print_good(f"New session {session_obj.guid} connected! ({session_obj.address})")
-        # We can't pickle an object with a queue, so we need to add it after we receive it. Ugly.
-        session_obj.queue = Queue()
-        self.sessions.append(session_obj)
-        state.SESSIONS = len(self.sessions)
+        We can probably pull some really fancy stuff here like registring functions 
+        using decorators in each Session object so when an event is published
+        it gets routed directly to the right session with the appropriate GUID.
+        This would be ideal as it would remove almost all of these helper functions.
 
-    def __notify_session_staged(self, msg):
+        I've tried doing this but it resulted in me drinking a lot with very little success.
+        """
+
+        ipc_server.attach(events.KEX, self.kex)
+        ipc_server.attach(events.ENCRYPT_STAGE, self.gen_encrypted_stage)
+        ipc_server.attach(events.SESSION_STAGED, self.notify_session_staged)
+        ipc_server.attach(events.SESSION_CHECKIN, self.session_checked_in)
+        ipc_server.attach(events.NEW_JOB, self.add_job)
+        ipc_server.attach(events.JOB_RESULT, self.job_result)
+
+    def kex(self, kex_tuple):
+        guid, remote_addr, pubkey_xml = kex_tuple
+        try:
+            session = list(filter(lambda x: x == guid, self.sessions))[0]
+            logging.debug(f"creating new pub/priv keys for {guid}")
+            session.set_peer_public_key(pubkey_xml)
+        except IndexError:
+            logging.debug(f"new kex from {remote_addr} ({guid})")
+            session = Session(guid, remote_addr, pubkey_xml)
+            self.sessions.add(session)
+
+        return session.public_key
+
+    def gen_encrypted_stage(self, info_tuple):
+        guid, remote_addr = info_tuple
+        session = list(filter(lambda x: x == guid, self.sessions))[0]
+        return session.get_encrypted_stage()
+
+    def notify_session_staged(self, msg):
         print_info(msg)
 
-    def __session_checked_in(self, checkin_tuple):
+    def session_checked_in(self, checkin_tuple):
         guid, remote_addr = checkin_tuple
-        for session in self.sessions:
-            if session.guid == guid:
-                session.checked_in()
-                try:
-                    return session.queue.get(block=False)
-                except Empty:
-                    return
+        session = list(filter(lambda x: x == guid, self.sessions))[0]
+        session.checked_in()
 
-        print_info(f"Re-attaching orphaned session from {remote_addr} ...")
-        self.__add_session(Session(guid, remote_addr, {}))
+        return session.get_job()
 
-    def __add_job(self, job_tuple):
+    def add_job(self, job_tuple):
         guid, job = job_tuple
         if guid.lower() == 'all':
             for session in self.sessions:
                 session.add_job(job)
         else:
             for session in self.sessions:
-                if session.guid == guid:
+                if session == guid:
                     session.add_job(job)
 
-    def __job_result(self, result):
-        guid, data = result
-        decoded = Job.decode(data)
-        print_good(f"{guid} returned job result (id: {decoded['id']})")
-        print(decoded['result'])
+    def job_result(self, result_tuple):
+        guid, job_id, data = result_tuple
+        session = list(filter(lambda x: x == guid, self.sessions))[0]
+
+        if not session.data:
+            session.set_session_info(data)
+            print_good(f"New session {session.guid} connected! ({session.address})")
+            state.SESSIONS = len(self.sessions)
+            return
+
+        for session in self.sessions:
+            if session == guid:
+                results = json.loads(session.crypto.decrypt(data))
+                print_good(f"{guid} returned job result (id: {job_id})")
+                print(results['result'])
+
+    @command
+    def sleep(self, guid: str, interval: int):
+        """
+        Set the checkin interval for an agent
+
+        Usage: sleep <guid> <interval> [-h]
+
+        Arguments:
+            guid  filter by session's guid
+            interval  checkin interval in milliseconds
+        """
+
+        for session in self.sessions:
+            if session == guid:
+                session.add_job(Job(command=('sleep', int(interval))))
 
     @command
     def list(self, guid: str):
@@ -84,17 +128,18 @@ class Sessions:
         ]
 
         for session in self.sessions:
-            try:
-                username = f"*{session.data['username']}@{session.data['domain']}" if session.data['high_integrity'] else f"{session.data['username']}@{session.data['domain']}"
-            except KeyError:
-                username = ''
+            if session.data:
+                try:
+                    username = f"*{session.data['username']}@{session.data['domain']}" if session.data['high_integrity'] else f"{session.data['username']}@{session.data['domain']}"
+                except KeyError:
+                    username = ''
 
-            table_data.append([
-                session.guid,
-                username,
-                session.address,
-                strftime("h %H m %M s %S", gmtime(session.last_check_in()))
-            ])
+                table_data.append([
+                    session.guid,
+                    username,
+                    session.address,
+                    strftime("h %H m %M s %S", gmtime(session.last_check_in()))
+                ])
 
         table = AsciiTable(table_data)
         print(table.table)
@@ -111,9 +156,9 @@ class Sessions:
         """
 
         for session in self.sessions:
-            if session.guid == guid:
+            if session == guid:
                 table_data = [["Name", "Value"]]
                 for k, v in session.data.items():
-                    table_data.append([k.capitalize(), v])
+                    table_data.append([k, v])
                 table = AsciiTable(table_data)
                 print(table.table)

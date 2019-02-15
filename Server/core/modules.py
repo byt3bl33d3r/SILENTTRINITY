@@ -1,13 +1,10 @@
 from core.loader import Loader
-from typing import List
-from core.utils import command, register_cli_commands
 from core.job import Job
-from core.events import NEW_JOB
-from core.ipcserver import ipc_server
-from prompt_toolkit.formatted_text import HTML
+from core.utils import command, register_cli_commands, print_bad, print_info, print_bad
 from core.completers import STCompleter
+from typing import List
+from prompt_toolkit.formatted_text import HTML
 from terminaltables import AsciiTable
-from core.utils import print_bad, print_info, print_bad
 
 
 @register_cli_commands
@@ -16,9 +13,10 @@ class Modules(Loader):
     def __init__(self, prompt_session):
         Loader.__init__(self)
         self.type = "module"
-        self.paths = ["modules/"]
+        self.paths = ["modules/ipy", "modules/boo"]
 
         self.name = 'modules'
+        self.description = 'Module menu'
         self.prompt = HTML('ST (<ansired>modules</ansired>) ≫ ')
         self.completer = STCompleter(self)
         self.prompt_session = prompt_session
@@ -55,7 +53,7 @@ class Modules(Loader):
         """
         Run a module
 
-        Usage: 
+        Usage:
             run <guids>...
             run -h | --help
 
@@ -65,9 +63,9 @@ class Modules(Loader):
         Options:
             -h, --help   Show dis
         """
-        job = Job(self.selected)
+
         for guid in guids:
-            ipc_server.publish(NEW_JOB, (guid, job.encode()))
+            self.prompt_session.contexts[1].add_job((guid, Job(module=self.selected)))
 
     @command
     def use(self, name: str):
@@ -83,10 +81,7 @@ class Modules(Loader):
         for m in self.loaded:
             if m.name == name.lower():
                 self.selected = m
-
-                new_prompt = HTML(f"ST (<ansired>modules</ansired>)(<ansired>{m.name}</ansired>) ≫ ")
-                self.prompt_session.message = new_prompt
-                self.prompt = new_prompt
+                self.prompt_session.message = self.prompt = HTML(f"ST (<ansired>modules</ansired>)(<ansired>{m.name}</ansired>) ≫ ")
                 return
 
         print_bad(f"No module named '{name}'")

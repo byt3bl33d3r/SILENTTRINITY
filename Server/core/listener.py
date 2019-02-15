@@ -1,5 +1,7 @@
 from multiprocessing import Process
 from multiprocessing.connection import Client
+from core.state import ipc_pass
+
 
 class Listener:
 
@@ -16,7 +18,7 @@ class Listener:
         return
 
     def __run(self):
-        self.__conn = Client(('localhost', 60000), authkey=b'silenttrinity')
+        self.__conn = Client(('localhost', 60000), authkey=ipc_pass)
         self.run()
 
     def start(self):
@@ -26,6 +28,8 @@ class Listener:
 
     def dispatch_event(self, event, msg):
         self.__conn.send((event, msg))
+        data = ()
+
         try:
             data = self.__conn.recv()
         except EOFError:

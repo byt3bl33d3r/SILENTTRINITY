@@ -1,39 +1,20 @@
-import gzip
 import json
-from io import BytesIO
 from core.utils import gen_random_string
-from base64 import b64encode, b64decode
-from secrets import token_bytes
 
 
 class Job:
-    def __init__(self, module):
+    def __init__(self, command=None, module=None):
         self.id = gen_random_string()
+        self.command = command
         self.module = module
 
-    def encode(self):
-        payload = b64encode(self.module.payload()).decode()
-        junk = {gen_random_string(): b64encode(token_bytes(5)).decode()}
+    def payload(self):
+        payload = {'id': self.id}
 
-        job = {'id': self.id, 'command': 'run_script', 'data': payload}
-        stream = BytesIO()
-        with gzip.open(stream, 'wb') as gzip_stream:
-            gzip_stream.write(json.dumps(job).encode())
+        if self.module:
+            payload['cmd'] = 'run_ipy_script' if self.module.language == 'ipy' else 'run_boo_script'
+            payload['args'] = self.module.payload()
+        elif self.command:
+            payload['cmd'], payload['args'] = self.command
 
-        malform = bytearray(stream.getvalue())
-        malform[:2] = token_bytes(2)
-
-        junk['data'] = b64encode(bytes(malform)).decode()
-
-        return junk
-
-    @staticmethod
-    def decode(response):
-        data = b64decode(response['data'])
-        good_gzip = bytearray(data)
-        good_gzip[:2] = b"\x1f\x8b"
-
-        stream = BytesIO(bytes(good_gzip))
-
-        with gzip.open(stream, 'rb') as f:
-            return json.loads(f.read())
+        return json.dumps(payload).encode()

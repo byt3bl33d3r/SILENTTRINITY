@@ -1,6 +1,7 @@
 class STModule:
     def __init__(self):
-        self.name = 'msgbox'
+        self.name = 'boo/msgbox'
+        self.language = 'boo'
         self.description = 'Pop a message box'
         self.author = '@byt3bl33d3r'
         self.options = {
@@ -16,12 +17,9 @@ class STModule:
             }
         }
 
-    def options(self):
-        pass
-
     def payload(self):
-        with open('modules/src/msgbox.py', 'r') as module_src:
+        with open('modules/boo/src/msgbox.boo', 'r') as module_src:
             src = module_src.read()
             src = src.replace('WINDOW_TITLE', self.options['Title']['Value'])
             src = src.replace('WINDOW_TEXT', self.options['Text']['Value'])
-            return src.encode()
+            return src

@@ -4,7 +4,8 @@ from shlex import split
 
 class STModule:
     def __init__(self):
-        self.name = 'execute-assembly'
+        self.name = 'ipy/execute-assembly'
+        self.language = 'ipy'
         self.description = 'Execute a .NET assembly in memory'
         self.author = '@byt3bl33d3r'
         self.options = {
@@ -21,7 +22,7 @@ class STModule:
         }
 
     def payload(self):
-        with open('modules/src/execute-assembly.py') as module:
+        with open('modules/ipy/src/execute-assembly.py') as module:
             module = module.read()
             assembly_path = os.path.expanduser(self.options['Assembly']['Value'])
             if not os.path.exists(assembly_path):
@@ -30,4 +31,4 @@ class STModule:
             with open(assembly_path, 'rb') as assembly:
                 module = module.replace('ASSEMBLY_BASE64', b64encode(assembly.read()).decode())
                 module = module.replace('ARGS', ' '.join(split(self.options['Arguments']['Value'])))
-                return module.encode()
+                return module
