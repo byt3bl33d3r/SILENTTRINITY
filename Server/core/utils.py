@@ -1,20 +1,32 @@
 import netifaces
 import random
 import string
-from typing import get_type_hints, List, Dict
+from core.ipcserver import ipc_server
 from functools import wraps
-from docopt import docopt
+from typing import get_type_hints, List
 from termcolor import colored
-from quart import jsonify
-from uuid import UUID
+from docopt import docopt
 
 
 class CmdError(Exception):
     pass
 
 
+# http://scottlobdell.me/2015/04/decorators-arguments-python/
+def subscribe(event):
+    def real_decorator(func):
+        func._subscription = event
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            print(args, kwargs)
+            return func(*args, **kwargs)
+        return wrapper
+    return real_decorator
+
+
 def command(func):
     func._command = True
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         cmd_args = docopt(func.__doc__.strip(), argv=kwargs["args"])
@@ -40,7 +52,17 @@ def command(func):
                     raise NotImplemented(f"Casting for type '{hint}' has not been implemented")
 
         return func(args[0], **validated_args)
+
     return wrapper
+
+
+def register_event_subscriptions(cls):
+    for methodname in dir(cls):
+        method = getattr(cls, methodname)
+        if hasattr(method, '_subscription'):
+            ipc_server.attach(method._subscription, method)
+    return cls
+
 
 def register_cli_commands(cls):
     cls._cmd_registry = []
@@ -50,15 +72,9 @@ def register_cli_commands(cls):
             cls._cmd_registry.append(methodname)
     return cls
 
-def check_valid_guid(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            UUID(kwargs["GUID"])
-        except Exception:
-            return jsonify({}), 400
-        return func(*args, **kwargs)
-    return wrapper
+
+def to_byte_array(data):
+    return list(map(int, data))
 
 
 def gen_random_string(length=8):
@@ -112,3 +128,54 @@ def print_bad(msg):
 
 def print_info(msg):
     print(f"{colored('[*]', 'blue')} {msg}")
+
+
+def print_banner(codename, version):
+    logo = """
+                                         ........                                   
+                                    .':ldxkkkkkxdoc,.                               
+                                  .cdOOOOOOOOOOOOOOOxl,.                            
+                                .ckOOOOOOOOOOOOOOOOOOOko'                           
+                               .dOOOOOOOOOOOOOOOOOOOOOOOx;                          
+                              .oOOOOOOOOOOOOOOOOOOOOOOOOOx,                         
+                              :OOOOOOOOOOOOOOOOOOOOOOOOOOOo.                        
+                             .lOOOOxoccldOOOOOOOxoccldkOOOd'                        
+                              cOOkc'.,,..;xOOOkc'.,;..;dOOd.                        
+                              ,kOl.'cccl;.;kOOl.'cccl;.;kOc.                        
+                              .cOl..:cc:'.:kOOo..:cc:,.:kd.                         
+                               .oko,.''.'cxl;cdo,.',.'cxx,                          
+                                .oOOxoodkOd;',lOOxoodkOx,                           
+                                 .oOxdocc:;;;;;::cloxkx,                            
+                                  .'.               .'.                             
+                          .......                       .......                     
+                   ..;:looddxxkkk;         .''.        .dkkxxdddolc;'.              
+                 'cdkOOxc;,,,cdOOo.       'dOk:        :OOxl;,,,:dOOOxl,.           
+               .lkOOOOd'.;::;'.lOO:       .cOd.       ,xOx,.,::;'.lOOOOOd,          
+              ,xOOOOOOc.;o:;o: ;kkx;       ;oc.      'okOl.,oc;oc.,kOOOOOkc.        
+             ,xOOOOOOOd,.,;;,..ox;,l:.              'l;,ox,.,;;;'.lOOOOOOOOc.       
+            .oOOOOOOOOOkl;,,;cxOdc:okl.           .:xdc:oOkl;,,;cdOOOOOOOOOk,       
+            ,xOOOOOOOOOOOOOOOkdc;;:okOx:.        ,okkdc:;:okOOOOOOOOOOOOOOOOc       
+            ,kOOOOOOOOOOOOOOx;.';;'.,dOOd:.    'okOx:..;;'.'oOOOOOOOOOOOOOOOc       
+            .dOOOOOOOOOOOOOOc.,oc:o: ;kOkc.    ,xOOl.,oc;o:.,kOOOOOOOOOOOOOk;       
+             ;kOOOOOOOOOOOOOo..;cc:'.cOx;       .oOd..;cc:'.cOOOOOOOOOOOOOOl.       
+             .:kOOOOOOOOOOOOOd;',,',oko.         .cxd:',,',lkOOOOOOOOOOOOOo.        
+               ,dOOOOOOOOOOOOOOkxxkOx;.            'okkxxkOOOOOOOOOOOOOOx:.         
+                .;okOOOOOOOOOOOOOkd:.               .,lxOOOOOOOOOOOOOkd:.           
+                   .,cldxxkkxdoc;.                     .,cldxxkkxdoc;'.             
+                        ......                              ......                  
+    """
+    banner = """
+        _____ ______    _______   __________________  _____   ______________  __
+       / ___//  _/ /   / ____/ | / /_  __/_  __/ __ \/  _/ | / /  _/_  __/\ \/ /
+       \__ \ / // /   / __/ /  |/ / / /   / / / /_/ // //  |/ // /  / /    \  /
+      ___/ // // /___/ /___/ /|  / / /   / / / _, _// // /|  // /  / /     / /
+     /____/___/_____/_____/_/ |_/ /_/   /_/ /_/ |_/___/_/ |_/___/ /_/     /_/
+    """
+    version = f"""
+                                    Codename : {colored(codename, "yellow")}
+                                   Version  : {colored(version, "yellow")}
+    """
+
+    print(logo)
+    print(banner)
+    print(version)

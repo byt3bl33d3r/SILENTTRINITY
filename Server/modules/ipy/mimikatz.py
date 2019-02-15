@@ -1,6 +1,7 @@
 class STModule:
     def __init__(self):
-        self.name = 'mimikatz'
+        self.name = 'ipy/mimikatz'
+        self.language = 'ipy'
         self.description = 'Loads Mimikatz in memory and executes the specified command'
         self.author = '@byt3bl33d3r'
         self.options = {
@@ -12,7 +13,7 @@ class STModule:
         }
 
     def payload(self):
-        with open('modules/src/mimikatz.py', 'r') as module_src:
+        with open('modules/ipy/src/mimikatz.py', 'r') as module_src:
             src = module_src.read()
             src = src.replace("MIMIKATZ_COMMAND", self.options['Command']['Value'])
-            return src.encode()
+            return src

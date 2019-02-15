@@ -1,14 +1,13 @@
 import functools
+import core.events as events
+from core.ipcserver import ipc_server
 from core.loader import Loader
 from typing import List
-from core.events import GET_LISTENERS
-from core.utils import command, register_cli_commands
-from core.ipcserver import ipc_server
+from core.utils import command, register_cli_commands, print_bad, print_info, print_bad
 from core.completers import STCompleter
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.application import run_in_terminal
 from terminaltables import AsciiTable
-from core.utils import print_bad, print_info, print_bad
 
 
 @register_cli_commands
@@ -20,13 +19,26 @@ class Stagers(Loader):
         self.paths = ["stagers/"]
 
         self.name = 'stagers'
+        self.description = 'Stager menu'
         self.prompt = HTML('ST (<ansired>stagers</ansired>) ≫ ')
 
         self.completer = STCompleter(self)
         self.prompt_session = prompt_session
 
         self.selected = None
+
+        ipc_server.attach(events.GET_STAGERS, self.get_stagers)
+
         self.get_loadables()
+
+    def get_stagers(self, name):
+        if name:
+            try:
+                return list(filter(lambda stager: stager.name == name, self.loaded))[0]
+            except IndexError:
+                return
+        else:
+            return self.loaded
 
     @command
     def list(self):
@@ -57,9 +69,7 @@ class Stagers(Loader):
         """
 
         if self.selected:
-            listeners = ipc_server.publish(GET_LISTENERS, '')
-
-            for l in listeners:
+            for l in self.prompt_session.contexts[0].listeners:
                 if l['Name'] == listener_name.lower():
                     self.selected.generate(l)
         else:
@@ -79,10 +89,7 @@ class Stagers(Loader):
         for s in self.loaded:
             if s.name == name.lower():
                 self.selected = s
-
-                new_prompt = HTML(f"ST (<ansired>stagers</ansired>)(<ansired>{s.name}</ansired>) ≫ ")
-                self.prompt_session.message = new_prompt
-                self.prompt = new_prompt
+                self.prompt_session.message = self.prompt = HTML(f"ST (<ansired>stagers</ansired>)(<ansired>{s.name}</ansired>) ≫ ")
 
     @command
     def set(self, name: str, value: str):
@@ -98,7 +105,7 @@ class Stagers(Loader):
 
         if self.selected:
             try:
-                self.selected[name] = value
+                self.selected.options[name]['Value'] = value
             except KeyError:
                 print_bad(f"Unknown option '{name}'")
 

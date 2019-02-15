@@ -12,7 +12,8 @@ class STCompleter(Completer):
 
         # This can't be the best way of doing this, just can't seem to find the right method on the document object
         if len(split(document.current_line)):
-            if split(document.current_line)[0].lower() == 'use':
+
+            if split(document.current_line)[0].lower() == 'use' and self.cli_menu.name == 'modules':
                 for module in self.cli_menu.loaded:
                     if module.name.startswith(word_before_cursor):
                         yield Completion(module.name, -len(word_before_cursor))
@@ -23,6 +24,20 @@ class STCompleter(Completer):
                 for k in self.cli_menu.selected.options.keys():
                     if k.startswith(word_before_cursor):
                         yield Completion(k, -len(word_before_cursor))
+
+                return
+
+            elif self.cli_menu.selected and split(document.current_line)[0].lower() == 'generate':
+                for listener in self.cli_menu.prompt_session.contexts[0].listeners:
+                    if listener.name.startswith(word_before_cursor):
+                        yield Completion(listener.name, -len(word_before_cursor))
+
+                return
+
+            elif split(document.current_line)[0].lower() in ['run', 'info', 'sleep']:
+                for session in self.cli_menu.prompt_session.contexts[1].sessions:
+                    if str(session.guid).startswith(word_before_cursor):
+                        yield Completion(str(session.guid), -len(word_before_cursor))
 
                 return
 

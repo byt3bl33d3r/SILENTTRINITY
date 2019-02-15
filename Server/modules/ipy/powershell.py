@@ -1,6 +1,7 @@
 class STModule:
     def __init__(self):
-        self.name = 'powershell'
+        self.name = 'ipy/powershell'
+        self.language = 'ipy'
         self.description = 'Execute arbitrary PowerShell in an un-managed runspace'
         self.author = '@byt3bl33d3r'
         self.options = {
@@ -12,8 +13,8 @@ class STModule:
         }
 
     def payload(self):
-        with open('modules/src/powershell.py', 'r') as module_src:
+        with open('modules/ipy/src/powershell.py', 'r') as module_src:
             src = module_src.read()
             src = src.replace("COMMAND_TO_RUN", self.options["Command"]["Value"])
 
-            return src.encode()
+            return src
