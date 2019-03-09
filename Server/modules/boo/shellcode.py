@@ -1,9 +1,11 @@
 import os
 from core.utils import print_bad, to_byte_array
+from core.module import Module
 
 
-class STModule:
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'boo/shellcode'
         self.language = 'boo'
         self.description = 'Injects shellcode using the specified technique'

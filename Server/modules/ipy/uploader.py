@@ -1,9 +1,11 @@
 import os
 import base64
+from core.module import Module
 
 
-class STModule:
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/uploader'
         self.language = 'ipy'
         self.description = 'Upload a file to a destination path.'

@@ -1,9 +1,11 @@
 import os
 from base64 import b64encode
+from core.module import Module
 
 
-class STModule:
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/msilshellexec'
         self.language = 'ipy'
         self.description = 'Executes shellcode by using specially crafted MSIL opcodes to overwrite a JITed dummy method.\nC# code that injects shellcode is dynamically compiled through the pyDLR'

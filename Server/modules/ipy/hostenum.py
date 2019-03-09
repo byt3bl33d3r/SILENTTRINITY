@@ -1,6 +1,10 @@
 #Based on https://github.com/threatexpress/red-team-scripts
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/hostenum'
         self.language = 'ipy'
         self.description = 'Enumerates host configuration.'

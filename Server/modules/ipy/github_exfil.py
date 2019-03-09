@@ -1,5 +1,9 @@
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/github_exfil'
         self.language = 'ipy'
         self.description = 'Backs up files to a github repo'

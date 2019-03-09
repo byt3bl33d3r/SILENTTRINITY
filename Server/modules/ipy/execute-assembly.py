@@ -1,9 +1,12 @@
 import os
 from base64 import b64encode
 from shlex import split
+from core.module import Module
 
-class STModule:
+
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/execute-assembly'
         self.language = 'ipy'
         self.description = 'Execute a .NET assembly in memory'

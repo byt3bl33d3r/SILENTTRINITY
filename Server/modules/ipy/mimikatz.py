@@ -1,5 +1,9 @@
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/mimikatz'
         self.language = 'ipy'
         self.description = 'Loads Mimikatz in memory and executes the specified command'

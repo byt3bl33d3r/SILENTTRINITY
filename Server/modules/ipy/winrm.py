@@ -1,9 +1,12 @@
 import core.events as events
 from core.utils import print_bad
 from core.ipcserver import ipc_server
+from core.module import Module
 
-class STModule:
+
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/winrm'
         self.language = 'ipy'
         self.description = 'Move laterally using winrm'

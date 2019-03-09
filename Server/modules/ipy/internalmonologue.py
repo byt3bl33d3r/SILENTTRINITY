@@ -1,6 +1,9 @@
+from core.module import Module
 
-class STModule:
+
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/internalmonologue'
         self.language = 'ipy'
         self.description = 'Executes the Internal Monologue attack.\nIf admin, this will give you the Net-NTLMv1 hashes of all logged on users'

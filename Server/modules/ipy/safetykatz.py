@@ -1,5 +1,9 @@
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/safetykatz'
         self.language = 'ipy'
         self.description = 'Creates a minidump of LSASS via Win32 API Calls, loads Mimikatz in memory and parses the dump for creds'

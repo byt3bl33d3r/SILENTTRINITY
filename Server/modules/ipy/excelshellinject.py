@@ -1,10 +1,12 @@
 import os
 from core.utils import convert_shellcode
 from base64 import b64encode
+from core.module import Module
 
 
-class STModule:
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/excelshellinject'
         self.language = 'ipy'
         self.description = 'Executes arbitrary shellcode using Excel COM objects'

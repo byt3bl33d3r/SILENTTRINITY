@@ -1,5 +1,9 @@
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'boo/mouseshaker'
         self.language = 'boo'
         self.description = 'Shakes da mouse'

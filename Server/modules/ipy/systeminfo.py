@@ -1,5 +1,9 @@
-class STModule:
+from core.module import Module
+
+
+class STModule(Module):
     def __init__(self):
+        super().__init__()
         self.name = 'ipy/systeminfo'
         self.language = 'ipy'
         self.description = 'Enumerates basic system information.'
