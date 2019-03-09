@@ -2,6 +2,7 @@ import logging
 import json
 import core.state as state
 import core.events as events
+from core.module import Module
 from core.session import Session
 from core.job import Job
 from time import gmtime, strftime
@@ -23,6 +24,8 @@ class Sessions:
 
         self.selected = None
         self.sessions = set()
+
+        self.jobs_modules: dict = {}
 
         """
         The following code sucks.
@@ -72,6 +75,9 @@ class Sessions:
 
     def add_job(self, job_tuple):
         guid, job = job_tuple
+
+        self.add_job_module(job)
+
         if guid.lower() == 'all':
             for session in self.sessions:
                 session.add_job(job)
@@ -94,7 +100,13 @@ class Sessions:
             if session == guid:
                 results = json.loads(session.crypto.decrypt(data))
                 print_good(f"{guid} returned job result (id: {job_id})")
-                print(results['result'])
+                self.get_job_module(job_id).process(results['result'])
+
+    def add_job_module(self, job: Job) -> None:
+        self.jobs_modules[job.id] = job.module
+
+    def get_job_module(self, job_id: str) -> Module:
+        return self.jobs_modules.pop(job_id)
 
     @command
     def sleep(self, guid: str, interval: int):
