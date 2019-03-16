@@ -10,14 +10,14 @@ namespace SILENTTRINITY.Utilities
     public static class Crypto
     {
         // TODO: Migrate to self implemented Diffie-Hellman Key Exchange
-        async public static Task<byte[]> KeyExchangeAsync(Uri URL, string Endpoint = "")
+        async public static Task<byte[]> KeyExchangeAsync(Uri url)
         {
             byte[] key = default(byte[]);
 
             using (ECDiffieHellmanCng AsymAlgo = new ECDiffieHellmanCng())
             {
                 var publicKey = AsymAlgo.PublicKey.ToXmlString();
-                byte[] response = await Http.PostAsync(URL, Encoding.UTF8.GetBytes(publicKey));
+                byte[] response = await Http.PostAsync(url, Encoding.UTF8.GetBytes(publicKey));
 
                 ECDiffieHellmanCngPublicKey peerPublicKey = 
                     ECDiffieHellmanCngPublicKey.FromXmlString(Encoding.UTF8.GetString(response));

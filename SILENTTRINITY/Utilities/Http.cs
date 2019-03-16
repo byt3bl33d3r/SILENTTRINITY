@@ -15,20 +15,25 @@ namespace SILENTTRINITY.Utilities
 
         async public static Task<byte[]> PostAsync(Uri url, byte[] payload)
         {
-            HttpClient client = new HttpClient();
-
-            ByteArrayContent content = new ByteArrayContent(payload);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-            content.Headers.ContentLength = payload.Length;
-
-            HttpResponseMessage response = await client.PostAsync(url, content);
-
-            if (response.StatusCode != HttpStatusCode.OK)
+            using (HttpClient client = new HttpClient())
             {
-                return default(byte[]);
-            }
+                ByteArrayContent content = new ByteArrayContent(payload);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                content.Headers.ContentLength = payload.Length;
 
-            return await response.Content.ReadAsByteArrayAsync();
+                using (HttpResponseMessage response = await client.PostAsync(url, content))
+                {
+                    if (response.StatusCode != HttpStatusCode.OK)
+                    {
+                        return default(byte[]);
+                    }
+
+                    using (HttpContent data = response.Content)
+                    {
+                        return await data.ReadAsByteArrayAsync();
+                    }
+                }
+            }
         }
     }
 }

