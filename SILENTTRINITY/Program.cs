@@ -4,7 +4,6 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Net;
 using SILENTTRINITY.Utilities;
-using System.Threading.Tasks;
 
 namespace SILENTTRINITY
 {
