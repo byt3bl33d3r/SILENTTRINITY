@@ -41,6 +41,7 @@
     <WarningLevel>4</WarningLevel>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
     <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -96,8 +97,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Utilities\Engines.cs" />
+    <Compile Include="Utilities\Internals.cs" />
     <Compile Include="Utilities\Http.cs" />
     <Compile Include="Utilities\Crypto.cs" />
+    <Compile Include="ZipStorer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -129,8 +133,6 @@
     <Content Include="Resources\Microsoft.Dynamic.dll" />
     <Content Include="Resources\Microsoft.Scripting.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Utilities\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

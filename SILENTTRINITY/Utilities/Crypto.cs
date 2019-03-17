@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using System.IO;
+using System.Collections.Generic;
 
 namespace SILENTTRINITY.Utilities
 {
@@ -49,29 +50,76 @@ namespace SILENTTRINITY.Utilities
                         return decryptedData;
                     }
                 }
-                decryptedData = AesDecrypt(ciphertext, key, iv);
+                decryptedData = AES.Decrypt(ciphertext, key, iv);
             }
             return decryptedData;
         }
 
-        private static byte[] AesDecrypt(byte[] data, byte[] key, byte[] iv)
+        public static byte[] Encrypt(byte[] key, byte[] data)
         {
-            using (Aes aesAlg = Aes.Create())
+            IEnumerable<byte> blob = default(byte[]);
+
+            using (RandomNumberGenerator rng = new RNGCryptoServiceProvider())
             {
-                aesAlg.Padding = PaddingMode.PKCS7;
-                aesAlg.KeySize = 256;
-                aesAlg.Key = key;
-                aesAlg.IV = iv;
+                byte[] iv = new byte[16];
+                rng.GetBytes(iv);
 
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+                byte[] encryptedData = AES.Encrypt(data, key, iv);
 
-                using (MemoryStream decryptedData = new MemoryStream())
+                using (HMACSHA256 hmacsha256 = new HMACSHA256(key))
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream(decryptedData, decryptor, CryptoStreamMode.Write))
+                    byte[] ivEncData = iv.Concat(encryptedData).ToArray();
+                    byte[] hmac = hmacsha256.ComputeHash(ivEncData);
+                    blob = ivEncData.Concat(hmac);
+                }
+            }
+            return blob.ToArray();
+        }
+
+        static class AES
+        {
+            public static byte[] Decrypt(byte[] data, byte[] key, byte[] iv)
+            {
+                using (Aes aesAlg = Aes.Create())
+                {
+                   aesAlg.Padding = PaddingMode.PKCS7;
+                   aesAlg.KeySize = 256;
+                   aesAlg.Key = key;
+                   aesAlg.IV = iv;
+
+                   ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+
+                   using (MemoryStream decryptedData = new MemoryStream())
+                   {
+                       using (CryptoStream cryptoStream = new CryptoStream(decryptedData, decryptor, CryptoStreamMode.Write))
+                       {
+                           cryptoStream.Write(data, 0, data.Length);
+                           cryptoStream.FlushFinalBlock();
+                           return decryptedData.ToArray();
+                       }
+                   }
+                }
+            }
+
+            public static byte[] Encrypt(byte[] data, byte[] key, byte[] iv)
+            {
+                using (Aes aesAlg = Aes.Create())
+                {
+                    aesAlg.Padding = PaddingMode.PKCS7;
+                    aesAlg.KeySize = 256;
+                    aesAlg.Key = key;
+                    aesAlg.IV = iv;
+
+                    ICryptoTransform decryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+
+                    using (MemoryStream encryptedData = new MemoryStream())
                     {
-                        cryptoStream.Write(data, 0, data.Length);
-                        cryptoStream.FlushFinalBlock();
-                        return decryptedData.ToArray();
+                        using (CryptoStream cryptoStream = new CryptoStream(encryptedData, decryptor, CryptoStreamMode.Write))
+                        {
+                            cryptoStream.Write(data, 0, data.Length);
+                            cryptoStream.FlushFinalBlock();
+                            return encryptedData.ToArray();
+                        }
                     }
                 }
             }
