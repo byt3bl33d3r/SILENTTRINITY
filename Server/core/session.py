@@ -1,4 +1,5 @@
 import json
+import logging
 from core.job import Job
 from core.crypto import ECDHE
 from uuid import UUID
@@ -17,6 +18,17 @@ class Session:
         self.crypto = ECDHE(pubkey_xml)
         self.jobs = Queue()
 
+        self.logger = logging.getLogger(str(guid))
+        self.logger.propagate = False
+        self.logger.setLevel(logging.DEBUG)
+
+        formatter = logging.Formatter('%(asctime)s - %(message)s')
+        fh = logging.FileHandler(f"./logs/{guid}.log", encoding='UTF-8')
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(formatter)
+
+        self.logger.addHandler(fh)
+
         self.add_job(Job(command=('checkin', '')))
 
     @property
@@ -28,6 +40,10 @@ class Session:
 
     def add_job(self, job):
         self.jobs.put(job)
+        if job.command:
+            self.logger.info(f"Tasked session to run command: {job.command[0]} args: {job.command[1]}")
+        else:
+            self.logger.info(f"Tasked session to run module: {job.module.name} args: {job.module.options}")
 
     def get_job(self):
         try:

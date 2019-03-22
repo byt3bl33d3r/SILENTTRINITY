@@ -87,6 +87,7 @@ class Sessions:
         if not session.data:
             session.set_session_info(data)
             print_good(f"New session {session.guid} connected! ({session.address})")
+            session.logger.info(f"New session {session.guid} connected! ({session.address})")
             state.SESSIONS = len(self.sessions)
             return
 
@@ -95,6 +96,7 @@ class Sessions:
                 results = json.loads(session.crypto.decrypt(data))
                 print_good(f"{guid} returned job result (id: {job_id})")
                 print(results['result'])
+                session.logger.info(f"{guid} returned job result (id: {job_id}) \n {results['result']}")
 
     @command
     def sleep(self, guid: str, interval: int):

@@ -9,7 +9,7 @@ from core.listener import Listener
 from core.session import Session
 from core.utils import get_ipaddress, gen_random_string
 from quart import Quart, Blueprint, request, Response
-from quart.logging import default_handler, serving_handler
+#from quart.logging import default_handler, serving_handler
 from hypercorn import Config
 from hypercorn.asyncio import serve
 
@@ -75,8 +75,8 @@ class STListener(Listener):
         http_blueprint.add_url_rule('/', 'unknown_path', self.unknown_path, defaults={'path': ''})
         http_blueprint.add_url_rule('/<path:path>', 'unknown_path', self.unknown_path, methods=['GET', 'POST'])
 
-        logging.getLogger('quart.app').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
-        logging.getLogger('quart.serving').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
+        #logging.getLogger('quart.app').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
+        #logging.getLogger('quart.serving').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
 
         self.app = Quart(__name__)
         self.app.register_blueprint(http_blueprint)
