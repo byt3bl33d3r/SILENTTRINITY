@@ -13,14 +13,15 @@ namespace SILENTTRINITY.Utilities
         {
             byte[] key = default;
 
-            using (dynamic asymAlgo = AsymmetricAlgorithm.Create("ECDiffieHellmanCng"))
+            using (ECDiffieHellmanCng AsymAlgo = new ECDiffieHellmanCng())
             {
-                var publicKey = asymAlgo.PublicKey.ToXmlString();
+                var publicKey = AsymAlgo.PublicKey.ToXmlString();
                 byte[] response = Http.Post(url, Encoding.UTF8.GetBytes(publicKey));
 
                 ECDiffieHellmanCngPublicKey peerPublicKey = 
                     ECDiffieHellmanCngPublicKey.FromXmlString(Encoding.UTF8.GetString(response));
-                key = asymAlgo.DeriveKeyMaterial(peerPublicKey);
+                
+                key = AsymAlgo.DeriveKeyMaterial(peerPublicKey);
             }
 
             return key;
