@@ -1,4 +1,5 @@
 import json
+import logging
 from core.job import Job
 from core.crypto import ECDHE
 from uuid import UUID
@@ -10,14 +11,36 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 class Session:
     def __init__(self, guid, remote_address, pubkey_xml):
-        self.guid = guid
+        self.__alias = str(guid)
+        self.__guid = guid
         self.address = remote_address
         self.data = None
         self.checkin_time = None
         self.crypto = ECDHE(pubkey_xml)
         self.jobs = Queue()
 
+        self.logger = logging.getLogger(str(guid))
+        self.logger.propagate = False
+        self.logger.setLevel(logging.DEBUG)
+
+        formatter = logging.Formatter('%(asctime)s - %(message)s')
+        fh = logging.FileHandler(f"./logs/{guid}.log", encoding='UTF-8')
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(formatter)
+
+        self.logger.addHandler(fh)
+
         self.add_job(Job(command=('checkin', '')))
+
+    @property
+    def guid(self):
+        if self.__alias is not None:
+            return self.__alias
+        return self.__guid
+
+    @guid.setter
+    def guid(self, value):
+        self.__alias = value
 
     @property
     def public_key(self):
@@ -28,6 +51,10 @@ class Session:
 
     def add_job(self, job):
         self.jobs.put(job)
+        if job.command:
+            self.logger.info(f"Tasked session to run command: {job.command[0]} args: {job.command[1]}")
+        else:
+            self.logger.info(f"Tasked session to run module: {job.module.name} args: {job.module.options}")
 
     def get_job(self):
         try:
@@ -61,10 +88,10 @@ class Session:
 
     def __eq__(self, other):
         if type(other) == UUID:
-            return self.guid == other
+            return self.__guid == other
         elif type(other) == str:
-            return str(self.guid) == other
+            return str(self.guid) == other or str(self.__alias) == other
         elif isinstance(other, type(self)):
-            return self.guid == other.guid
+            return self.__guid == other.guid
 
         return NotImplemented
