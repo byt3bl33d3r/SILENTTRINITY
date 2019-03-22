@@ -11,7 +11,8 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 class Session:
     def __init__(self, guid, remote_address, pubkey_xml):
-        self.guid = guid
+        self.__alias = str(guid)
+        self.__guid = guid
         self.address = remote_address
         self.data = None
         self.checkin_time = None
@@ -30,6 +31,16 @@ class Session:
         self.logger.addHandler(fh)
 
         self.add_job(Job(command=('checkin', '')))
+
+    @property
+    def guid(self):
+        if self.__alias is not None:
+            return self.__alias
+        return self.__guid
+
+    @guid.setter
+    def guid(self, value):
+        self.__alias = value
 
     @property
     def public_key(self):
@@ -77,10 +88,10 @@ class Session:
 
     def __eq__(self, other):
         if type(other) == UUID:
-            return self.guid == other
+            return self.__guid == other
         elif type(other) == str:
-            return str(self.guid) == other
+            return str(self.guid) == other or str(self.__alias) == other
         elif isinstance(other, type(self)):
-            return self.guid == other.guid
+            return self.__guid == other.guid
 
         return NotImplemented
