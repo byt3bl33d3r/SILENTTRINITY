@@ -101,6 +101,20 @@ def get_ipaddress(interface=None):
             return ""
 
 
+def get_ips():
+    ips = []
+    for iface in netifaces.interfaces():
+      try:
+          netif = netifaces.ifaddresses(iface)
+          if netif[netifaces.AF_INET][0]['addr'] == '127.0.0.1':
+              continue
+          ips.append(netif[netifaces.AF_INET][0]['addr'])
+      except (ValueError, KeyError):
+          continue
+
+    return ips
+
+
 # https://github.com/zerosum0x0/koadic/blob/master/core/plugin.py
 def convert_shellcode(shellcode):
     decis = []
