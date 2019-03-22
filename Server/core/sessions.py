@@ -6,7 +6,7 @@ from core.session import Session
 from core.job import Job
 from time import gmtime, strftime
 from prompt_toolkit.formatted_text import HTML
-from core.utils import command, register_cli_commands, print_info, print_good
+from core.utils import command, register_cli_commands, print_info, print_good, print_bad
 from core.completers import STCompleter
 from core.ipcserver import ipc_server
 from terminaltables import AsciiTable
@@ -44,8 +44,12 @@ class Sessions:
 
     def kex(self, kex_tuple):
         guid, remote_addr, pubkey_xml = kex_tuple
+
+        if self.sessions and not len(self.sessions):
+            return
+
         try:
-            session = list(filter(lambda x: x == guid, self.sessions))[0]
+            session = self.get(guid)
             logging.debug(f"creating new pub/priv keys for {guid}")
             session.set_peer_public_key(pubkey_xml)
         except IndexError:
@@ -56,8 +60,11 @@ class Sessions:
         return session.public_key
 
     def gen_encrypted_stage(self, info_tuple):
+        if not len(self.sessions):
+            return
+
         guid, remote_addr = info_tuple
-        session = list(filter(lambda x: x == guid, self.sessions))[0]
+        session = self.get(guid)
         return session.get_encrypted_stage()
 
     def notify_session_staged(self, msg):
@@ -65,36 +72,51 @@ class Sessions:
 
     def session_checked_in(self, checkin_tuple):
         guid, remote_addr = checkin_tuple
-        session = list(filter(lambda x: x == guid, self.sessions))[0]
+        if self.sessions and not len(self.sessions):
+            return
+
+        session = self.get(guid)
         session.checked_in()
 
         return session.get_job()
 
     def add_job(self, job_tuple):
+        if self.sessions and not len(self.sessions):
+            return
+
         guid, job = job_tuple
-        if guid.lower() == 'all':
+        if self.sessions and guid.lower() == 'all':
             for session in self.sessions:
                 session.add_job(job)
         else:
-            for session in self.sessions:
-                if session == guid:
-                    session.add_job(job)
+            try:
+                session = self.get(guid)
+                session.add_job(job)
+            except IndexError:
+                print_bad("No session was found with name: {}".format(guid))
 
     def job_result(self, result_tuple):
+        if self.sessions and not len(self.sessions):
+            return
         guid, job_id, data = result_tuple
-        session = list(filter(lambda x: x == guid, self.sessions))[0]
+        session = self.get(guid)
 
         if not session.data:
             session.set_session_info(data)
             print_good(f"New session {session.guid} connected! ({session.address})")
+            session.logger.info(f"New session {session.guid} connected! ({session.address})")
             state.SESSIONS = len(self.sessions)
             return
 
         for session in self.sessions:
             if session == guid:
                 results = json.loads(session.crypto.decrypt(data))
-                print_good(f"{guid} returned job result (id: {job_id})")
+                print_good(f"{session.guid} returned job result (id: {job_id})")
                 print(results['result'])
+                session.logger.info(f"{guid} returned job result (id: {job_id}) \n {results['result']}")
+
+    def get(self, guid):
+        return list(filter(lambda x: x == guid, self.sessions))[0]
 
     @command
     def sleep(self, guid: str, interval: int):
@@ -113,18 +135,15 @@ class Sessions:
                 session.add_job(Job(command=('sleep', int(interval))))
 
     @command
-    def list(self, guid: str):
+    def list(self):
         """
         Get available sessions
 
-        Usage: list [<guid>] [-h]
-
-        Arguments:
-            guid  filter by session's guid
+        Usage: list [-h]
         """
 
         table_data = [
-            ["GUID", "User", "Address", "Last Checkin"]
+            ["Name", "User", "Address", "Last Checkin"]
         ]
 
         for session in self.sessions:
@@ -152,7 +171,7 @@ class Sessions:
         Usage: info <guid> [-h]
 
         Arguments:
-            guid  filter by session's guid
+            guid   filter by session's guid
         """
 
         for session in self.sessions:
@@ -162,3 +181,29 @@ class Sessions:
                     table_data.append([k, v])
                 table = AsciiTable(table_data)
                 print(table.table)
+
+    @command
+    def rename(self, guid: str, name: str):
+        """
+        Set a name for a session
+
+        Usage: alias <guid> <name> [-h]
+
+        Arguments:
+            guid   filter by session's guid
+            name  the new name for the session
+        """
+        try:
+            if self.get(name):
+                print_bad("New name should be unique. No agent was renamed.")
+        except IndexError:
+            try:
+                session = self.get(guid)
+                self.sessions.remove(session)
+                session.guid = name
+                self.sessions.add(session)
+                print_good("Session {} has a new alias: {}".format(guid, name))
+            except IndexError:
+                print_info("Session {} not found".format(guid))
+
+        return

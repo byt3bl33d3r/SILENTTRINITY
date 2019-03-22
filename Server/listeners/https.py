@@ -9,10 +9,10 @@ from core.crypto import create_self_signed_cert
 from core.listener import Listener
 from core.session import Session
 from core.utils import get_ipaddress, gen_random_string
-from pprint import pprint
 from quart import Quart, Blueprint, request, Response
-from quart.logging import default_handler, serving_handler
-
+#from quart.logging import default_handler, serving_handler
+from hypercorn import Config
+from hypercorn.asyncio import serve
 
 class STListener(Listener):
     def __init__(self):
@@ -64,23 +64,24 @@ class STListener(Listener):
 
     def run(self):
 
-        #ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        #ssl_context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1 | ssl.OP_NO_COMPRESSION
-        #ssl_context.set_ciphers('ECDHE+AESGCM')
-        #ssl_context.load_cert_chain(, )
-        #ssl_context.set_alpn_protocols(['http/1.1', 'h2'])
-
         if (self['Key'] == 'data/key.pem') and (self['Cert'] == 'data/cert.pem'):
             if not os.path.exists(self['Key']) or not os.path.exists(self['Cert']) or self['RegenCert']:
                 create_self_signed_cert()
+
+        config = Config()
+        config.ciphers = 'ALL'
+        config.host = self['BindIP']
+        config.port = self['Port']
+        config.certfile = self['Cert']
+        config.keyfile=self['Key']
+        config.debug = False
+        config.use_reloader = False
 
         """
         While we could use the standard decorators to register these routes, 
         using add_url_rule() allows us to create diffrent endpoint names
         programmatically and pass the classes self object to the routes
         """
-
-        loop = asyncio.get_event_loop()
 
         http_blueprint = Blueprint(__name__, 'https')
         http_blueprint.before_request(self.check_if_naughty)
@@ -95,24 +96,12 @@ class STListener(Listener):
         http_blueprint.add_url_rule('/', 'unknown_path', self.unknown_path, defaults={'path': ''})
         http_blueprint.add_url_rule('/<path:path>', 'unknown_path', self.unknown_path, methods=['GET', 'POST'])
 
+        #logging.getLogger('quart.app').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
+        #logging.getLogger('quart.serving').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
+
         self.app = Quart(__name__)
-
-        logging.getLogger('quart.app').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
-        logging.getLogger('quart.serving').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
-
-        #serving_handler.setFormatter('%(h)s %(p)s - - %(t)s statusline: "%(r)s" statuscode: %(s)s responselen: %(b)s protocol: %(H)s')
-        #logging.getLogger('quart.app').removeHandler(default_handler)
-
         self.app.register_blueprint(http_blueprint)
-        self.app.run(host=self['BindIP'],
-                     port=self['Port'],
-                     debug=False,
-                     #ssl=ssl_context,
-                     certfile=self['Cert'],
-                     keyfile=self['Key'],
-                     use_reloader=False,
-                     #access_log_format=,
-                     loop=loop)
+        asyncio.run(serve(self.app, config))
 
     async def check_if_naughty(self):
         try:

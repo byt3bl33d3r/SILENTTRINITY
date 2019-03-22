@@ -8,9 +8,10 @@ import core.events as events
 from core.listener import Listener
 from core.session import Session
 from core.utils import get_ipaddress, gen_random_string
-from pprint import pprint
 from quart import Quart, Blueprint, request, Response
-from quart.logging import default_handler, serving_handler
+#from quart.logging import default_handler, serving_handler
+from hypercorn import Config
+from hypercorn.asyncio import serve
 
 
 class STListener(Listener):
@@ -54,7 +55,12 @@ class STListener(Listener):
         programmatically and pass the classes self object to the routes
         """
 
-        loop = asyncio.get_event_loop()
+        config = Config()
+        config.ciphers = 'ALL'
+        config.host = self['BindIP']
+        config.port = self['Port']
+        config.debug = False
+        config.use_reloader = False
 
         http_blueprint = Blueprint(__name__, 'http')
         http_blueprint.before_request(self.check_if_naughty)
@@ -69,21 +75,12 @@ class STListener(Listener):
         http_blueprint.add_url_rule('/', 'unknown_path', self.unknown_path, defaults={'path': ''})
         http_blueprint.add_url_rule('/<path:path>', 'unknown_path', self.unknown_path, methods=['GET', 'POST'])
 
+        #logging.getLogger('quart.app').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
+        #logging.getLogger('quart.serving').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
+
         self.app = Quart(__name__)
-
-        logging.getLogger('quart.app').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
-        logging.getLogger('quart.serving').setLevel(logging.DEBUG if state.args['--debug'] else logging.ERROR)
-
-        #serving_handler.setFormatter('%(h)s %(p)s - - %(t)s statusline: "%(r)s" statuscode: %(s)s responselen: %(b)s protocol: %(H)s')
-        #logging.getLogger('quart.app').removeHandler(default_handler)
-
         self.app.register_blueprint(http_blueprint)
-        self.app.run(host=self['BindIP'],
-                     port=self['Port'],
-                     debug=False,
-                     use_reloader=False,
-                     #access_log_format=,
-                     loop=loop)
+        asyncio.run(serve(self.app, config))
 
     async def check_if_naughty(self):
         try:

@@ -147,13 +147,13 @@ if __name__ == "__main__":
     args = docopt(__doc__, version=f"{codename} - {version}")
     state.args = args
 
-    log_format = "%(asctime)s %(process)d %(threadName)s - [%(levelname)s] %(filename)s: %(funcName)s - %(message)s"
     logging.basicConfig(
-        format=log_format,
-        level=logging.DEBUG if args['--debug'] else logging.INFO
-        #filename='st.log',
-        #filemode='a+'
+        format="%(asctime)s %(process)d %(threadName)s - [%(levelname)s] %(filename)s: %(funcName)s - %(message)s",
+        level=logging.DEBUG if args['--debug'] else logging.INFO,
+        filename='./logs/ST.log',
+        filemode='a'
     )
+
     logging.debug(args)
 
     os.system('cls' if os.name == 'nt' else 'clear')
