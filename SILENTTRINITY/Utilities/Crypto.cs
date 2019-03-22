@@ -10,6 +10,7 @@ namespace SILENTTRINITY.Utilities
     public static class Crypto
     {
         // TODO: Migrate to self implemented Diffie-Hellman Key Exchange
+        // ECDiffieHellmanCng is only available under Windows
         public static byte[] KeyExchange(Uri url)
         {
             byte[] key = default;
