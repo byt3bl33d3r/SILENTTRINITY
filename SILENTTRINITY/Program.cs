@@ -54,9 +54,11 @@ namespace SILENTTRINITY
             }
 
             Assembly asm = Assembly.Load(bytes);
+
 #if DEBUG
-        Console.WriteLine("'{0}' loaded", asm.FullName);
+            Console.WriteLine("'{0}' loaded", asm.FullName);
 #endif
+
             return asm;
         }
     }
