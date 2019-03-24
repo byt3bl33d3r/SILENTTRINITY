@@ -39,7 +39,7 @@ namespace SILENTTRINITY.Utilities
             IBasicAgreement aKeyAgree = AgreementUtilities.GetBasicAgreement("ECDH");
             aKeyAgree.Init(alicePrivateKey);
             BigInteger sharedSecret = aKeyAgree.CalculateAgreement(bobPublicKey);
-            byte[] sharedSecretBytes = sharedSecret.ToByteArrayUnsigned();
+            byte[] sharedSecretBytes = sharedSecret.ToByteArray();
 
             IDigest digest = new Sha256Digest();
             byte[] symmetricKey = new byte[digest.GetDigestSize()];

