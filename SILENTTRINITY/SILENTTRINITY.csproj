@@ -90,6 +90,9 @@
       <HintPath>..\packages\Portable.BouncyCastle.1.8.5\lib\net40\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
+    <Reference Include="ZipStorer">
+      <HintPath>Resources\ZipStorer.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
