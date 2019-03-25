@@ -2,7 +2,7 @@
 import hmac
 import logging
 import datetime
-import defusedxml.ElementTree as ET
+import json
 from secrets import token_bytes
 from cryptography import x509
 from cryptography.x509.oid import NameOID
@@ -19,20 +19,10 @@ class CryptoException(Exception):
 
 class ECDHE:
 
-    pubkey_xml_tpl = '''<ECDHKeyValue xmlns="http://www.w3.org/2001/04/xmldsig-more#">
-      <DomainParameters>
-        <NamedCurve URN="urn:oid:1.3.132.0.35" />
-      </DomainParameters>
-      <PublicKey>
-        <X Value="X_VALUE" xsi:type="PrimeFieldElemType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" />
-        <Y Value="Y_VALUE" xsi:type="PrimeFieldElemType" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" />
-      </PublicKey>
-    </ECDHKeyValue>'''
-
-    def __init__(self, xml):
+    def __init__(self, json_string):
         logging.debug('Generating new pub/priv key pair')
         self.dh = ec.generate_private_key(SECP521R1(), default_backend())
-        self.peer_public_key = self.pubkey_from_xml(xml)
+        self.peer_public_key = self.pubkey_from_json(json_string)
         logging.debug('Imported peer public key')
 
         self.shared_key = self.dh.exchange(ec.ECDH(), self.peer_public_key)
@@ -40,24 +30,22 @@ class ECDHE:
         sha256.update(self.shared_key)
         self.derived_key = sha256.finalize()
 
-        #logging.debug(f"Derived encryption key: {to_byte_array(self.derived_key)}")
-        #logging.debug(f"Derived encryption key: {self.derived_key.hex()}")
+        logging.debug(f"Derived encryption key: {self.derived_key.hex()}")
 
     @property
     def public_key(self):
         ec_numbers = self.dh.public_key().public_numbers()
 
-        pubkey_xml = ECDHE.pubkey_xml_tpl.replace("X_VALUE", str(ec_numbers.x))
-        pubkey_xml = pubkey_xml.replace("Y_VALUE", str(ec_numbers.y))
-
-        return pubkey_xml
+        return json.dumps({'x': ec_numbers.x, 'y': ec_numbers.y})
 
     @staticmethod
-    def pubkey_from_xml(xml):
-        root = ET.fromstring(xml)
+    def pubkey_from_json(json_string):
+        my_json = json_string.decode('utf8').replace("'", '"')
+        root = json.loads(my_json)
 
-        x = int(root[1][0].attrib['Value'])
-        y = int(root[1][1].attrib['Value'])
+        x = int(root.get('x'))
+        y = int(root.get('y'))
+
         return EllipticCurvePublicNumbers(x, y, SECP521R1()).public_key(backend=default_backend())
 
     def generate_private_key(self):
@@ -76,10 +64,6 @@ class ECDHE:
         encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
         mac = hmac.digest(self.derived_key, (iv + encrypted_data), 'sha256')
 
-        #logging.debug(f"IV: {to_byte_array(iv)}")
-        #logging.debug(f"HMAC: {to_byte_array(mac)}")
-        #logging.debug(f"DATA: {to_byte_array(encrypted_data)}")
-
         return iv + encrypted_data + mac
 
     def decrypt(self, data):
@@ -95,39 +79,7 @@ class ECDHE:
 
             return unpadder.update(decrypted_data) + unpadder.finalize()
 
-        #logging.error('HMAC not valid')
         raise CryptoException("HMAC not valid")
-
-    """
-    def encrypt_file(infile, aes_key, outfile):
-        sha256 = hashes.Hash(hashes.SHA256(), backend=default_backend())
-        sha256.update(aes_key.encode())
-        derived_key = sha256.finalize()
-
-        logging.debug(f"SHA256_KEY: {derived_key.hex()}")
-
-        aes = Cipher(algorithms.AES(derived_key), modes.CBC(AES_IV), backend=default_backend())
-        encryptor = aes.encryptor()
-
-        padder = padding.PKCS7(128).padder()
-        with open(infile, 'rb') as file_to_encrypt:
-            with open(outfile, 'wb') as encrypted_file:
-                padded_data = padder.update(file_to_encrypt.read()) + padder.finalize()
-                encrypted_file.write(encryptor.update(padded_data) + encryptor.finalize())
-
-
-    def decrypt(encrypted_data, aes_key):
-        sha256 = hashes.Hash(hashes.SHA256(), backend=default_backend())
-        sha256.update(aes_key.encode())
-        derived_key = sha256.finalize()
-
-        aes = Cipher(algorithms.AES(derived_key), modes.CBC(AES_IV), backend=default_backend())
-        decryptor = aes.decryptor()
-        decrypted_data = decryptor.update(encrypted_data) + decryptor.finalize()
-
-        unpadder = padding.PKCS7(128).unpadder()
-        return unpadder.update(decrypted_data) + unpadder.finalize()
-    """
 
 
 # https://cryptography.io/en/latest/x509/tutorial/#creating-a-self-signed-certificate

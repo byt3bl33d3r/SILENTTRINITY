@@ -10,13 +10,13 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 
 class Session:
-    def __init__(self, guid, remote_address, pubkey_xml):
+    def __init__(self, guid, remote_address, pubkey_json):
         self.__alias = str(guid)
         self.__guid = guid
         self.address = remote_address
         self.data = None
         self.checkin_time = None
-        self.crypto = ECDHE(pubkey_xml)
+        self.crypto = ECDHE(pubkey_json)
         self.jobs = Queue()
 
         self.logger = logging.getLogger(str(guid))
@@ -46,8 +46,8 @@ class Session:
     def public_key(self):
         return self.crypto.public_key
 
-    def set_peer_public_key(self, pubkey_xml):
-        self.crypto = ECDHE(pubkey_xml)
+    def set_peer_public_key(self, pubkey_json):
+        self.crypto = ECDHE(pubkey_json)
 
     def add_job(self, job):
         self.jobs.put(job)

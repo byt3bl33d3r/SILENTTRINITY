@@ -81,26 +81,10 @@ namespace SILENTTRINITY.Utilities
             string mcy = response.Substring(response.LastIndexOf(": ", StringComparison.Ordinal) + 1).Replace("}","").Trim();
             BigInteger y = new BigInteger(mcy);
 
-            
             return new KeyCoords { 
                 X = x,
                 Y = y
             };
-        }
-
-
-        public static Dictionary<string, string> ParseJSON(string s)
-        {
-            Regex r = new Regex("\"(?<Key>[\\w]*)\":\"?(?<Value>([\\s\\w\\d\\.\\\\\\-/:_\\+]+(,[,\\s\\w\\d\\.\\\\\\-/:_\\+]*)?)*)\"?");
-            MatchCollection mc = r.Matches(s);
-
-            Dictionary<string, string> json = new Dictionary<string, string>();
-
-            foreach (Match k in mc)
-            {
-                json.Add(k.Groups["Key"].Value, k.Groups["Value"].Value);
-            }
-            return json;
         }
 
         static string GetJsonString(ECPublicKeyParameters publicKeyParameters)
