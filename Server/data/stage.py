@@ -26,10 +26,9 @@ from Microsoft.Win32 import Registry
 from System.Text.RegularExpressions import Regex
 from System import StringComparison
 
-from Org.BouncyCastle.Asn1.Nist import NistNamedCurves
 from Org.BouncyCastle.Crypto.Parameters import ECKeyGenerationParameters, ECDomainParameters, ECPublicKeyParameters
 from Org.BouncyCastle.Security import GeneratorUtilities, SecureRandom, AgreementUtilities
-from Org.BouncyCastle.Asn1.Sec import SecObjectIdentifiers
+from Org.BouncyCastle.Asn1.Sec import SecNamedCurves, SecObjectIdentifiers
 from Org.BouncyCastle.Math import BigInteger
 from Org.BouncyCastle.Crypto.Digests import Sha256Digest
 
@@ -155,7 +154,7 @@ class Requests(object):
 
 class Crypto(object):
     def __init__(self):
-        x9EC = NistNamedCurves.GetByName("P-521")
+        x9EC = SecNamedCurves.GetByName("secp521r1")
         self.aliceKeyPair = self.GenerateKeyPair(ECDomainParameters(x9EC.Curve, x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed()))
         self.bobPublicKey = self.GetBobPublicKey(URL, x9EC, self.aliceKeyPair.Public)
 

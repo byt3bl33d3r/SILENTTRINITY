@@ -4,7 +4,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using Org.BouncyCastle.Asn1.Nist;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto;
@@ -20,10 +19,10 @@ namespace SILENTTRINITY.Utilities.Crypto
     {
         public static byte[] KeyExchange(Uri url)
         {
-            X9ECParameters x9EC = NistNamedCurves.GetByName("P-521");
-            ECDomainParameters ecDomain = new ECDomainParameters(x9EC.Curve, 
-                                        x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed());
-            AsymmetricCipherKeyPair aliceKeyPair = GenerateKeyPair( ecDomain);
+            X9ECParameters x9EC = SecNamedCurves.GetByName("secp521r1");
+            AsymmetricCipherKeyPair aliceKeyPair = GenerateKeyPair(
+                                            new ECDomainParameters(x9EC.Curve,
+                                        x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed()));
 
             ECPublicKeyParameters alicePublicKey = (ECPublicKeyParameters)aliceKeyPair.Public;
             ECPublicKeyParameters bobPublicKey = GetBobPublicKey(url, x9EC, alicePublicKey);
@@ -61,8 +60,7 @@ namespace SILENTTRINITY.Utilities.Crypto
             ECKeyPairGenerator g = (ECKeyPairGenerator)GeneratorUtilities.GetKeyPairGenerator("ECDH");
             g.Init(new ECKeyGenerationParameters(ecDomain, new SecureRandom()));
 
-            AsymmetricCipherKeyPair aliceKeyPair = g.GenerateKeyPair();
-            return aliceKeyPair;
+            return g.GenerateKeyPair();
         }
 
         static KeyCoords GetBobCoords(Uri url, ECPublicKeyParameters publicKey)

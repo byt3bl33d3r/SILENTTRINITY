@@ -106,6 +106,8 @@ def create_self_signed_cert(key_path="./data/key.pem", cert_path="./data/cert.pe
         x509.NameAttribute(NameOID.COMMON_NAME, u"mysite.com"),
     ])
 
+    # Sign our certificate with our private key
+
     cert = x509.CertificateBuilder().subject_name(
         subject
     ).issuer_name(
@@ -122,7 +124,6 @@ def create_self_signed_cert(key_path="./data/key.pem", cert_path="./data/cert.pe
     ).add_extension(
         x509.SubjectAlternativeName([x509.DNSName(u"localhost")]),
         critical=False,
-    # Sign our certificate with our private key
     ).sign(key, hashes.SHA256(), default_backend())
 
     with open(cert_path, "wb") as f:
