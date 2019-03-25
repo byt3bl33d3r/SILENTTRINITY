@@ -10,8 +10,7 @@ namespace SILENTTRINITY.Utilities
         {
             using (var wc = new WebClient())
             {
-                byte[] data = wc.DownloadData(url);
-                return data;
+                return wc.DownloadData(url);
             }
         }
 
