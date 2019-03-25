@@ -97,7 +97,6 @@
     <Compile Include="Utilities\Engines.cs" />
     <Compile Include="Utilities\Internals.cs" />
     <Compile Include="Utilities\Http.cs" />
-    <Compile Include="ZipStorer.cs" />
     <Compile Include="Utilities\Retry.cs" />
     <Compile Include="Utilities\Crypto\Base.cs" />
     <Compile Include="Utilities\Crypto\AES.cs" />
@@ -125,10 +124,9 @@
     <Content Include="Resources\IronPython.Modules.dll" />
     <Content Include="Resources\Microsoft.Dynamic.dll" />
     <Content Include="Resources\Microsoft.Scripting.dll" />
+    <Content Include="Resources\ZipStorer.dll" />
   </ItemGroup>
   <ItemGroup />
-  <ItemGroup>
-    <Folder Include="Utilities\Crypto\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
