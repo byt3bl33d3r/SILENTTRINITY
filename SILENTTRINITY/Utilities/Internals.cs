@@ -6,14 +6,14 @@ namespace SILENTTRINITY.Utilities
     {
         public static string GetDLLName(string name)
         {
-            string DllName = name + ".dll";
+            string dllName = name + ".dll";
 
             if (name.IndexOf(',') > 0)
             {
-                DllName = name.Substring(0, name.IndexOf(',')) + ".dll";
+                dllName = name.Substring(0, name.IndexOf(',')) + ".dll";
             }
 
-            return DllName;
+            return dllName;
         }
 
         public static byte[] GetResourceInZip(ZipStorer zip, string resourceName)

