@@ -32,8 +32,8 @@ from Org.BouncyCastle.Asn1.Sec import SecNamedCurves, SecObjectIdentifiers
 from Org.BouncyCastle.Math import BigInteger
 from Org.BouncyCastle.Crypto.Digests import Sha256Digest
 
-def urljoin(base, sufix):
-    return "{}/{}".format(base, sufix)
+def urljoin(base, suffix):
+    return "{}/{}".format(base, suffix)
 
 def print_traceback():
     try:
@@ -422,7 +422,7 @@ class STClient(Serializable):
         self.PROCESS = self.__process.Id
         self.PROCESS_NAME = self.__process.ProcessName
         self.HOSTNAME = Environment.MachineName
-        self.JOBS = 0 #len(self.__jobs)
+        self.JOBS = len(self.__jobs)
         self.URL = str(URL)
         self.COMMS = Comms(self.SLEEP)
 
