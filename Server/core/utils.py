@@ -1,6 +1,7 @@
 import netifaces
 import random
 import string
+import defusedxml.ElementTree as ET
 from core.ipcserver import ipc_server
 from functools import wraps
 from typing import get_type_hints, List
@@ -10,6 +11,15 @@ from docopt import docopt
 
 class CmdError(Exception):
     pass
+
+
+class PastebinPaste:
+    def __init__(self, paste_xml):
+        paste_xml = "\n".join(paste_xml.strip().split('\r\n')) + "\n</paste>"
+
+        root = ET.fromstring(paste_xml)
+        for child in root.getchildren():
+            setattr(self, child.tag.split('_')[1], child.text)
 
 
 # http://scottlobdell.me/2015/04/decorators-arguments-python/

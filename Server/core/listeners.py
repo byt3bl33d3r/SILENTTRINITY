@@ -68,7 +68,10 @@ class Listeners(Loader):
             ["Type", "Name", "URL"]
         ]
         for l in self.listeners:
-            table_data.append([l.name, l["Name"], f"{l.name}://{l['BindIP']}:{l['Port']}"])
+            try:
+                table_data.append([l.name, l["Name"], f"{l.name}://{l['BindIP']}:{l['Port']}"])
+            except KeyError:
+                table_data.append([l.name, l["Name"], f"{l.name}://{l['Host']}"])
 
         table = AsciiTable(table_data, title="Running")
         table.inner_row_border = True

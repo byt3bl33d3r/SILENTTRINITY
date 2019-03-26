@@ -32,6 +32,7 @@ from core.listeners import Listeners
 from core.modules import Modules
 from core.sessions import Sessions
 from core.stagers import Stagers
+from core.servers import Servers
 from core.utils import print_bad, print_banner
 
 rprompt_style = Style.from_dict({
@@ -68,7 +69,8 @@ class CmdLoop:
             Listeners(self.prompt_session),
             Sessions(self.prompt_session),
             Modules(self.prompt_session),
-            Stagers(self.prompt_session)
+            Stagers(self.prompt_session),
+            Servers(self.prompt_session)
         ]
 
         self.prompt_session.completer = WordCompleter([ctx.name for ctx in self.contexts] + ['exit'], ignore_case=True)

@@ -14,6 +14,7 @@ from quart import Quart, Blueprint, request, Response
 from hypercorn import Config
 from hypercorn.asyncio import serve
 
+
 class STListener(Listener):
     def __init__(self):
         Listener.__init__(self)
@@ -59,6 +60,11 @@ class STListener(Listener):
                 'Description'   :   'Regenerate TLS cert',
                 'Required'      :    False,
                 'Value'         :    False
+            },
+            'Comms': {
+                'Description'   :   'C2 Comms to use',
+                'Required'      :   True,
+                'Value'         :   'http'
             }
         }
 
@@ -125,7 +131,7 @@ class STListener(Listener):
         return Response(pub_key, content_type='application/xml')
 
     async def stage(self, GUID):
-        stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (GUID, request.remote_addr))
+        stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (self["Comms"], GUID, request.remote_addr))
 
         if stage_file:
             self.dispatch_event(events.SESSION_STAGED, f'Sending stage ({sys.getsizeof(stage_file)} bytes) ->  {request.remote_addr} ...')
@@ -143,8 +149,13 @@ class STListener(Listener):
         return '', 200
 
     async def job_result(self, GUID, job_id):
-        data = await request.data
         self.app.logger.debug(f"Session {GUID} posted results of job {job_id}")
+        # if the request body is larger than 15MB, stream it
+        #if int(request.headers['Content-Length']) > 15000000:
+        #    async for data in request.body:
+        #        self.dispatch_event(events.JOB_RESULT_LARGE, (GUID, job_id, data))
+        #else:
+        data = await request.data
         self.dispatch_event(events.JOB_RESULT, (GUID, job_id, data))
 
         return '', 200

@@ -45,75 +45,58 @@ class Sessions:
     def kex(self, kex_tuple):
         guid, remote_addr, pubkey_xml = kex_tuple
 
-        if self.sessions and not len(self.sessions):
-            return
-
         try:
             session = self.get(guid)
             logging.debug(f"creating new pub/priv keys for {guid}")
-            session.set_peer_public_key(pubkey_xml)
+            session.jobs.set_peer_public_key(pubkey_xml)
         except IndexError:
             logging.debug(f"new kex from {remote_addr} ({guid})")
             session = Session(guid, remote_addr, pubkey_xml)
             self.sessions.add(session)
 
-        return session.public_key
+        return session.jobs.public_key
 
     def gen_encrypted_stage(self, info_tuple):
-        if not len(self.sessions):
-            return
-
-        guid, remote_addr = info_tuple
+        comms, guid, remote_addr = info_tuple
         session = self.get(guid)
-        return session.get_encrypted_stage()
+        return session.jobs.get_encrypted_stage(comms)
 
     def notify_session_staged(self, msg):
         print_info(msg)
 
     def session_checked_in(self, checkin_tuple):
         guid, remote_addr = checkin_tuple
-        if self.sessions and not len(self.sessions):
-            return
 
         session = self.get(guid)
         session.checked_in()
 
-        return session.get_job()
+        return session.jobs.get()
 
     def add_job(self, job_tuple):
-        if self.sessions and not len(self.sessions):
-            return
-
         guid, job = job_tuple
-        if self.sessions and guid.lower() == 'all':
+        if guid.lower() == 'all':
             for session in self.sessions:
-                session.add_job(job)
+                session.jobs.add(job)
         else:
             try:
                 session = self.get(guid)
-                session.add_job(job)
+                session.jobs.add(job)
             except IndexError:
-                print_bad("No session was found with name: {}".format(guid))
+                print_bad(f"No session was found with name: {guid}")
 
     def job_result(self, result_tuple):
-        if self.sessions and not len(self.sessions):
-            return
         guid, job_id, data = result_tuple
         session = self.get(guid)
 
-        if not session.data:
-            session.set_session_info(data)
+        if not session.info:
+            session.set_info(data)
             print_good(f"New session {session.guid} connected! ({session.address})")
-            session.logger.info(f"New session {session.guid} connected! ({session.address})")
             state.SESSIONS = len(self.sessions)
             return
 
-        for session in self.sessions:
-            if session == guid:
-                results = json.loads(session.crypto.decrypt(data))
-                print_good(f"{session.guid} returned job result (id: {job_id})")
-                print(results['result'])
-                session.logger.info(f"{guid} returned job result (id: {job_id}) \n {results['result']}")
+        output = session.jobs.results(job_id, data)
+        print_good(f"{session.guid} returned job result (id: {job_id})")
+        print(output)
 
     def get(self, guid):
         return list(filter(lambda x: x == guid, self.sessions))[0]
@@ -147,9 +130,9 @@ class Sessions:
         ]
 
         for session in self.sessions:
-            if session.data:
+            if session.info:
                 try:
-                    username = f"*{session.data['username']}@{session.data['domain']}" if session.data['high_integrity'] else f"{session.data['username']}@{session.data['domain']}"
+                    username = f"*{session.info['username']}@{session.info['domain']}" if session.info['high_integrity'] else f"{session.info['username']}@{session.info['domain']}"
                 except KeyError:
                     username = ''
 
@@ -177,8 +160,10 @@ class Sessions:
         for session in self.sessions:
             if session == guid:
                 table_data = [["Name", "Value"]]
-                for k, v in session.data.items():
+                for k, v in session.info.items():
                     table_data.append([k, v])
+
+                table_data.append(['total_jobs', len(session.jobs)])
                 table = AsciiTable(table_data)
                 print(table.table)
 

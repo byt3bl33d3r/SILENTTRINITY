@@ -44,6 +44,11 @@ class STListener(Listener):
                 'Description'   :   'Port for the listener.',
                 'Required'      :   True,
                 'Value'         :   80
+            },
+            'Comms': {
+                'Description'   :   'C2 Comms to use',
+                'Required'      :   True,
+                'Value'         :   'http'
             }
         }
 
@@ -56,7 +61,6 @@ class STListener(Listener):
         """
 
         config = Config()
-        config.ciphers = 'ALL'
         config.host = self['BindIP']
         config.port = self['Port']
         config.debug = False
@@ -104,7 +108,7 @@ class STListener(Listener):
         return Response(pub_key, content_type='application/xml')
 
     async def stage(self, GUID):
-        stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (GUID, request.remote_addr))
+        stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (self["Comms"], GUID, request.remote_addr))
 
         if stage_file:
             self.dispatch_event(events.SESSION_STAGED, f'Sending stage ({sys.getsizeof(stage_file)} bytes) ->  {request.remote_addr} ...')
