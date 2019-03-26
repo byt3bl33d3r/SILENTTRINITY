@@ -18,7 +18,8 @@ namespace SILENTTRINITY.Utilities.Crypto
 
                 using (MemoryStream decryptedData = new MemoryStream())
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream(decryptedData, decryptor, CryptoStreamMode.Write))
+                    using (CryptoStream cryptoStream = new CryptoStream(decryptedData,
+                                                         decryptor, CryptoStreamMode.Write))
                     {
                         cryptoStream.Write(data, 0, data.Length);
                         cryptoStream.FlushFinalBlock();
@@ -41,7 +42,8 @@ namespace SILENTTRINITY.Utilities.Crypto
 
                 using (MemoryStream encryptedData = new MemoryStream())
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream(encryptedData, decryptor, CryptoStreamMode.Write))
+                    using (CryptoStream cryptoStream = new CryptoStream(encryptedData,
+                                                        decryptor, CryptoStreamMode.Write))
                     {
                         cryptoStream.Write(data, 0, data.Length);
                         cryptoStream.FlushFinalBlock();

