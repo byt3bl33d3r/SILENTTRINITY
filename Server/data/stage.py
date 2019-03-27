@@ -188,15 +188,25 @@ class Crypto(object):
     def derive_key(self, bobPublicKey, alicePrivateKey):
         aKeyAgree = ECDHBasicAgreement()
         aKeyAgree.Init(alicePrivateKey)
-        sharedSecret = aKeyAgree.CalculateAgreement(bobPublicKey)
-        sharedSecretBytes = sharedSecret.ToByteArray()
-
+        sharedSecretBytes = self.ResizeRight(aKeyAgree.CalculateAgreement(bobPublicKey).ToByteArray(), 66)
+       
         digest = Sha256Digest()
         symmetricKey = Array.CreateInstance(Byte, digest.GetDigestSize())
         digest.BlockUpdate(sharedSecretBytes, 0, sharedSecretBytes.Length)
         digest.DoFinal(symmetricKey, 0)
 
         return symmetricKey
+    
+    # Resize but pad zeroes to the left instead of to the right like Array.Resize
+    def ResizeRight(self, b, length):
+        if b.Length == length:
+            return b
+        if b.Length > length:
+            raise Exception("Invalid size!")
+        newB = Array.CreateInstance(Byte, length)
+        Array.Copy(b, 0, newB, length - b.Length, b.Length)
+
+        return newB
 
     def HMAC(self, key, message):
         with HMACSHA256(key) as hmac:

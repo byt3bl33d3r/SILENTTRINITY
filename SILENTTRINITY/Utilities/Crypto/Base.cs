@@ -4,10 +4,12 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Org.BouncyCastle.Asn1.Nist;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Agreement;
+using Org.BouncyCastle.Crypto.Agreement.Kdf;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -34,10 +36,13 @@ namespace SILENTTRINITY.Utilities.Crypto
         static byte[] GenerateAESKey(ECPublicKeyParameters bobPublicKey, 
                                 AsymmetricKeyParameter alicePrivateKey)
         {
+
             ECDHBasicAgreement aKeyAgree = new ECDHBasicAgreement();
             aKeyAgree.Init(alicePrivateKey);
-
             byte[] sharedSecret = aKeyAgree.CalculateAgreement(bobPublicKey).ToByteArray();
+
+            // make sure each part has the correct and same size
+            ResizeRight(ref sharedSecret, 66);
 
             Sha256Digest digest = new Sha256Digest();
             byte[] symmetricKey = new byte[digest.GetDigestSize()];
@@ -45,6 +50,21 @@ namespace SILENTTRINITY.Utilities.Crypto
             digest.DoFinal(symmetricKey, 0);
 
             return symmetricKey;
+        }
+
+        /// <summary>
+        /// Resize but pad zeroes to the left instead of to the right like Array.Resize
+        /// </summary>
+        public static void ResizeRight(ref byte[] b, int length)
+        {
+            if (b.Length == length)
+                return;
+            if (b.Length > length)
+                throw new NotSupportedException();
+
+            byte[] newB = new byte[length];
+            Array.Copy(b, 0, newB, length - b.Length, b.Length);
+            b = newB;
         }
 
         static ECPublicKeyParameters GetBobPublicKey(Uri url, 
