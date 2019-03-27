@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Agreement;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -33,14 +34,14 @@ namespace SILENTTRINITY.Utilities.Crypto
         static byte[] GenerateAESKey(ECPublicKeyParameters bobPublicKey, 
                                 AsymmetricKeyParameter alicePrivateKey)
         {
-            IBasicAgreement aKeyAgree = AgreementUtilities.GetBasicAgreement("ECDH");
+            ECDHBasicAgreement aKeyAgree = new ECDHBasicAgreement();
             aKeyAgree.Init(alicePrivateKey);
-            BigInteger sharedSecret = aKeyAgree.CalculateAgreement(bobPublicKey);
-            byte[] sharedSecretBytes = sharedSecret.ToByteArray();
 
-            IDigest digest = new Sha256Digest();
+            byte[] sharedSecret = aKeyAgree.CalculateAgreement(bobPublicKey).ToByteArray();
+
+            Sha256Digest digest = new Sha256Digest();
             byte[] symmetricKey = new byte[digest.GetDigestSize()];
-            digest.BlockUpdate(sharedSecretBytes, 0, sharedSecretBytes.Length);
+            digest.BlockUpdate(sharedSecret, 0, sharedSecret.Length);
             digest.DoFinal(symmetricKey, 0);
 
             return symmetricKey;
@@ -51,8 +52,10 @@ namespace SILENTTRINITY.Utilities.Crypto
                                                      ECPublicKeyParameters alicePublicKey)
         {
             KeyCoords bobCoords = GetBobCoords(url, alicePublicKey);
-            var point = x9EC.Curve.CreatePoint(bobCoords.X, bobCoords.Y);
-            return new ECPublicKeyParameters("ECDH", point, SecObjectIdentifiers.SecP521r1);
+
+            return new ECPublicKeyParameters("ECDH", 
+                        x9EC.Curve.ValidatePoint(bobCoords.X, bobCoords.Y).Normalize(),
+                        SecObjectIdentifiers.SecP521r1);
         }
 
         static AsymmetricCipherKeyPair GenerateKeyPair(ECDomainParameters ecDomain)
@@ -65,9 +68,9 @@ namespace SILENTTRINITY.Utilities.Crypto
 
         static KeyCoords GetBobCoords(Uri url, ECPublicKeyParameters publicKey)
         {
-            string json = string.Format("{{\"x\": {0},\"y\": {1}}}",
-                    publicKey.Q.AffineXCoord.ToBigInteger(),
-                    publicKey.Q.AffineYCoord.ToBigInteger()
+            string json = string.Format("{{'x': \"{0}\",'y': \"{1}\"}}",
+                    publicKey.Q.Normalize().AffineXCoord,
+                    publicKey.Q.Normalize().AffineYCoord
                 );
 
             string response = Encoding.UTF8.GetString(Http.Post(url,
@@ -103,7 +106,7 @@ namespace SILENTTRINITY.Utilities.Crypto
                 {
                     if (computedHash[i] != hmac[i])
                     {
-                        return decryptedData;
+                        throw new Exception("HMAC not valid");
                     }
                 }
                 decryptedData = AES.Decrypt(ciphertext, key, iv);

@@ -43,8 +43,8 @@ class ECDHE:
         my_json = json_string.decode('utf8').replace("'", '"')
         root = json.loads(my_json)
 
-        x = int(root.get('x'))
-        y = int(root.get('y'))
+        x = int(root.get('x'), 16)
+        y = int(root.get('y'), 16)
 
         return EllipticCurvePublicNumbers(x, y, SECP521R1()).public_key(backend=default_backend())
 

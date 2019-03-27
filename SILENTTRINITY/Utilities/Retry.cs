@@ -18,10 +18,14 @@ namespace SILENTTRINITY.Utilities
                     {
                         Thread.Sleep(retryInterval);
                     }
+#if DEBUG
+                    Console.WriteLine(string.Format("[-] Attempt #{0}", attempts + 1));
+#endif
                     return action();
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine("\t [!] {0}", ex.Message);
                     exceptions.Add(ex);
                 }
             }

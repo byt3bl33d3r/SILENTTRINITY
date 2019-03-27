@@ -31,6 +31,7 @@ from Org.BouncyCastle.Security import GeneratorUtilities, SecureRandom, Agreemen
 from Org.BouncyCastle.Asn1.Sec import SecNamedCurves, SecObjectIdentifiers
 from Org.BouncyCastle.Math import BigInteger
 from Org.BouncyCastle.Crypto.Digests import Sha256Digest
+from Org.BouncyCastle.Crypto.Agreement import ECDHBasicAgreement
 
 def urljoin(base, suffix):
     return "{}/{}".format(base, suffix)
@@ -169,9 +170,9 @@ class Crypto(object):
     def GetBobPublicKey(self, url, x9EC, alicePublicKey):
         requests = Requests()
 
-        alice_x = str(alicePublicKey.Q.AffineXCoord.ToBigInteger())
-        alice_y = str(alicePublicKey.Q.AffineYCoord.ToBigInteger())
-        json = "{'x':" + alice_x + ",\'y\':" + alice_y +"}"
+        alice_x = str(alicePublicKey.Q.Normalize().AffineXCoord)
+        alice_y = str(alicePublicKey.Q.Normalize().AffineYCoord)
+        json = "{'x': \"" + alice_x + "\",'y': \"" + alice_y +"\"}"
 
         response = requests.post(url, Encoding.UTF8.GetBytes(json)).text
         response = response.replace("\"", "'")
@@ -180,14 +181,12 @@ class Crypto(object):
         mcx = r.Matches(response)
         x = BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", ""))
 
-        mcy = response.Substring(response.LastIndexOf(": ", StringComparison.Ordinal) + 1).Replace("}", "").Trim()
-        y = BigInteger(mcy)
+        y = BigInteger(response.Substring(response.LastIndexOf(": ", StringComparison.Ordinal) + 1).Replace("}", "").Trim())
 
-        point = x9EC.Curve.CreatePoint(x,y)
-        return ECPublicKeyParameters("ECDH", point, SecObjectIdentifiers.SecP521r1)
+        return ECPublicKeyParameters("ECDH", x9EC.Curve.ValidatePoint(x,y).Normalize(), SecObjectIdentifiers.SecP521r1)
 
     def derive_key(self, bobPublicKey, alicePrivateKey):
-        aKeyAgree = AgreementUtilities.GetBasicAgreement("ECDH")
+        aKeyAgree = ECDHBasicAgreement()
         aKeyAgree.Init(alicePrivateKey)
         sharedSecret = aKeyAgree.CalculateAgreement(bobPublicKey)
         sharedSecretBytes = sharedSecret.ToByteArray()
