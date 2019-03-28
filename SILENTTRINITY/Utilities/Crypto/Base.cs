@@ -4,12 +4,10 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using Org.BouncyCastle.Asn1.Nist;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Agreement;
-using Org.BouncyCastle.Crypto.Agreement.Kdf;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -33,7 +31,7 @@ namespace SILENTTRINITY.Utilities.Crypto
             return GenerateAESKey(bobPublicKey, aliceKeyPair.Private);
         }
 
-        static byte[] GenerateAESKey(ECPublicKeyParameters bobPublicKey, 
+        static byte[] GenerateAESKey(ECPublicKeyParameters bobPublicKey,
                                 AsymmetricKeyParameter alicePrivateKey)
         {
 
@@ -42,7 +40,7 @@ namespace SILENTTRINITY.Utilities.Crypto
             byte[] sharedSecret = aKeyAgree.CalculateAgreement(bobPublicKey).ToByteArray();
 
             // make sure each part has the correct and same size
-            ResizeRight(ref sharedSecret, 66);
+            ResizeRight(ref sharedSecret, 66); // 66 is the desired key size
 
             Sha256Digest digest = new Sha256Digest();
             byte[] symmetricKey = new byte[digest.GetDigestSize()];
@@ -67,13 +65,13 @@ namespace SILENTTRINITY.Utilities.Crypto
             b = newB;
         }
 
-        static ECPublicKeyParameters GetBobPublicKey(Uri url, 
+        static ECPublicKeyParameters GetBobPublicKey(Uri url,
                                                      X9ECParameters x9EC,
                                                      ECPublicKeyParameters alicePublicKey)
         {
             KeyCoords bobCoords = GetBobCoords(url, alicePublicKey);
 
-            return new ECPublicKeyParameters("ECDH", 
+            return new ECPublicKeyParameters("ECDH",
                         x9EC.Curve.ValidatePoint(bobCoords.X, bobCoords.Y).Normalize(),
                         SecObjectIdentifiers.SecP521r1);
         }
@@ -98,10 +96,11 @@ namespace SILENTTRINITY.Utilities.Crypto
 
             // Really ugly, but we're trying to reduce extra dependencies...
             MatchCollection mcx = new Regex(@"': (.+?) ").Matches(response);
-            string mcy = response.Substring(response.LastIndexOf(": ", 
-                            StringComparison.Ordinal) + 1).Replace("}","").Trim();
+            string mcy = response.Substring(response.LastIndexOf(": ",
+                            StringComparison.Ordinal) + 1).Replace("}", "").Trim();
 
-            return new KeyCoords { 
+            return new KeyCoords
+            {
                 X = new BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", "")),
                 Y = new BigInteger(mcy)
             };

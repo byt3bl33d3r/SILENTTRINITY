@@ -19,6 +19,7 @@ namespace SILENTTRINITY
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)768 |
                                                    (SecurityProtocolType)3072;
 
+            ServicePointManager.Expect100Continue = false;
             AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler;
         }
 

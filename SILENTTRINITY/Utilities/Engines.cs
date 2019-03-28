@@ -38,8 +38,7 @@ namespace SILENTTRINITY.Utilities
                     scope.SetVariable("DEBUG", false);
 #endif
                     byte[] mainPyFile = Internals.GetResourceInZip(Stage, "Main.py");
-                    
-                    engine.Execute(Encoding.UTF8.GetString(mainPyFile, 0, mainPyFile.Length), scope);
+                     engine.Execute(Encoding.UTF8.GetString(mainPyFile, 0, mainPyFile.Length), scope);
                 }
             }
 
@@ -54,11 +53,8 @@ namespace SILENTTRINITY.Utilities
                                                         ["Debug"] = false
                                                     });
                 var pyRuntime = new ScriptRuntime(setup);
-
                 ScriptEngine engineInstance = Python.GetEngine(pyRuntime);
-
                 AddPythonLibrariesToSysMetaPath(engineInstance);
-
                 return engineInstance;
             }
 
