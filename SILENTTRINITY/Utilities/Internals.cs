@@ -32,7 +32,7 @@ namespace SILENTTRINITY.Utilities
             return default;
         }
 
-        public static MemoryStream DownloadStage(Uri URL, int sleep = 5, int retries = 3)
+        public static MemoryStream DownloadStage(Uri URL, int sleep = 10, int retries = 5)
         {
             return Retry.Do(() => GetStage(URL), TimeSpan.FromSeconds(sleep), retries);
         }
