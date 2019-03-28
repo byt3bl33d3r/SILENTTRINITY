@@ -476,7 +476,7 @@ class STClient(Serializable):
         try:
             self.OS_RELEASE_ID = Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "ReleaseId", "")
         except:
-            self.OS_RELEASE_ID = ""
+            self.OS_RELEASE_ID = "N/A"
         self.PROCESS = self.__process.Id
         self.PROCESS_NAME = self.__process.ProcessName
         self.HOSTNAME = Environment.MachineName
