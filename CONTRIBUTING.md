@@ -25,14 +25,6 @@ And other preferences:
 
 As a rule, all Python code should be written to support Python 3.7 or greater.
 
-#### IronPython Version
-
-As a rule, all IronPython code should be written to support IronPython 2.7.9 or greater.
-
-#### .NET Version
-
-As a rule, all .NET code should be written to support .NET 4.5 or greater due to the IronPython DLLs being compiled against .NET 4.0, also there is no `ZipArchive`.
-
 ## Development environment.
 
 Follow the instructions written in the Wiki page: [Setting up your development environment](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki/Setting-up-your-development-environment)

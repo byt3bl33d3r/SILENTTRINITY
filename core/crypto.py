@@ -39,12 +39,11 @@ class ECDHE:
         return json.dumps({'x': ec_numbers.x, 'y': ec_numbers.y})
 
     @staticmethod
-    def pubkey_from_json(json_string):
-        my_json = json_string.decode('utf8').replace("'", '"')
-        root = json.loads(my_json)
+    def pubkey_from_json(json_pubkey):
+        root = json.loads(json_pubkey.decode())
 
-        x = int(root.get('x'), 16)
-        y = int(root.get('y'), 16)
+        x = int(root['x'], 16)
+        y = int(root['y'], 16)
 
         return EllipticCurvePublicNumbers(x, y, SECP521R1()).public_key(backend=default_backend())
 

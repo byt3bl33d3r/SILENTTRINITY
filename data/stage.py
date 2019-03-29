@@ -129,47 +129,53 @@ class Serializable(object):
 
 class Crypto(object):
     def __init__(self):
-        x9EC = SecNamedCurves.GetByName("secp521r1")
-        self.aliceKeyPair = self.GenerateKeyPair(ECDomainParameters(x9EC.Curve, x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed()))
-        self.bobPublicKey = self.GetBobPublicKey(URL, x9EC, self.aliceKeyPair.Public)
+        self.x9EC = SecNamedCurves.GetByName("secp521r1")
 
-        self.derived_key = self.derive_key(self.bobPublicKey, self.aliceKeyPair.Private)
+        self.key_pair = self.generate_key_pair()
+        self.public_key = self.json_pubkey()
 
-    def GenerateKeyPair(self, ecDomain):
-        g = GeneratorUtilities.GetKeyPairGenerator("ECDH")
-        g.Init(ECKeyGenerationParameters(ecDomain, SecureRandom()))
+        self.server_pubkey = None
+        self.derived_key = None
 
-        return g.GenerateKeyPair()
+    def generate_key_pair(self):
+        ec_domain_params = ECDomainParameters(
+            self.x9EC.Curve,
+            self.x9EC.G,
+            self.x9EC.N,
+            self.x9EC.H,
+            self.x9EC.GetSeed()
+        )
 
-    def GetBobPublicKey(self, url, x9EC, alicePublicKey):
-        requests = Requests()
+        generator = GeneratorUtilities.GetKeyPairGenerator("ECDH")
+        generator.Init(ECKeyGenerationParameters(ec_domain_params, SecureRandom()))
+        return generator.GenerateKeyPair()
 
-        alice_x = str(alicePublicKey.Q.Normalize().AffineXCoord)
-        alice_y = str(alicePublicKey.Q.Normalize().AffineYCoord)
-        json = "{'x': \"" + alice_x + "\",'y': \"" + alice_y +"\"}"
+    def json_pubkey(self):
+        x = str(self.key_pair.Public.Q.Normalize().AffineXCoord)
+        y = str(self.key_pair.Public.Q.Normalize().AffineYCoord)
 
-        response = requests.post(url, Encoding.UTF8.GetBytes(json)).text
-        response = response.replace("\"", "'")
+        return JavaScriptSerializer().Serialize({'x': x, 'y': y})
 
-        r = Regex("': (.+?) ")
-        mcx = r.Matches(response)
-        x = BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", ""))
+    def derive_key(self, json_pubkey):
+        x = BigInteger(json_pubkey["x"])
+        y = BigInteger(json_pubkey["y"])
 
-        y = BigInteger(response.Substring(response.LastIndexOf(": ", StringComparison.Ordinal) + 1).Replace("}", "").Trim())
+        self.server_pubkey = ECPublicKeyParameters(
+            "ECDH",
+            self.x9EC.Curve.ValidatePoint(x, y).Normalize(),
+            SecObjectIdentifiers.SecP521r1
+        )
 
-        return ECPublicKeyParameters("ECDH", x9EC.Curve.ValidatePoint(x,y).Normalize(), SecObjectIdentifiers.SecP521r1)
-
-    def derive_key(self, bobPublicKey, alicePrivateKey):
         aKeyAgree = ECDHBasicAgreement()
-        aKeyAgree.Init(alicePrivateKey)
-        sharedSecretBytes = self.resize_right(aKeyAgree.CalculateAgreement(bobPublicKey).ToByteArray(), 66)
+        aKeyAgree.Init(self.key_pair.Private)
+        sharedSecretBytes = self.resize_right(aKeyAgree.CalculateAgreement(self.server_pubkey).ToByteArray(), 66)
 
         digest = Sha256Digest()
         symmetricKey = Array.CreateInstance(Byte, digest.GetDigestSize())
         digest.BlockUpdate(sharedSecretBytes, 0, sharedSecretBytes.Length)
         digest.DoFinal(symmetricKey, 0)
 
-        return symmetricKey
+        self.derived_key = symmetricKey
 
     # Resize but pad zeroes to the left instead of to the right like Array.Resize
     def resize_right(self, b, length):
