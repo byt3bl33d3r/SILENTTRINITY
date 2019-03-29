@@ -20,6 +20,7 @@ wsgidav = "*"
 pypykatz = "*"
 impacket = {editable = true,git = "https://github.com/SecureAuthCorp/impacket.git",ref = "python36"}
 requests = "*"
+dnslib = "*"
 
 [requires]
 python_version = "3.7"

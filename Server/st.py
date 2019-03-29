@@ -143,8 +143,8 @@ class CmdLoop:
 
 
 if __name__ == "__main__":
-    codename = "尻目"
-    version = "0.1.0dev"
+    codename = ""
+    version = "0.2.0dev"
 
     args = docopt(__doc__, version=f"{codename} - {version}")
     state.args = args

@@ -14,6 +14,9 @@ class STServer(Server):
         self.bind_ip = None
         self.port = None
 
+    def host_file(self, file_path):
+        pass
+
     def run(self, bind_ip, port):
         self.bind_ip = bind_ip
         self.port = int(port)
