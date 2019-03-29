@@ -90,9 +90,6 @@
       <HintPath>..\packages\Portable.BouncyCastle.1.8.5\lib\net40\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="System.Security" />
-    <Reference Include="ZipStorer">
-      <HintPath>Resources\ZipStorer.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -101,8 +98,9 @@
     <Compile Include="Utilities\Internals.cs" />
     <Compile Include="Utilities\Http.cs" />
     <Compile Include="Utilities\Retry.cs" />
-    <Compile Include="Utilities\Crypto\Base.cs" />
+    <Compile Include="Utilities\Crypto\ECDeffieHellman.cs" />
     <Compile Include="Utilities\Crypto\AES.cs" />
+    <Compile Include="ZipStorer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

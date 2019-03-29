@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto;
@@ -16,28 +14,37 @@ using Org.BouncyCastle.Security;
 
 namespace SILENTTRINITY.Utilities.Crypto
 {
-    public static class Base
+    public class ECDeffieHellman
     {
-        public static byte[] KeyExchange(Uri url)
+        readonly public X9ECParameters x9EC;
+        readonly public AsymmetricCipherKeyPair KeyPair;
+
+        ECPublicKeyParameters serverPublicKey;
+
+        public ECPublicKeyParameters PublicKey { get { return (ECPublicKeyParameters)KeyPair.Public;  } }
+
+        public ECDeffieHellman()
         {
-            X9ECParameters x9EC = SecNamedCurves.GetByName("secp521r1");
-            AsymmetricCipherKeyPair aliceKeyPair = GenerateKeyPair(
-                                            new ECDomainParameters(x9EC.Curve,
-                                        x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed()));
+            x9EC = SecNamedCurves.GetByName("secp521r1");
 
-            ECPublicKeyParameters alicePublicKey = (ECPublicKeyParameters)aliceKeyPair.Public;
-            ECPublicKeyParameters bobPublicKey = GetBobPublicKey(url, x9EC, alicePublicKey);
+            var ecDomain = new ECDomainParameters(x9EC.Curve, x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed());
+            var g = (ECKeyPairGenerator)GeneratorUtilities.GetKeyPairGenerator("ECDH");
+            g.Init(new ECKeyGenerationParameters(ecDomain, new SecureRandom()));
 
-            return GenerateAESKey(bobPublicKey, aliceKeyPair.Private);
+            KeyPair = g.GenerateKeyPair();
         }
 
-        static byte[] GenerateAESKey(ECPublicKeyParameters bobPublicKey,
-                                AsymmetricKeyParameter alicePrivateKey)
-        {
+        public void GenerateServerPublicKey(KeyCoords serverCoords) {
+            serverPublicKey = new ECPublicKeyParameters("ECDH",
+                            x9EC.Curve.ValidatePoint(serverCoords.X, serverCoords.Y).Normalize(),
+                            SecObjectIdentifiers.SecP521r1);
+        }
 
+        public byte[] GenerateAESKey()
+        {
             ECDHBasicAgreement aKeyAgree = new ECDHBasicAgreement();
-            aKeyAgree.Init(alicePrivateKey);
-            byte[] sharedSecret = aKeyAgree.CalculateAgreement(bobPublicKey).ToByteArray();
+            aKeyAgree.Init(KeyPair.Private);
+            byte[] sharedSecret = aKeyAgree.CalculateAgreement(serverPublicKey).ToByteArray();
 
             // make sure each part has the correct and same size
             ResizeRight(ref sharedSecret, 66); // 66 is the desired key size
@@ -53,7 +60,7 @@ namespace SILENTTRINITY.Utilities.Crypto
         /// <summary>
         /// Resize but pad zeroes to the left instead of to the right like Array.Resize
         /// </summary>
-        public static void ResizeRight(ref byte[] b, int length)
+        void ResizeRight(ref byte[] b, int length)
         {
             if (b.Length == length)
                 return;
@@ -65,48 +72,7 @@ namespace SILENTTRINITY.Utilities.Crypto
             b = newB;
         }
 
-        static ECPublicKeyParameters GetBobPublicKey(Uri url,
-                                                     X9ECParameters x9EC,
-                                                     ECPublicKeyParameters alicePublicKey)
-        {
-            KeyCoords bobCoords = GetBobCoords(url, alicePublicKey);
-
-            return new ECPublicKeyParameters("ECDH",
-                        x9EC.Curve.ValidatePoint(bobCoords.X, bobCoords.Y).Normalize(),
-                        SecObjectIdentifiers.SecP521r1);
-        }
-
-        static AsymmetricCipherKeyPair GenerateKeyPair(ECDomainParameters ecDomain)
-        {
-            ECKeyPairGenerator g = (ECKeyPairGenerator)GeneratorUtilities.GetKeyPairGenerator("ECDH");
-            g.Init(new ECKeyGenerationParameters(ecDomain, new SecureRandom()));
-
-            return g.GenerateKeyPair();
-        }
-
-        static KeyCoords GetBobCoords(Uri url, ECPublicKeyParameters publicKey)
-        {
-            string json = string.Format("{{'x': \"{0}\",'y': \"{1}\"}}",
-                    publicKey.Q.Normalize().AffineXCoord,
-                    publicKey.Q.Normalize().AffineYCoord
-                );
-
-            string response = Encoding.UTF8.GetString(Http.Post(url,
-                                 Encoding.UTF8.GetBytes(json))).Replace("\"", "'");
-
-            // Really ugly, but we're trying to reduce extra dependencies...
-            MatchCollection mcx = new Regex(@"': (.+?) ").Matches(response);
-            string mcy = response.Substring(response.LastIndexOf(": ",
-                            StringComparison.Ordinal) + 1).Replace("}", "").Trim();
-
-            return new KeyCoords
-            {
-                X = new BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", "")),
-                Y = new BigInteger(mcy)
-            };
-        }
-
-        public static byte[] Decrypt(byte[] key, byte[] data)
+        public byte[] Decrypt(byte[] key, byte[] data)
         {
             byte[] decryptedData = default;
 
@@ -134,7 +100,7 @@ namespace SILENTTRINITY.Utilities.Crypto
             return decryptedData;
         }
 
-        public static byte[] Encrypt(byte[] key, byte[] data)
+        public byte[] Encrypt(byte[] key, byte[] data)
         {
             IEnumerable<byte> blob = default(byte[]);
 
@@ -157,7 +123,7 @@ namespace SILENTTRINITY.Utilities.Crypto
         }
     }
 
-    class KeyCoords
+    public class KeyCoords
     {
         public BigInteger X { get; set; }
         public BigInteger Y { get; set; }
