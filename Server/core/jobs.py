@@ -6,9 +6,9 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 
 class Jobs:
-    def __init__(self, session, pubkey_xml):
+    def __init__(self, session, pubkey):
         self.session = session
-        self.crypto = ECDHE(pubkey_xml)
+        self.crypto = ECDHE(pubkey)
         self.jobs = []
 
         self.jobs.append(Job(command=('checkin', '')))
@@ -17,8 +17,8 @@ class Jobs:
     def public_key(self):
         return self.crypto.public_key
 
-    def set_peer_public_key(self, pubkey_xml):
-        self.crypto = ECDHE(pubkey_xml)
+    def set_peer_public_key(self, pubkey):
+        self.crypto = ECDHE(pubkey)
 
     def get(self, id=None):
         try:

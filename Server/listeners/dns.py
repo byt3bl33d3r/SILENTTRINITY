@@ -1,4 +1,6 @@
 import asyncio
+from core.listener import Listener
+from core.utils import get_ipaddress
 from core.thirdparty.dnschef import DNSServerProtocol
 
 
@@ -47,8 +49,8 @@ class STListener(Listener):
         pass
 
     def run(self):
-        self.nametodns[
-
+        pass
+        """
         loop = asyncio.get_event_loop()
         loop.run_until_complete(start_cooking(
             interface=self['BindIP']
@@ -59,3 +61,4 @@ class STListener(Listener):
             port=self["Port"],
             dnsclass=self
         ))
+        """

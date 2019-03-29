@@ -7,7 +7,7 @@ from time import time
 
 
 class Session:
-    def __init__(self, guid, remote_address, pubkey_xml):
+    def __init__(self, guid, remote_address, pubkey):
         self.__alias = str(guid)
         self.__guid = guid
         self.address = remote_address
@@ -30,7 +30,7 @@ class Session:
 
         self.logger.addHandler(fh)
 
-        self.jobs = Jobs(self, pubkey_xml)
+        self.jobs = Jobs(self, pubkey)
 
     @property
     def guid(self):
