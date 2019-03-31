@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace SILENTTRINITY.Utilities
+namespace Kaliya.Utils
 {
     public static class Retry
     {
-        public static T Do<T>(Func<T> action, TimeSpan retryInterval, int maxAttempts = 3)
+        public static T Do<T>(Func<T> action, TimeSpan retryInterval,
+                                                         int maxAttempts = 3)
         {
             var exceptions = new List<Exception>();
 
@@ -29,7 +30,6 @@ namespace SILENTTRINITY.Utilities
                     exceptions.Add(ex);
                 }
             }
-
             throw new AggregateException(exceptions);
         }
     }

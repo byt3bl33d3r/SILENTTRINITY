@@ -2,7 +2,7 @@
 using System.IO;
 using System.Net;
 
-namespace SILENTTRINITY.Utilities
+namespace Kaliya.Utils
 {
     public static class Http
     {

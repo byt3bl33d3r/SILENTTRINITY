@@ -12,16 +12,16 @@ using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
 
-namespace SILENTTRINITY.Utilities.Crypto
+namespace Kaliya.Crypto
 {
-    public class ECDeffieHellman
+    internal class ECDeffieHellman
     {
         readonly public X9ECParameters x9EC;
         readonly public AsymmetricCipherKeyPair KeyPair;
 
         ECPublicKeyParameters serverPublicKey;
 
-        public ECPublicKeyParameters PublicKey { get { return (ECPublicKeyParameters)KeyPair.Public;  } }
+        public ECPublicKeyParameters PublicKey { get { return (ECPublicKeyParameters)KeyPair.Public; } }
 
         public ECDeffieHellman()
         {
@@ -34,9 +34,10 @@ namespace SILENTTRINITY.Utilities.Crypto
             KeyPair = g.GenerateKeyPair();
         }
 
-        public void GenerateServerPublicKey(KeyCoords serverCoords) {
+        public void GenerateServerPublicKey(KeyCoords serverCoords)
+        {
             serverPublicKey = new ECPublicKeyParameters("ECDH",
-                            x9EC.Curve.ValidatePoint(serverCoords.X, serverCoords.Y).Normalize(),
+                            x9EC.Curve.ValidatePoint(serverCoords.x, serverCoords.y).Normalize(),
                             SecObjectIdentifiers.SecP521r1);
         }
 
@@ -123,9 +124,10 @@ namespace SILENTTRINITY.Utilities.Crypto
         }
     }
 
-    public class KeyCoords
+    internal class KeyCoords
     {
-        public BigInteger X { get; set; }
-        public BigInteger Y { get; set; }
+        public BigInteger x { get; set; }
+        public BigInteger y { get; set; }
     }
 }
+

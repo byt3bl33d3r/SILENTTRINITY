@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Security.Cryptography;
 
-namespace SILENTTRINITY.Utilities.Crypto
+namespace Kaliya.Crypto
 {
-    public static class AES
+    internal static class AES
     {
         public static byte[] Decrypt(byte[] data, byte[] key, byte[] iv)
         {
@@ -14,12 +14,14 @@ namespace SILENTTRINITY.Utilities.Crypto
                 aesAlg.Key = key;
                 aesAlg.IV = iv;
 
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key,
+                                                                    aesAlg.IV);
 
                 using (MemoryStream decryptedData = new MemoryStream())
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream(decryptedData,
-                                                         decryptor, CryptoStreamMode.Write))
+                    using (CryptoStream cryptoStream =
+                                    new CryptoStream(decryptedData, decryptor,
+                                                        CryptoStreamMode.Write))
                     {
                         cryptoStream.Write(data, 0, data.Length);
                         cryptoStream.FlushFinalBlock();
@@ -38,12 +40,14 @@ namespace SILENTTRINITY.Utilities.Crypto
                 aesAlg.Key = key;
                 aesAlg.IV = iv;
 
-                ICryptoTransform decryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+                ICryptoTransform decryptor = aesAlg.CreateEncryptor(aesAlg.Key,
+                                                                    aesAlg.IV);
 
                 using (MemoryStream encryptedData = new MemoryStream())
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream(encryptedData,
-                                                        decryptor, CryptoStreamMode.Write))
+                    using (CryptoStream cryptoStream =
+                                      new CryptoStream(encryptedData, decryptor,
+                                                        CryptoStreamMode.Write))
                     {
                         cryptoStream.Write(data, 0, data.Length);
                         cryptoStream.FlushFinalBlock();
