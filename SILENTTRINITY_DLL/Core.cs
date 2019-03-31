@@ -53,8 +53,8 @@ namespace Kaliya
 
             // Really ugly, I know, but we're trying to reduce extra dependencies...
             string json = string.Format("{{'x': \"{0}\",'y': \"{1}\"}}",
-                    publicKey.AffineXCoord,
-                    publicKey.AffineYCoord
+                    publicKey.AffineXCoord.ToBigInteger(),
+                    publicKey.AffineYCoord.ToBigInteger()
                 );
 
             string response = Encoding.UTF8.GetString(Http.Post(uri,
