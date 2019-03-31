@@ -222,8 +222,8 @@ class Crypto(object):
     def GetBobPublicKey(self, url, x9EC, alicePublicKey):
         requests = Requests()
 
-        alice_x = str(alicePublicKey.Q.Normalize().AffineXCoord)
-        alice_y = str(alicePublicKey.Q.Normalize().AffineYCoord)
+        alice_x = str(alicePublicKey.Q.Normalize().AffineXCoord.ToBigInteger())
+        alice_y = str(alicePublicKey.Q.Normalize().AffineYCoord.ToBigInteger())
         json = "{'x': \"" + alice_x + "\",'y': \"" + alice_y +"\"}"
 
         response = requests.post(url, Encoding.UTF8.GetBytes(json)).text
