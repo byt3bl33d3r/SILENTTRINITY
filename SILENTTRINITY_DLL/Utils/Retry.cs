@@ -26,7 +26,9 @@ namespace Kaliya.Utils
                 }
                 catch (Exception ex)
                 {
+#if DEBUG
                     Console.WriteLine("\t [!] {0}", ex.Message);
+#endif
                     exceptions.Add(ex);
                 }
             }
