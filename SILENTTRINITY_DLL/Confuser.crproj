@@ -2,15 +2,16 @@
     <module path="Kaliya.dll">
         <rule pattern="true" inherit="false">
             <protection id="anti debug" />
-            <!--<protection id="anti dump" /> -->
+            <protection id="anti dump" /> 
             <protection id="anti ildasm" />
-            <!-- <protection id="anti tamper" /> -->
+            <protection id="anti tamper" />
             <protection id="constants" />
             <protection id="ctrl flow" /> 
-            <!-- <protection id="invalid metadata" /> -->
+            <protection id="invalid metadata" />
             <protection id="ref proxy" />
             <protection id="rename" />
             <protection id="resources" />
         </rule>
     </module>
+    <!-- <probePath>/usr/lib/mono/4.0-api/</probePath> -->
 </project>
