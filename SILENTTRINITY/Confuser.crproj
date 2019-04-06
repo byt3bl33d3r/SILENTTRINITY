@@ -1,5 +1,5 @@
 <project baseDir="bin/Debug/" outputDir="Obfuscated" xmlns="http://confuser.codeplex.com">
-    <module path="PoC.dll">
+    <module path="PoC.exe">
         <rule pattern="true" inherit="false">
             <protection id="anti debug" />
             <protection id="anti dump" /> 

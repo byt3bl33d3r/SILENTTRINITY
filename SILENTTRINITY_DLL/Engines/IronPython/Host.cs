@@ -29,7 +29,7 @@ namespace Kaliya.Engines.IronPython
 #elif RELEASE
                 scope.SetVariable("DEBUG", false);
 #endif
-                var mainPyFile = Resources.GetResourceInZip(stage, "Main.py");
+                var mainPyFile = Extras.GetResourceFromZip(stage, "Main.py");
 
                 engine.Execute(Encoding.UTF8.GetString(mainPyFile, 0,
                         mainPyFile.Length),

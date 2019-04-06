@@ -6,7 +6,7 @@ internal static class Program
     {
         if (args.Length != 2)
         {
-            Console.WriteLine("Usage: PoC.exe <static|assembly|obfuscated> <URL>");
+            Console.WriteLine("Usage: PoC.exe <static|assembly> <URL>");
             Environment.Exit(1);
         }
 
@@ -23,10 +23,6 @@ internal static class Program
                 // Another test, the base64 was generated using Out-CompressedDLL
                 // in Debug mode to be able to see the logs
                 DynamicAssembly.Run(url);
-                break;
-            case "obfuscated":
-                // An obfuscated Dll using ConfuserEX
-                ObfuscatedAssembly.Run(url);
                 break;
             default:
                 Console.WriteLine("[!] ERROR: Invalid option.");

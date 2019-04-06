@@ -62,11 +62,11 @@ namespace Kaliya
             byte[] bytes;
             try
             {
-                bytes = Resources.GetByName(dllName);
+                bytes = Extras.GetResourceByName(dllName);
             }
             catch
             {
-                bytes = Resources.GetResourceInZip(_stage, dllName) ??
+                bytes = Extras.GetResourceFromZip(_stage, dllName) ??
                         File.ReadAllBytes(RuntimeEnvironment.GetRuntimeDirectory() +
                                           dllName);
             }
