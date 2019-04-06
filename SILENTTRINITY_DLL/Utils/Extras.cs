@@ -1,8 +1,6 @@
-using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Resources;
 
 namespace Kaliya.Utils
 {
@@ -34,7 +32,7 @@ namespace Kaliya.Utils
         internal static byte[] GetResourceByName(string resName)
         {
             var asm = System.Reflection.Assembly.GetExecutingAssembly();
-            var resource = asm.GetManifestResourceNames().Where(x => x.EndsWith(resName)).FirstOrDefault();
+            var resource = asm.GetManifestResourceNames().FirstOrDefault(x => x.EndsWith(resName));
             using (var resourceStream = asm.GetManifestResourceStream(resource))
             {
                 using (var memoryStream = new MemoryStream())
