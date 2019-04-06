@@ -36,15 +36,15 @@ class ECDHE:
     def public_key(self):
         ec_numbers = self.dh.public_key().public_numbers()
 
-        return json.dumps({'x': ec_numbers.x, 'y': ec_numbers.y})
+        return json.dumps({'X': ec_numbers.x, 'Y': ec_numbers.y})
 
     @staticmethod
     def pubkey_from_json(json_string):
         my_json = json_string.decode('utf8').replace("'", '"')
         root = json.loads(my_json)
 
-        x = int(root.get('x'))
-        y = int(root.get('y'))
+        x = int(root.get('X'))
+        y = int(root.get('Y'))
 
         return EllipticCurvePublicNumbers(x, y, SECP521R1()).public_key(backend=default_backend())
 

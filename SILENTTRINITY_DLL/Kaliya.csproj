@@ -26,9 +26,11 @@
     <LangVersion>Latest</LangVersion>
     <SignAssembly>false</SignAssembly>
     <DelaySign>false</DelaySign>
-    <AssemblyOriginatorKeyFile></AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
-    <WarningsNotAsErrors></WarningsNotAsErrors>
+    <WarningsNotAsErrors>
+    </WarningsNotAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -48,27 +50,41 @@
     <Reference Include="IronPython">
       <HintPath>Resources\IronPython.dll</HintPath>
     </Reference>
-    <Reference Include="BouncyCastle.Crypto">
-      <HintPath>Resources\BouncyCastle.Crypto.dll</HintPath>
-    </Reference>
     <Reference Include="IronPython.Modules">
       <HintPath>Resources\IronPython.Modules.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Scripting">
       <HintPath>Resources\Microsoft.Scripting.dll</HintPath>
     </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Waher.Security, Version=1.0.7033.31270, Culture=neutral, PublicKeyToken=null">
+      <HintPath>Dependencies\Waher.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Waher.Security.EllipticCurves, Version=1.0.7033.31271, Culture=neutral, PublicKeyToken=null">
+      <HintPath>Dependencies\Waher.Security.EllipticCurves.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Engines\IronPython\Host.cs" />
     <Compile Include="Stager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Crypto\AES.cs" />
-    <Compile Include="Crypto\ECDeffieHellman.cs" />
+    <Compile Include="Crypto\Aes.cs" />
+    <Compile Include="Utils\Extras.cs" />
     <Compile Include="Utils\Http.cs" />
+    <Compile Include="Utils\PointInCurve\Actions.cs" />
+    <Compile Include="Utils\PointInCurve\Coordinates.cs" />
+    <Compile Include="Utils\Resources.cs" />
     <Compile Include="Utils\Retry.cs" />
     <Compile Include="ZipStorer.cs" />
     <Compile Include="Core.cs" />
-    <Compile Include="Engines\IronPython.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Dependencies\Waher.Security.dll" />
+    <EmbeddedResource Include="Dependencies\Waher.Security.EllipticCurves.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

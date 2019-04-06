@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import clr
-from System import Convert, Guid, Environment, Uri, Console, Array, Byte, Random, IntPtr
+from System import Convert, Guid, Environment, Uri, Console, Array, Byte, Random, IntPtr, StringComparison
 
 try:
     assert DEBUG
@@ -34,7 +34,9 @@ try:
 except:
     pass
 clr.AddReference("Boo.Lang.Interpreter")
-clr.AddReference("BouncyCastle.Crypto")
+clr.AddReference("System.Numerics")
+clr.AddReference("Waher.Security")
+clr.AddReference("Waher.Security.EllipticCurves")
 
 from System.Text import Encoding
 from System.Management import ManagementObject
@@ -57,14 +59,9 @@ from IronPython.Hosting import Python
 from Boo.Lang.Interpreter import InteractiveInterpreter
 
 from System.Text.RegularExpressions import Regex
-from System import StringComparison
-
-from Org.BouncyCastle.Crypto.Parameters import ECKeyGenerationParameters, ECDomainParameters, ECPublicKeyParameters
-from Org.BouncyCastle.Security import GeneratorUtilities, SecureRandom, AgreementUtilities
-from Org.BouncyCastle.Asn1.Sec import SecNamedCurves, SecObjectIdentifiers
-from Org.BouncyCastle.Math import BigInteger
-from Org.BouncyCastle.Crypto.Digests import Sha256Digest
-from Org.BouncyCastle.Crypto.Agreement import ECDHBasicAgreement
+from System.Numerics import BigInteger
+from Waher.Security import HashFunction
+from Waher.Security.EllipticCurves import NistP521, PointOnCurve
 
 def urljoin(*args):
     return "/".join(map(lambda x: str(x).rstrip('/'), args))
@@ -207,59 +204,24 @@ class Requests(object):
 
 class Crypto(object):
     def __init__(self):
-        x9EC = SecNamedCurves.GetByName("secp521r1")
-        self.aliceKeyPair = self.GenerateKeyPair(ECDomainParameters(x9EC.Curve, x9EC.G, x9EC.N, x9EC.H, x9EC.GetSeed()))
-        self.bobPublicKey = self.GetBobPublicKey(URL, x9EC, self.aliceKeyPair.Public)
+        curve = NistP521()
+        point = self.GetServerPointOnCurve(URL, curve.PublicKey.X, curve.PublicKey.Y)
 
-        self.derived_key = self.derive_key(self.bobPublicKey, self.aliceKeyPair.Private)
+        self.derived_key = curve.GetSharedKey(point, HashFunction.SHA256)
 
-    def GenerateKeyPair(self, ecDomain):
-        g = GeneratorUtilities.GetKeyPairGenerator("ECDH")
-        g.Init(ECKeyGenerationParameters(ecDomain, SecureRandom()))
-
-        return g.GenerateKeyPair()
-
-    def GetBobPublicKey(self, url, x9EC, alicePublicKey):
+    def GetServerPointOnCurve(self, url, x, y):
         requests = Requests()
 
-        alice_x = str(alicePublicKey.Q.Normalize().AffineXCoord.ToBigInteger())
-        alice_y = str(alicePublicKey.Q.Normalize().AffineYCoord.ToBigInteger())
-        json = "{'x': \"" + alice_x + "\",'y': \"" + alice_y +"\"}"
+        json = "{'X': \"" + str(x) + "\",'Y': \"" + str(y) +"\"}"
 
-        response = requests.post(url, Encoding.UTF8.GetBytes(json)).text
-        response = response.replace("\"", "'")
+        response = requests.post(url, Encoding.UTF8.GetBytes(json)).text.replace("\"", "'")
+        mcx = Regex("': (.+?) ").Matches(response)
 
-        r = Regex("': (.+?) ")
-        mcx = r.Matches(response)
-        x = BigInteger(mcx[0].Value.Replace("': ", "").Replace(", ", ""))
+        x = BigInteger.Parse(mcx[0].Value.Replace("': ", "").Replace(", ", ""))
+        y = BigInteger.Parse(response.Substring(response.LastIndexOf(": ", StringComparison.Ordinal) + 1).Replace("}", "").Trim())
 
-        y = BigInteger(response.Substring(response.LastIndexOf(": ", StringComparison.Ordinal) + 1).Replace("}", "").Trim())
-
-        return ECPublicKeyParameters("ECDH", x9EC.Curve.ValidatePoint(x,y).Normalize(), SecObjectIdentifiers.SecP521r1)
-
-    def derive_key(self, bobPublicKey, alicePrivateKey):
-        aKeyAgree = ECDHBasicAgreement()
-        aKeyAgree.Init(alicePrivateKey)
-        sharedSecretBytes = self.resize_right(aKeyAgree.CalculateAgreement(bobPublicKey).ToByteArray(), 66)
-       
-        digest = Sha256Digest()
-        symmetricKey = Array.CreateInstance(Byte, digest.GetDigestSize())
-        digest.BlockUpdate(sharedSecretBytes, 0, sharedSecretBytes.Length)
-        digest.DoFinal(symmetricKey, 0)
-
-        return symmetricKey
+        return PointOnCurve(x, y)
     
-    # Resize but pad zeroes to the left instead of to the right like Array.Resize
-    def resize_right(self, b, length):
-        if b.Length == length:
-            return b
-        if b.Length > length:
-            raise Exception("Invalid size!")
-        newB = Array.CreateInstance(Byte, length)
-        Array.Copy(b, 0, newB, length - b.Length, b.Length)
-
-        return newB
-
     def HMAC(self, key, message):
         with HMACSHA256(key) as hmac:
             return hmac.ComputeHash(message)

@@ -43,7 +43,7 @@ class Sessions:
         ipc_server.attach(events.JOB_RESULT, self.job_result)
 
     def kex(self, kex_tuple):
-        guid, remote_addr, pubkey_xml = kex_tuple
+        guid, remote_addr, pubkey_json = kex_tuple
 
         if self.sessions and not len(self.sessions):
             return
@@ -51,10 +51,10 @@ class Sessions:
         try:
             session = self.get(guid)
             logging.debug(f"creating new pub/priv keys for {guid}")
-            session.set_peer_public_key(pubkey_xml)
+            session.set_peer_public_key(pubkey_json)
         except IndexError:
             logging.debug(f"new kex from {remote_addr} ({guid})")
-            session = Session(guid, remote_addr, pubkey_xml)
+            session = Session(guid, remote_addr, pubkey_json)
             self.sessions.add(session)
 
         return session.public_key

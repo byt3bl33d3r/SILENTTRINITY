@@ -27,10 +27,10 @@ namespace Kaliya.Utils
             requestStream.Close();
 
             var response = wr.GetResponse();
-            using (MemoryStream memstream = new MemoryStream())
+            using (var stream = new MemoryStream())
             {
-                response.GetResponseStream().CopyTo(memstream);
-                return memstream.ToArray();
+                response.GetResponseStream()?.CopyTo(stream);
+                return stream.ToArray();
             }
         }
     }
