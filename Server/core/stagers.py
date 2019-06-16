@@ -58,20 +58,21 @@ class Stagers(Loader):
         print(table.table)
 
     @command
-    def generate(self, listener_name: str):
+    def generate(self, listener_name: str, filename: str = ""):
         """
         Generate the selected stager
 
-        Usage: generate <listener_name> [-h]
+        Usage: generate <listener_name> [--filename=<filename>] [-h]
 
         Arguments:
             listener_name   listener name
+            filename   stager save location
         """
 
         if self.selected:
             for l in self.prompt_session.contexts[0].listeners:
                 if l['Name'] == listener_name.lower():
-                    self.selected.generate(l)
+                    self.selected.generate(l, filename=filename)
         else:
             print_bad("No stager selected")
 

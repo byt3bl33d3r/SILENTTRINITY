@@ -25,7 +25,7 @@ class STStager:
         }
 
     def generate(self, listener, filename=None, as_string=False):
-        stager_filename = filename if filename else 'stager.ps1'
+        stager_filename = filename if filename is not None else 'stager.ps1'
         remote_host = self.options['rhost']['Value'] or listener['BindIP']
         remote_port = self.options['rport']['Value'] or listener['Port']
         c2_url = f"{listener.name}://{remote_host}:{remote_port}"

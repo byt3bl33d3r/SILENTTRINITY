@@ -41,7 +41,8 @@ def command(func):
                     raise CmdError(f"Unable to find '{name}' argument in command definition")
 
             try:
-                validated_args[name] = hint(value)
+                # Don't cast for arguments that are not provided
+                validated_args[name] = hint(value) if value is not None else None
             except TypeError:
                 # I'm still not sure if there's a way to dynamically cast Lists and Dicts using type hints
                 if hint == List[int]:
