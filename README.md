@@ -22,6 +22,28 @@ The implant needs .NET 4.5 or greater due to the IronPython DLLs being compiled 
 
 Reading the source for the [IronPython Compiler](https://github.com/IronLanguages/ironpython2/tree/master/Src/IronPythonCompiler) it seems like we can get around the first issue by directly generating IL code through IKVM (I still don't understand why this works). However, this would require modifying the compiler to generate a completely new EXE stub (definitely feasible, just time consuming to find the proper IKVM API calls).
 
+### Deployment with Docker
+The server can be built as a docker container, reducing surface area of your machine to
+potentially untrusted code.
+
+From the root of the repository build the docker image with
+```bash
+docker build -t silenttrinity .
+```
+Run it with
+```bash
+docker run -it --rm --name trinity -p 8000:8000 -v $PWD/artifacts:/artifacts silenttrinity
+```
+
+Things to note:
+
+ - The given command will mount the directory `./artifacts` in the container at `/artifacts` meaning that to get the stagers
+ out of the container you will have to specify a filename eg. `generate http --filename=/artifacts/stager.ps1`
+ - The `-p xxxx:yyyy` flag means, forward host port xxxx to container port yyyy. These values can be any valid TCP port
+  you wish however, you will have to use yyyy as the Port for the listener, and when generating a stager you must set
+  lhost to your host's IP (Not the container), and lport to xxxx
+ - The `-p` flag can be repeated to forward multiple ports
+
 ### C2 Comms
 
 Currently the implant only supports C2 over HTTP 1.1, .NET 4.5 seems to have a native WebSocket library which makes implementing a WS C2 channel more than possible.
