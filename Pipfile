@@ -1,0 +1,25 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pylint = "*"
+ipython = "*"
+
+[packages]
+prompt-toolkit = "*"
+cryptography = "*"
+websockets = "*"
+docopt = "*"
+terminaltables = "*"
+termcolor = "*"
+requests = "*"
+quart = "==0.9.1"
+hypercorn = "==0.6.0"
+dnslib = "*"
+defusedxml = "*"
+netifaces = "*"
+
+[requires]
+python_version = "3.7"
