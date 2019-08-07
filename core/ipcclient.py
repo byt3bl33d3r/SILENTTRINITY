@@ -32,7 +32,7 @@ class IPCClient:
         self.__conn.send((event, msg))
         try:
             data = self.__conn.recv()
-            logging.debug(f"Received data back from event: {event} data: {data}")
+            logging.debug(f"Received data back from event: {event} {f'data-len: {len(data)}' if data else ''}")
             return data
         except EOFError:
             pass

@@ -6,8 +6,8 @@ from core.teamserver.module import Module
 
 class STModule(Module):
     def __init__(self):
-        self.name = 'ipy/excelshellinject'
-        self.language = 'ipy'
+        self.name = 'boo/excelshellinject'
+        self.language = 'boo'
         self.description = 'Executes arbitrary shellcode using Excel COM objects'
         self.author = '@byt3bl33d3r'
         self.references = ["Microsoft.Office.Interop.Excel"]

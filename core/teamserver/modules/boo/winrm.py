@@ -10,7 +10,7 @@ class STModule(Module):
         self.language = 'boo'
         self.description = 'Move laterally using winrm'
         self.author = '@byt3bl33d3r'
-        self.references = []
+        self.references = ["System.Management"]
         self.options = {
             'Host': {
                 'Description'   :   'Target IP or Hostname',

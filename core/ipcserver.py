@@ -62,7 +62,7 @@ class IPCServer(Thread):
                 continue
             else:
                 topic, msg = data
-                logging.debug(f"Got event: {topic} msg: {msg}")
+                logging.debug(f"Got event: {topic} {f'msg-len: {len(msg)}' if msg else ''}")
                 if topic in self.subscribers:
                     for sub in self.subscribers[topic]:
                         client.send(sub(msg))

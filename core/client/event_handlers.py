@@ -13,6 +13,9 @@ class ClientEventHandlers:
 
     def user_login(self, data):
         print_info(f"[{self.connection.alias}] {data}")
+    
+    def session_staged(self, data):
+        print_info(f"[{self.connection.alias}] {data}")
 
     def new_session(self, data):
         print_info(f"[{self.connection.alias}] {data}")

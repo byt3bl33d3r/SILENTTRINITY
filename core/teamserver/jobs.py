@@ -51,15 +51,15 @@ class Jobs:
         return output
 
     def get_encrypted_stage(self, comms):
-        with open('data/stage.boo') as stage:
-            with open(f"comms/{comms}.boo") as comms:
+        with open('./core/teamserver/data/stage.boo') as stage:
+            with open(f"core/teamserver/comms/{comms}.boo") as comms:
                 stage = stage.read()
                 stage = stage.replace("PUT_COMMS_HERE", comms.read())
 
-                with open('data/stage.zip', 'rb') as stage_file:
+                with open('./core/teamserver/data/stage.zip', 'rb') as stage_file:
                     stage_file = BytesIO(stage_file.read())
                     with ZipFile(stage_file, 'a', compression=ZIP_DEFLATED, compresslevel=9) as zip_file:
-                        zip_file.writestr("main.boo", stage)
+                        zip_file.writestr("Main.boo", stage)
 
                     return self.crypto.encrypt(stage_file.getvalue())
 

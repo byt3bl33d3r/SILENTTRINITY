@@ -51,14 +51,20 @@ class Sessions:
 
     #@subscribe(events.ENCRYPT_STAGE)
     def gen_encrypted_stage(self, info_tuple):
-        comms, guid, _ = info_tuple
+        guid, _, comms = info_tuple
         session = self.get(guid)
         return session.jobs.get_encrypted_stage(comms)
 
     #@subscribe(events.SESSION_STAGED)
     def notify_session_staged(self, msg):
-        pass
-        #print_info(msg)
+        #Since these methods get called from a seperate OS thread in ipc_server, we must use asyncio.run_coroutine_threadsafe()
+        asyncio.run_coroutine_threadsafe(
+                self.teamserver.users.broadcast_event(
+                    events.SESSION_STAGED, 
+                    msg
+            ),
+            loop=self.teamserver.loop
+        )
 
     #@subscribe(events.SESSION_CHECKIN)
     def session_checked_in(self, checkin_tuple):
