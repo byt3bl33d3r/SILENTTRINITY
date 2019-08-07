@@ -103,3 +103,11 @@ class Stagers:
             name   option name
             value  option value
         """
+
+    @command
+    def reload(self, response):
+        """
+        Reload all modules
+
+        Usage: reload [-h]
+        """

