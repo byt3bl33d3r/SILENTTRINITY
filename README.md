@@ -17,6 +17,25 @@ Some of the main features that distinguish SILENTTRINITY are:
 - **Extensive logging** - Every action is logged to a file.
 - **Future proof** - HTTPS/HTTP listeners are built on [Quart](https://gitlab.com/pgjones/quart) & [Hypercorn](https://gitlab.com/pgjones/hypercorn) which also support HTTP2 & Websockets.
 
+## Getting Involved
+
+Join the #silenttrinity channel in the [BloodHoundGang](https://bloodhoundgang.herokuapp.com/) Slack!
+
+## Call for Contributions
+
+I'm just one person developing this mostly in my spare time, I do need to have a life outside of computers (radical idea, I know).
+
+This means that if anyone finds this tool useful and would like to see X functionality added, the best way to get it added is to submit a Pull Request.
+
+Be the change you want to see in the world!
+
+As of the time of writing the most useful thing you can contribute are post-ex modules: this would allow me to concetrate efforts on the framework itself, user experience, QOF features etc...
+
+To do this, you're going to have to learn the Boo programming language (the Boo [wiki](https://github.com/boo-lang/boo/wiki) is amazing and has everything you'd need to get started), if you know Python you'll find yourself at home :).
+
+Check out some of the existing [modules](../blob/master/core/teamserver/modules), if you've written an [Empire](https://github.com/EmpireProject/Empire) module before you'll see its very similar.
+Finally you can start porting over post-ex modules from other C2 frameworks such as [Empire](https://github.com/EmpireProject/Empire).
+
 ## Setup & Requirements
 
 - Python >= 3.7 is required.
