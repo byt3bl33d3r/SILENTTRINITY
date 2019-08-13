@@ -10,4 +10,4 @@ public static def Main():
     assembly = Assembly.Load(Convert.FromBase64String(encoded_assembly))
     args = Array[Object]([Array[String](["ARGS"])])
 
-    assembly.EntryPoint.Invoke(None, args)
+    assembly.EntryPoint.Invoke(null, args)

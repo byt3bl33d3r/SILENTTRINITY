@@ -164,7 +164,7 @@ class STJob:
     */
 
     public def Start() as string:
-        result = {"id": Job.id}
+        result = {"id": Job.id, "cmd": Job.cmd}
         out as duck
         try:
             if Job.cmd == 'CheckIn':

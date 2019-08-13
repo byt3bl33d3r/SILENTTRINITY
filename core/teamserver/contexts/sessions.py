@@ -92,9 +92,10 @@ class Sessions:
     def job_result(self, result_tuple):
         guid, job_id, data = result_tuple
         session = self.get(guid)
+        decrypted_job_results = session.jobs.results(job_id, data)
 
-        if not session.info:
-            session.set_info(data)
+        if not session.info and decrypted_job_results['cmd'] == 'CheckIn':
+            session.info = decrypted_job_results['result']
             logging.debug(f"New session {session.guid} connected! ({session.address})")
 
             #Since these methods get called from a seperate OS thread in ipc_server, we must use asyncio.run_coroutine_threadsafe()
@@ -110,18 +111,16 @@ class Sessions:
                 self.teamserver.update_user_stats(),
                 loop=self.teamserver.loop
             )
-            return
+        else:
+            logging.debug(f"{session.guid} returned job/command result (id: {job_id})")
 
-        output = session.jobs.results(job_id, data)
-        logging.debug(f"{session.guid} returned job/command result (id: {job_id})")
-
-        asyncio.run_coroutine_threadsafe(
-                self.teamserver.users.broadcast_event(
-                    events.JOB_RESULT, 
-                    {'id': job_id, 'output': output, 'session': session.guid, 'address': session.address}
-            ),
-            loop=self.teamserver.loop
-        )
+            asyncio.run_coroutine_threadsafe(
+                    self.teamserver.users.broadcast_event(
+                        events.JOB_RESULT, 
+                        {'id': job_id, 'output': decrypted_job_results['result'], 'session': session.guid, 'address': session.address}
+                ),
+                loop=self.teamserver.loop
+            )
 
     def get(self, guid):
         return list(filter(lambda x: x == guid, self.sessions))[0]

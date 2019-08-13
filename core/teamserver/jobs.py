@@ -20,7 +20,13 @@ class Jobs:
     def set_peer_public_key(self, pubkey):
         self.crypto = ECDHE(pubkey)
 
-    def get(self, id=None):
+    def get_by_id(self, job_id):
+        try:
+            return list(filter(lambda job: job.id == job_id, self.jobs))[0]
+        except IndexError:
+            self.session.logger.error(f"Job with id {job_id} not found")
+
+    def get(self):
         try:
             job = list(filter(lambda job: job.status == 'initialized', self.jobs))[-1]
             job.status = 'started'
@@ -36,9 +42,10 @@ class Jobs:
             self.session.logger.info(f"Tasked session to run module: {job.module.name} args: {job.module.options}")
 
     def results(self, job_id, data):
-        output = json.loads(self.crypto.decrypt(data))['result']
+        decrypted_job = json.loads(self.crypto.decrypt(data))
         for job in self.jobs:
             if job.id == job_id:
+                output = decrypted_job['result']
                 if job.module:
                     self.session.logger.info(f"{self.session.guid} returned job result (id: {job_id}) \n {output}")
                     if hasattr(job.module, 'process'):
@@ -46,9 +53,9 @@ class Jobs:
                         self.session.logger.info(f"{self.session.guid} module '{job.module.name}' processed job results (id: {job_id}) \n {output}")
                 elif job.command:
                     self.session.logger.info(f"{self.session.guid} returned command result (id: {job_id}): {output}")
+                job.status = 'completed'
 
-        job.status = 'completed'
-        return output
+        return decrypted_job
 
     def get_encrypted_stage(self, comms):
         with open('./core/teamserver/data/stage.boo') as stage:
