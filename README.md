@@ -29,11 +29,11 @@ This means that if anyone finds this tool useful and would like to see X functio
 
 Be the change you want to see in the world!
 
-As of the time of writing the most useful thing you can contribute are post-ex modules: this would allow me to concetrate efforts on the framework itself, user experience, QOF features etc...
+As of the time of writing the most useful thing you can contribute are post-ex modules: this would allow me to concentrate efforts on the framework itself, user experience, QOL features etc...
 
 To do this, you're going to have to learn the Boo programming language (the Boo [wiki](https://github.com/boo-lang/boo/wiki) is amazing and has everything you'd need to get started), if you know Python you'll find yourself at home :).
 
-Check out some of the existing [modules](../blob/master/core/teamserver/modules), if you've written an [Empire](https://github.com/EmpireProject/Empire) module before you'll see its very similar.
+Check out some of the existing [modules](../blob/master/core/teamserver/modules/boo), if you've written an [Empire](https://github.com/EmpireProject/Empire) module before you'll see its very similar.
 Finally you can start porting over post-ex modules from other C2 frameworks such as [Empire](https://github.com/EmpireProject/Empire).
 
 ## Setup & Requirements
