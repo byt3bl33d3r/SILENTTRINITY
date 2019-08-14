@@ -14,6 +14,10 @@ from core.utils import get_remote_cert_fingerprint, gen_random_string
 from core.client.stats import ClientConnectionStats
 from core.client.event_handlers import ClientEventHandlers
 from core.client.server_response import ServerResponse
+from core.client.contexts.listeners import Listeners
+from core.client.contexts.sessions import Sessions
+from core.client.contexts.modules import Modules
+from core.client.contexts.stagers import Stagers
 from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.application import run_in_terminal
 
@@ -25,6 +29,12 @@ class ClientConnection:
         self.stats = ClientConnectionStats()
         self.event_handlers = ClientEventHandlers(self)
         self.msg_queue =  asyncio.Queue(maxsize=1)
+        self.contexts = [
+            Listeners(),
+            Sessions(),
+            Modules(),
+            Stagers()
+        ]
 
         self.task = None
         self.ws = None

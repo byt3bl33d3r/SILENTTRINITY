@@ -15,7 +15,7 @@ from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.application import run_in_terminal
 from prompt_toolkit.styles import Style
 from prompt_toolkit.document import Document
-from core.client.contexts import TeamServers, Listeners, Sessions, Modules, Stagers
+from core.client.contexts.teamservers import TeamServers
 from core.client.utils import command, register_cli_commands
 from core.utils import print_bad, print_good, print_info
 
@@ -67,7 +67,7 @@ class STCompleter(Completer):
                     if cmd.startswith(word_before_cursor):
                         yield Completion(cmd, -len(word_before_cursor))
 
-            for ctx in self.cli_menu.contexts:
+            for ctx in [*self.cli_menu.teamservers.selected.contexts, self.cli_menu.teamservers]:
                 if ctx.name.startswith(word_before_cursor) and ctx.name is not self.cli_menu.current_context.name:
                     yield Completion(ctx.name, -len(word_before_cursor))
 
@@ -98,14 +98,7 @@ class STShell:
         self.args = args
         self.current_context = self
 
-        self.contexts = [
-            TeamServers(args['<URL>']),
-            Listeners(),
-            Sessions(),
-            Modules(),
-            Stagers()
-        ]
-        self.teamservers = self.contexts[0]
+        self.teamservers = TeamServers(args['<URL>'])
 
         self.completer = STCompleter(self)
         self.prompt_session = PromptSession(
@@ -125,7 +118,7 @@ class STShell:
         )
 
     def get_context(self, ctx_name):
-        for ctx in self.contexts:
+        for ctx in [*self.teamservers.selected.contexts, self.teamservers]:
             if ctx_name == ctx.name:
                 return ctx
 
@@ -137,7 +130,7 @@ class STShell:
         )
 
     async def switched_context(self, text):
-        for ctx in self.contexts:
+        for ctx in [*self.teamservers.selected.contexts, self.teamservers]:
             if text.lower() == ctx.name:
                 if ctx._remote is True:
                     try:
@@ -249,11 +242,11 @@ class STShell:
             for cmd in self.current_context._cmd_registry:
                 table_data.append([cmd, getattr(self.current_context, cmd).__doc__.split('\n', 2)[1].strip()])
 
-            for menu in self.contexts:
+            for menu in [*self.teamservers.selected.contexts, self.teamservers]:
                 if menu.name != self.current_context.name:
                     table_data.append([menu.name, menu.description])
         except AttributeError:
-            for menu in self.contexts:
+            for menu in [*self.teamservers.selected.contexts, self.teamservers]:
                 table_data.append([menu.name, menu.description])
 
         table = SingleTable(table_data)
