@@ -85,7 +85,9 @@ Arguments:
 
 ## Documentation
 
-Coming Soon(™), for now make wild use the ```help``` command and the ```-h``` flag :)
+The documentation is a work in progress but some is already available in the [Wiki](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki)
+
+I recommend making wild use the ```help``` command and the ```-h``` flag :)
 
 ## Author
 
