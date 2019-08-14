@@ -67,7 +67,7 @@ class STCompleter(Completer):
                     if cmd.startswith(word_before_cursor):
                         yield Completion(cmd, -len(word_before_cursor))
 
-            for ctx in [*self.cli_menu.teamservers.selected.contexts, self.cli_menu.teamservers]:
+            for ctx in self.cli_menu.get_context():
                 if ctx.name.startswith(word_before_cursor) and ctx.name is not self.cli_menu.current_context.name:
                     yield Completion(ctx.name, -len(word_before_cursor))
 
@@ -117,10 +117,15 @@ class STShell:
             search_ignore_case=True
         )
 
-    def get_context(self, ctx_name):
-        for ctx in [*self.teamservers.selected.contexts, self.teamservers]:
-            if ctx_name == ctx.name:
-                return ctx
+    def get_context(self, ctx_name=None):
+        try:
+            cli_menus = [*self.teamservers.selected.contexts, self.teamservers]
+        except AttributeError:
+            cli_menus = [self.teamservers]
+
+        if ctx_name:
+            return list(filter(lambda c: c.name == ctx_name, cli_menus))[0]
+        return cli_menus
 
     async def update_prompt(self, ctx):
         self.prompt_session.message = HTML(
@@ -130,7 +135,7 @@ class STShell:
         )
 
     async def switched_context(self, text):
-        for ctx in [*self.teamservers.selected.contexts, self.teamservers]:
+        for ctx in self.get_context():
             if text.lower() == ctx.name:
                 if ctx._remote is True:
                     try:
@@ -242,11 +247,11 @@ class STShell:
             for cmd in self.current_context._cmd_registry:
                 table_data.append([cmd, getattr(self.current_context, cmd).__doc__.split('\n', 2)[1].strip()])
 
-            for menu in [*self.teamservers.selected.contexts, self.teamservers]:
+            for menu in self.get_context():
                 if menu.name != self.current_context.name:
                     table_data.append([menu.name, menu.description])
         except AttributeError:
-            for menu in [*self.teamservers.selected.contexts, self.teamservers]:
+            for menu in self.get_context():
                 table_data.append([menu.name, menu.description])
 
         table = SingleTable(table_data)
