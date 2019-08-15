@@ -1,4 +1,6 @@
 from core.teamserver.module import Module
+from core.teamserver.utils import dotnet_deflate_and_encode
+
 
 class STModule(Module):
     def __init__(self):
@@ -41,12 +43,14 @@ class STModule(Module):
         }
 
     def payload(self):
-        with open('core/teamserver/modules/boo/src/internalmonologue.boo', 'r') as module_src:
-            src = module_src.read()
-            src = src.replace("impersonate=", f"impersonate={self.options['Impersonate']['Value']}".lower())
-            src = src.replace("threads=", f"threads={self.options['Threads']['Value']}".lower())
-            src = src.replace("downgrade=", f"downgrade={self.options['Downgrade']['Value']}".lower())
-            src = src.replace("restore=", f"restore={self.options['Restore']['Value']}".lower())
-            src = src.replace("challenge=", f"challenge=\"{self.options['Challenge']['Value']}\"".lower())
-            src = src.replace("verbose=", f"verbose={self.options['Verbose']['Value']}".lower())
-            return src
+        with open ('core/teamserver/data/internalmonologue.dll', 'rb') as dll:
+            with open('core/teamserver/modules/boo/src/internalmonologue.boo') as module_src:
+                src = module_src.read()
+                src = src.replace("INTERNAL_MONOLOGUE_DLL", dotnet_deflate_and_encode(dll.read()))
+                src = src.replace("impersonate=", f"impersonate={self.options['Impersonate']['Value']}".lower())
+                src = src.replace("threads=", f"threads={self.options['Threads']['Value']}".lower())
+                src = src.replace("downgrade=", f"downgrade={self.options['Downgrade']['Value']}".lower())
+                src = src.replace("restore=", f"restore={self.options['Restore']['Value']}".lower())
+                src = src.replace("challenge=", f"challenge=\"{self.options['Challenge']['Value']}\"".lower())
+                src = src.replace("verbose=", f"verbose={self.options['Verbose']['Value']}".lower())
+                return src
