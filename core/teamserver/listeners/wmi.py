@@ -5,9 +5,9 @@ from core.teamserver.listener import Listener
 from uuid import UUID
 from time import sleep
 from base64 import b64decode, b64encode
-#from impacket.dcerpc.v5.dcomrt import DCOMConnection
-#from impacket.dcerpc.v5.dcom import wmi
-#from impacket.dcerpc.v5.dtypes import NULL
+from impacket.dcerpc.v5.dcomrt import DCOMConnection
+from impacket.dcerpc.v5.dcom import wmi
+from impacket.dcerpc.v5.dtypes import NULL
 
 
 class STListener(Listener):
