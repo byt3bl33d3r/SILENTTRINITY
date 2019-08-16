@@ -7,9 +7,16 @@ class ClientEventHandlers:
 
     def stats_update(self, data):
         logging.debug(f"In stats_update event handler, got: {data}")
-        self.connection.stats.LISTENERS = int(data['listeners']['active'])
-        self.connection.stats.SESSIONS = int(data['sessions']['active'])
-        self.connection.stats.USERS = data['users'].keys()
+        self.connection.stats.LISTENERS = data['listeners']
+        self.connection.stats.SESSIONS = data['sessions']
+        self.connection.stats.USERS = data['users']
+        self.connection.stats.IPS = data['ips']
+
+    def loadables_update(self, data):
+        for ctx, loadables in data.items():
+            for lctx in self.connection.contexts:
+                if lctx.name == ctx:
+                    lctx.available = loadables
 
     def user_login(self, data):
         print_info(f"[{self.connection.alias}] {data}")

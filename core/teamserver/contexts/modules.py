@@ -1,10 +1,12 @@
 import types
+import asyncio
 import core.events as events
 from copy import deepcopy
 from core.teamserver import ipc_server
 from core.teamserver.loader import Loader
 from core.utils import CmdError
 from core.teamserver.job import Job
+
 
 class Modules(Loader):
     name = 'modules'
@@ -47,6 +49,9 @@ class Modules(Loader):
     
     def reload(self):
         self.get_loadables()
+        asyncio.create_task(
+            self.teamserver.update_available_loadables()
+        )
 
     def get_selected(self):
         if self.selected:

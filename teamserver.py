@@ -30,7 +30,8 @@ from hashlib import sha512
 from typing import Dict, List, Any
 from core.teamserver.users import Users, UsernameAlreadyPresentError
 from core.teamserver.contexts import Listeners, Sessions, Modules, Stagers
-from core.utils import create_self_signed_cert, get_cert_fingerprint, decode_auth_header, CmdError
+from core.utils import create_self_signed_cert, get_cert_fingerprint, decode_auth_header, CmdError, get_ips
+
 
 class TeamServer:
     def __init__(self):
@@ -79,14 +80,19 @@ class TeamServer:
                 'result': result
         })
 
-    async def update_user_stats(self):
-        stats = {str(ctx): dict(ctx) for n,ctx in self.contexts.items()}
+    async def update_server_stats(self):
+        stats = {**{str(ctx): dict(ctx) for ctx in self.contexts.values()}, 'ips': get_ips()} 
         await self.users.broadcast_event(events.STATS_UPDATE, stats)
+
+    async def update_available_loadables(self):
+        loadables = {str(ctx): [loadable.name for loadable in ctx.loaded] for ctx in self.contexts.values() if hasattr(ctx, 'loaded')}
+        await self.users.broadcast_event(events.LOADABLES_UPDATE, loadables)
 
     async def connection_handler(self, websocket, path):
         try:
             user = await self.users.register(websocket)
-            await self.update_user_stats()
+            await self.update_server_stats()
+            await self.update_available_loadables()
             logging.info(f"New client connected {user.name}@{user.ip}")
         except UsernameAlreadyPresentError as e:
             logging.error(f"{websocket.remote_address[0]}: {e}")
@@ -105,13 +111,13 @@ class TeamServer:
                     # No response to ping in 10 seconds, disconnect.
                     logging.debug(f"No pong from {user.name}@{user.ip} after 10 seconds, closing connection")
                     self.users.unregister(user.name)
-                    await self.update_user_stats()
+                    await self.update_server_stats()
                     return
 
             except websockets.exceptions.ConnectionClosed:
                 logging.debug(f"Connection closed by client")
                 self.users.unregister(user.name)
-                await self.update_user_stats()
+                await self.update_server_stats()
                 return
             else:
                 await self.process_client_message(user, path, data)

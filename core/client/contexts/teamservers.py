@@ -16,12 +16,9 @@ class TeamServers:
     _remote = False
 
     def __init__(self, urls=[]):
-        self.connections = [ClientConnection(url) for url in urls]
-
-        # We might want to aggreggate stats for every teamserver ? 
-        #self.stats = ClientSessionStats(self.connections)
-
         self.prompt = None
+
+        self.connections = [ClientConnection(url) for url in urls]
         self.selected = self.connections[0] if len(self.connections) else None
 
         for ts in self.connections:

@@ -8,9 +8,9 @@ from time import time
 
 class Session:
     def __init__(self, guid, remote_address, pubkey):
-        self.__alias = str(guid)
-        self.__guid = guid
-        self.__info = None
+        self._alias = str(guid)
+        self._guid = guid
+        self._info = None
         self.address = remote_address
         self.checkin_time = None
 
@@ -34,23 +34,23 @@ class Session:
 
     @property
     def guid(self):
-        if self.__alias is not None:
-            return self.__alias
-        return self.__guid
+        if self._alias is not None:
+            return self._alias
+        return self._guid
 
     @guid.setter
     def guid(self, value):
-        self.__alias = value
+        self._alias = value
 
     @property
     def info(self):
-        return self.__info
+        return self._info
 
     @info.setter
     def info(self, value):
-        self.__info = value
-        self.__info["Jobs"] = len(self.__info['Jobs'])
-        self.__info["CommChannel"] = self.__info['CommChannel']['Name']
+        self._info = value
+        self._info["Jobs"] = len(self._info['Jobs'])
+        self._info["CommChannel"] = self._info['CommChannel']['Name']
 
     def checked_in(self):
         self.checkin_time = time()
@@ -65,18 +65,18 @@ class Session:
         return hash(self.guid)
     
     def __iter__(self):
-        yield ('guid', str(self.__guid))
-        yield ('alias', str(self.__alias))
+        yield ('guid', str(self._guid))
+        yield ('alias', str(self._alias))
         yield ('address', self.address)
         yield ('info', self.info)
         yield ('lastcheckin', self.last_check_in())
 
     def __eq__(self, other):
         if type(other) == UUID:
-            return self.__guid == other
+            return self._guid == other
         elif type(other) == str:
-            return str(self.guid) == other or str(self.__alias) == other
+            return str(self._guid) == other or str(self._alias) == other
         elif isinstance(other, type(self)):
-            return self.__guid == other.guid
+            return self._guid == other.guid
 
         return NotImplemented

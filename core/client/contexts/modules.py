@@ -14,6 +14,7 @@ class Modules:
 
     def __init__(self):
         self.prompt = None
+        self.available = []
         self._selected = None
 
     @property

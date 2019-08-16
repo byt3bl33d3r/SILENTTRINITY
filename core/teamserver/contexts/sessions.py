@@ -108,7 +108,7 @@ class Sessions:
             )
 
             asyncio.run_coroutine_threadsafe(
-                self.teamserver.update_user_stats(),
+                self.teamserver.update_server_stats(),
                 loop=self.teamserver.loop
             )
         else:
@@ -132,7 +132,8 @@ class Sessions:
         return dict(self.get(guid))
 
     def __iter__(self):
-        yield ('active', len(self.sessions))
-    
+        for session in self.sessions:
+            yield (str(session._guid), dict(session))
+
     def __str__(self):
         return self.__class__.__name__.lower()

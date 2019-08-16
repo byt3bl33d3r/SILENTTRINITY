@@ -28,7 +28,7 @@ def bottom_toolbar(ts):
         ts = ts.selected
         terminal_width,_ = shutil.get_terminal_size()
         info_bar1 = f"{ts.alias} - {ts.url.scheme}://{ts.url.username}@{ts.url.hostname}:{ts.url.port}"
-        info_bar2 = f"[Sessions: {ts.stats.SESSIONS} Listeners: {ts.stats.LISTENERS} Users: {len(ts.stats.USERS)}]"
+        info_bar2 = f"[Sessions: {len(ts.stats.SESSIONS)} Listeners: {len(ts.stats.LISTENERS)} Users: {len(ts.stats.USERS)}]"
         ljustify_amount = terminal_width - len(info_bar2)
         return HTML(f"{info_bar1:<{ljustify_amount}}{info_bar2}")
     else:
@@ -56,11 +56,44 @@ class STCompleter(Completer):
                             if conn.alias.startswith(word_before_cursor):
                                 yield Completion(conn.alias, -len(word_before_cursor))
 
-                if hasattr(self.cli_menu.current_context, 'selected') and self.cli_menu.current_context.selected and cmd_line[0] == 'set':
-                    for k in self.cli_menu.current_context.selected['options'].keys():
-                        if k.startswith(word_before_cursor):
-                            yield Completion(k, -len(word_before_cursor))
-                    return
+                if self.cli_menu.teamservers.selected:
+                    if cmd_line[0] == 'use':
+                        for loadable in self.cli_menu.current_context.available:
+                            if word_before_cursor in loadable:
+                                # Apperently document.get_word_before_cursor() breaks if there's a forward slash in the command line ?
+                                try:
+                                    yield Completion(loadable, -len(cmd_line[1]))
+                                except IndexError:
+                                    yield Completion(loadable, -len(word_before_cursor))
+                        return
+
+                    if hasattr(self.cli_menu.current_context, 'selected') and self.cli_menu.current_context.selected:
+                        if cmd_line[0] == 'set':
+                            if len(cmd_line) >= 2 and cmd_line[1] == 'bindip':
+                                for ip in self.cli_menu.teamservers.selected.stats.IPS:
+                                    if ip.startswith(word_before_cursor):
+                                        yield Completion(ip, -len(word_before_cursor))
+
+                                return
+
+                            for option in self.cli_menu.current_context.selected['options'].keys():
+                                if option.lower().startswith(word_before_cursor.lower()):
+                                    yield Completion(option, -len(word_before_cursor))
+                            return
+
+                        elif cmd_line[0] == 'generate':
+                            for listener in self.cli_menu.teamservers.selected.stats.LISTENERS.keys():
+                                if listener.startswith(word_before_cursor):
+                                    yield Completion(listener, -len(word_before_cursor))
+
+                            return
+
+                        elif cmd_line[0] in ['run', 'info', 'sleep']:
+                            for session in self.cli_menu.teamservers.selected.stats.SESSIONS.values():
+                                if session['alias'].startswith(word_before_cursor):
+                                    yield Completion(session['alias'], -len(word_before_cursor))
+
+                            return
 
             if hasattr(self.cli_menu.current_context, "_cmd_registry"):
                 for cmd in self.cli_menu.current_context._cmd_registry:

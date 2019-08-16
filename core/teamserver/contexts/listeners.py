@@ -41,7 +41,7 @@ class Listeners(Loader):
         self.listeners.append(self.selected)
 
         asyncio.create_task(
-            self.teamserver.update_user_stats()
+            self.teamserver.update_server_stats()
         )
         return dict(self.selected)
 
@@ -66,9 +66,13 @@ class Listeners(Loader):
 
     def reload(self):
         self.get_loadables()
+        asyncio.create_task(
+            self.teamserver.update_available_loadables()
+        )
 
     def __iter__(self):
-        yield ('active', len(self.listeners))
-    
+        for listener in self.listeners:
+            yield (listener.name, dict(listener))
+
     def __str__(self):
         return self.__class__.__name__.lower()

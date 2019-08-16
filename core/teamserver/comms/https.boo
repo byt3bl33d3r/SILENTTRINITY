@@ -72,7 +72,7 @@ class Requests:
         return Post(url, Encoding.UTF8.GetBytes(payload))
 
 class Comms:
-    public Name as string = "http"
+    public Name as string = "https"
     public BaseUrl as Uri
     public JobsUrl as Uri
     private Requests as Requests = Requests()

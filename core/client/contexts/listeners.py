@@ -12,8 +12,9 @@ class Listeners:
 
     def __init__(self):
         self.prompt = None
+        self.available = []
         self._selected = None
-    
+
     @property
     def selected(self):
         return self._selected
