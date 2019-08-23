@@ -15,6 +15,11 @@ class STStager(Stager):
                 'Description'   :   "Generate stager as a PowerShell function",
                 'Required'      :   False,
                 'Value'         :   True
+            },
+            'OutputPath': {
+                'Description'  :   "Generate stager in the specified directory",
+                'Required'      :   False,
+                'Value'         :   "./generated_stagers/"
             }
         }
 

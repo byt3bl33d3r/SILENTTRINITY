@@ -49,10 +49,20 @@ class Stagers(Loader):
 
         for l in self.teamserver.contexts['listeners'].listeners:
             if l['Name'] == listener_name:
+
+                try: 
+                    output_path = self.selected.options['OutputPath']['Value']
+                except KeyError:
+                    output_path = None
+
+                if not output_path:
+                    output_path = './'
+
                 return {
                     "output": self.selected.generate(l),
                     "suggestions": self.selected.suggestions,
-                    "extension": self.selected.extension
+                    "extension": self.selected.extension,
+                    "output_path": output_path
                 }
 
         raise CmdError(f"No listener running with name '{listener_name}'")

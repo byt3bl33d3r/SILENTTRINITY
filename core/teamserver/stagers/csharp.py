@@ -10,7 +10,13 @@ class STStager(Stager):
         self.suggestions = ''
         self.extension = 'cs'
         self.author = '@byt3bl33d3r'
-        self.options = {}
+        self.options = {
+            'OutputPath': {
+                'Description'  :   "Generate stager in the specified directory",
+                'Required'      :   False,
+                'Value'         :   "./generated_stagers/"
+            }
+        } 
 
     def generate(self, listener):
         with open('./core/teamserver/data/naga.exe', 'rb') as assembly:

@@ -87,7 +87,7 @@ class Stagers:
 
         generated_stager = response.result
 
-        stager_filename = f"./stager.{generated_stager['extension']}"
+        stager_filename = f"{generated_stager['output_path']}stager.{generated_stager['extension']}"
         with open(stager_filename, 'wb') as stager:
             stager.write(generated_stager['output'].encode('latin-1'))
 

@@ -1,0 +1,9 @@
+# This .gitignore is useful as we can't push an empty directory
+
+# The .gitignore is the only file of this directoty 
+# which needs to be push
+
+*
+!.gitignore
+
+

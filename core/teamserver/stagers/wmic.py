@@ -7,7 +7,13 @@ class STStager(Stager):
         self.suggestions = ''
         self.extension = 'xsl'
         self.author = '@byt3bl33d3r'
-        self.options = {}
+        self.options = {
+            'OutputPath': {
+                'Description'  :   "Generate stager in the specified directory",
+                'Required'      :   False,
+                'Value'         :   "./generated_stagers/"
+            }
+        }
 
     def generate(self, listener):
         with open('core/teamserver/stagers/templates/wmic.xsl') as template:
