@@ -24,10 +24,14 @@ public static def ShellExecute(ShellCommand as string, Path as string, Username 
     shellProcess.StartInfo.UseShellExecute = false
     shellProcess.StartInfo.CreateNoWindow = true
     shellProcess.StartInfo.RedirectStandardOutput = true
-    shellProcess.Start()
 
-    output = shellProcess.StandardOutput.ReadToEnd()
-    shellProcess.WaitForExit()
+    try:
+        shellProcess.Start()
+
+        output = shellProcess.StandardOutput.ReadToEnd()
+        shellProcess.WaitForExit()
+    except e:
+        output = e.Message
 
     return output
 
