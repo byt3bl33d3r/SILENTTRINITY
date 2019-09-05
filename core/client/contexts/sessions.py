@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from core.utils import print_good
 from core.client.utils import command, register_cli_commands
 from terminaltables import SingleTable
 from time import gmtime, strftime
@@ -69,3 +70,13 @@ class Sessions:
         table = SingleTable(table_data, title="Session Info")
         table.inner_row_border = True
         print(table.table)
+
+    @command
+    def register(self, guid: str, psk: str, response):
+        """
+        Register a session with the server
+
+        Usage: register [-h] [<guid>] [<psk>]
+        """
+
+        print_good(f"Registered new session (guid: {response.result['guid']} psk: {response.result['psk']})")

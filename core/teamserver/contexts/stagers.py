@@ -1,9 +1,11 @@
 import asyncio
 import core.events as events
 from copy import deepcopy
+from core.utils import CmdError
 from core.teamserver import ipc_server
 from core.teamserver.loader import Loader
-from core.utils import CmdError
+from core.teamserver.db import STDatabase
+
 
 class Stagers(Loader):
     name = 'stagers'
@@ -11,7 +13,6 @@ class Stagers(Loader):
 
     def __init__(self, teamserver):
         self.teamserver = teamserver
-        self.stagers = []
         self.selected = None
 
         ipc_server.attach(events.GET_STAGERS, self.get_stagers)
@@ -42,15 +43,21 @@ class Stagers(Loader):
             self.selected[name] = value
         except KeyError:
             raise CmdError(f"Unknown option '{name}'")
-    
+
     def generate(self, listener_name):
         if not self.selected:
             raise CmdError("No stager selected")
 
         for l in self.teamserver.contexts['listeners'].listeners:
             if l['Name'] == listener_name:
+                guid, psk, generated_stager = self.selected.generate(l)
+
+                with STDatabase as db:
+                    db.add_session(guid, psk)
+                self.teamserver.contexts['sessions']._register(guid, psk)
+
                 return {
-                    "output": self.selected.generate(l),
+                    "output": generated_stager,
                     "suggestions": self.selected.suggestions,
                     "extension": self.selected.extension
                 }

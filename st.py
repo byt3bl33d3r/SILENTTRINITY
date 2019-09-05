@@ -19,8 +19,8 @@ from docopt import docopt
 from core.utils import print_banner
 from core.client.cmdloop import STShell
 
-VERSION = "0.3.0dev"
-CODENAME = "Bresaola"
+VERSION = "0.4.0dev"
+CODENAME = "Zuiikin' English"
 
 async def main(args):
     s = STShell(args)

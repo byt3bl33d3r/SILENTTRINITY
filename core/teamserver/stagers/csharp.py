@@ -23,4 +23,4 @@ class STStager(Stager):
 
                 #print_good(f"Generated stager to {stager.name}")
                 #print_info(
-                #    f"Launch with 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\msbuild.exe {stager_filename}'")
+                #    f"Compile with 'C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319\\csc.exe {stager_filename}'")

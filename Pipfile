@@ -20,6 +20,8 @@ hypercorn = "==0.6.0"
 dnslib = "*"
 defusedxml = "*"
 netifaces = "*"
+aiosqlite = "*"
+pypykatz = "*"
 
 [requires]
 python_version = "3.7"

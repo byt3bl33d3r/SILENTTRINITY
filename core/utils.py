@@ -207,7 +207,7 @@ def print_banner(codename, version):
      /____/___/_____/_____/_/ |_/ /_/   /_/ /_/ |_/___/_/ |_/___/ /_/     /_/
     """
     version = f"""
-                                    Codename : {colored(codename, "yellow")}
+                               Codename : {colored(codename, "yellow")}
                                    Version  : {colored(version, "yellow")}
     """
 

@@ -58,10 +58,12 @@ class STListener(Listener):
         """
 
         config = Config()
-        config.host = self['BindIP']
-        config.port = self['Port']
-        config.debug = False
+        config.accesslog = './data/logs/access.log'
+        config.bind = f"{self['BindIP']}:{self['Port']}"
+        config.insecure_bind = True
+        config.include_server_header = False
         config.use_reloader = False
+        config.debug = False
 
         http_blueprint = Blueprint(__name__, 'http')
         http_blueprint.before_request(self.check_if_naughty)
@@ -81,6 +83,7 @@ class STListener(Listener):
 
         self.app = Quart(__name__)
         self.app.register_blueprint(http_blueprint)
+        logging.debug(f"Started HTTP listener {self['BindIP']}:{self['Port']}")
         asyncio.run(serve(self.app, config))
 
     async def check_if_naughty(self):
@@ -92,17 +95,20 @@ class STListener(Listener):
             pass
 
     async def make_normal(self, response):
-        #response.headers["server"] = "Apache/2.4.35"
+        response.headers["server"] = "Apache/2.4.35"
         return response
 
     async def unknown_path(self, path):
-        self.app.logger.error(f"Unknown path: {path}")
+        self.app.logger.error(f"{request.remote_addr} requested an unknown path: {path}")
         return '', 404
 
     async def key_exchange(self, GUID):
         data = await request.data
         pub_key = self.dispatch_event(events.KEX, (GUID, request.remote_addr, data))
-        return Response(pub_key, content_type='application/json')
+        if not pub_key:
+            return '', 400
+
+        return Response(pub_key, content_type='application/octet-stream')
 
     async def stage(self, GUID):
         stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (self["Comms"], GUID, request.remote_addr))
@@ -114,17 +120,16 @@ class STListener(Listener):
         return '', 400
 
     async def jobs(self, GUID):
-        self.app.logger.debug(f"Session {GUID} ({request.remote_addr}) checked in")
+        #self.app.logger.debug(f"Session {GUID} ({request.remote_addr}) checked in")
         job = self.dispatch_event(events.SESSION_CHECKIN, (GUID, request.remote_addr))
         if job:
             return Response(job, content_type='application/octet-stream')
 
-        self.app.logger.debug(f"No jobs to give {GUID}")
+        #self.app.logger.debug(f"No jobs to give {GUID}")
         return '', 200
 
     async def job_result(self, GUID, job_id):
         data = await request.data
-        self.app.logger.debug(f"Session {GUID} posted results of job {job_id}")
+        #self.app.logger.debug(f"Session {GUID} posted results of job {job_id}")
         self.dispatch_event(events.JOB_RESULT, (GUID, job_id, data))
-
         return '', 200

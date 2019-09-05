@@ -127,7 +127,9 @@ class STListener(Listener):
     async def key_exchange(self, GUID):
         data = await request.data
         pub_key = self.dispatch_event(events.KEX, (GUID, request.remote_addr, data))
-        return Response(pub_key, content_type='application/xml')
+        if not pub_key:
+            return '', 400
+        return Response(pub_key, content_type='application/octet-stream')
 
     async def stage(self, GUID):
         stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (GUID, request.remote_addr, self["Comms"]))

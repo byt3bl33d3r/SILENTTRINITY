@@ -33,8 +33,8 @@ class Loader:
                             self.loaded.append(m.STModule())
                         elif self.type == 'stager':
                             self.loaded.append(m.STStager())
-                        elif self.type == 'server':
-                            self.loaded.append(m.STServer())
+                        elif self.type == 'c2channel':
+                            self.loaded.append(m.STC2Channel())
                     except Exception as e:
                         logging.error(f'Failed loading {self.type} {os.path.join(path, module)}: {e}')
 

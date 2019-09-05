@@ -97,6 +97,7 @@ Marcello Salvati ([@byt3bl33d3r](https://twitter.com/byt3bl33d3r))
 
 **(In no particular order)**
 
+- [@nicolas_dbresse](https://twitter.com/nicolas_dbresse) a.k.a [@Daudau](https://github.com/Daudau) for contributing an insane amount of modules
 - [@C_Sto](https://twitter.com/C__Sto) for helping me with some of the .NET ECDHE implementation details and keeping my sanity
 - [@davidtavarez](https://twitter.com/davidtavarez) for making some amazing contributions including a cross-platform stager
 - [@mcohmi](https://twitter.com/mcohmi) a.k.a daddycocoaman, for being awesome and making code contributions including modules
