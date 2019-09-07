@@ -3,9 +3,10 @@ import logging
 import os
 import uuid
 from time import time
-from io import BytesIO, StringIO
+from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED
 from core.teamserver.jobs import Jobs
+from core.teamserver.comms.utils import gen_stager_code
 from core.teamserver.crypto import ECDHE
 
 
@@ -63,32 +64,14 @@ class Session:
     def last_check_in(self):
         return time() - self.checkin_time
 
-    def get_comms(self, comms):
-        comms_section = StringIO()
-        comm_classes = []
-        for channel in comms:
-            for comm_file in os.listdir('./core/teamserver/comms/'):
-                if channel.strip().lower() == comm_file[:-4].lower():
-                    comm_classes.append(f"{channel.strip().upper()}()")
-                    with open(os.path.join('./core/teamserver/comms/', comm_file)) as channel_code:
-                        comms_section.write(channel_code.read())
-
-        return ", ".join(comm_classes), comms_section.getvalue()
-
-    #@subscribe(events.ENCRYPT_STAGE)
     def gen_encrypted_stage(self, comms):
-        with open('./core/teamserver/data/stage.boo') as stage:
-            comm_classes, comms_section = self.get_comms(comms)
-            stage = stage.read()
-            stage = stage.replace("PUT_COMMS_HERE", comms_section)
-            stage = stage.replace("PUT_COMM_CLASSES_HERE", comm_classes)
+        stage = gen_stager_code(comms)
+        with open('./core/teamserver/data/stage.zip', 'rb') as stage_file:
+            stage_file = BytesIO(stage_file.read())
+            with ZipFile(stage_file, 'a', compression=ZIP_DEFLATED, compresslevel=9) as zip_file:
+                zip_file.writestr("Main.boo", stage)
 
-            with open('./core/teamserver/data/stage.zip', 'rb') as stage_file:
-                stage_file = BytesIO(stage_file.read())
-                with ZipFile(stage_file, 'a', compression=ZIP_DEFLATED, compresslevel=9) as zip_file:
-                    zip_file.writestr("Main.boo", stage)
-
-                return self.crypto.encrypt(stage_file.getvalue())
+            return self.crypto.encrypt(stage_file.getvalue())
 
     def __str__(self):
         return f"<Session {self._guid}{f' alias: {self._alias}' if self._alias else ''}>"

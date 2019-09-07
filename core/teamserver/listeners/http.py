@@ -42,6 +42,11 @@ class STListener(Listener):
                 'Required'      :   True,
                 'Value'         :   80
             },
+            'CallBackURls': {
+                'Description'   :   'Additional C2 Callback URLs (comma seperated)',
+                'Required'      :   False,
+                'Value'         :   ''
+            },
             'Comms': {
                 'Description'   :   'C2 Comms to use',
                 'Required'      :   True,

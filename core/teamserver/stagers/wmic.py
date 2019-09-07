@@ -11,8 +11,12 @@ class STStager(Stager):
 
     def generate(self, listener):
         with open('core/teamserver/stagers/templates/wmic.xsl') as template:
+            c2_urls = ','.join(
+                filter(None, [f"{listener.name}://{listener['BindIP']}:{listener['Port']}", listener['CallBackURls']])
+            )
+
             template = template.read()
-            template = template.replace("C2_URL", f"{listener.name}://{listener['BindIP']}:{listener['Port']}")
+            template = template.replace("C2_URL", c2_urls)
             return template
 
             #print_good(f"Generated stager to {stager.name}")

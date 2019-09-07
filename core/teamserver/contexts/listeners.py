@@ -1,7 +1,7 @@
 import asyncio
 from copy import deepcopy
 from core.teamserver.loader import Loader
-from core.utils import CmdError
+from core.utils import CmdError, gen_random_string
 
 
 class Listeners(Loader):
@@ -23,6 +23,7 @@ class Listeners(Loader):
         for l in self.loaded:
             if l.name.lower() == name.lower():
                 self.selected = deepcopy(l)
+                #self.selected.name = f"{l.name}-{gen_random_string(6)}"
                 return dict(self.selected)
 
         raise CmdError(f"No listener available named '{name.lower()}'")
@@ -36,6 +37,9 @@ class Listeners(Loader):
     def start(self):
         if not self.selected:
             raise CmdError("No listener selected")
+
+        if len(list(filter(lambda l: l.name == self.selected.name, self.listeners))):
+            raise CmdError(f"Listener named '{self.selected.name}' already running!")
 
         self.selected.start()
         self.listeners.append(self.selected)

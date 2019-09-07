@@ -1,4 +1,6 @@
 import logging
+import uuid
+from core.teamserver.crypto import gen_stager_psk
 from core.teamserver.stager import Stager
 
 class STStager(Stager):
@@ -12,4 +14,7 @@ class STStager(Stager):
 
     def generate(self, listener):
         with open('./core/teamserver/data/naga.dll', 'rb') as dll:
-            return dll.read().decode('latin-1')
+            guid = uuid.uuid4()
+            psk = gen_stager_psk()
+
+            return guid, psk, dll.read().decode('latin-1')

