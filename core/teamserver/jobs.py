@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+import copy
 from core.teamserver.job import Job
 
 
@@ -8,36 +9,38 @@ class Jobs:
     def __init__(self, session):
         self.session = session
         self.jobs = []
-        self.jobs.append(Job(command=('CheckIn', {})))
+        self.jobs.append(Job(command=('CheckIn', [])))
 
-    def find(self, job_id=None):
+    def next_job(self):
         try:
-            if job_id:
-                job = list(filter(lambda job: job.id == job_id, self.jobs))[0]
-            else:
-                job = list(filter(lambda job: job.status == 'initialized', self.jobs))[-1]
-            return job
+            return list(filter(lambda job: job.status == 'initialized', self.jobs))[-1]
         except IndexError:
-            if job_id:
-                logging.error(f"Job with id {job_id} not found")
-            else:
-                logging.error(f"No jobs available")
+            logging.error(f"No jobs available")
+    
+    def get_by_id(self, job_id):
+        try:
+            return list(filter(lambda job: job.id == job_id, self.jobs))[0]
+        except IndexError:
+            logging.error(f"Job with id {job_id} not found")
 
     def get(self, job_id=None):
-        job = self.find()
+        job = self.next_job()
         if job:
             job.status = 'started'
             return self.session.crypto.encrypt(job.payload())
 
     def add(self, job):
-        self.jobs.insert(0, job)
+        # We have to make a copy of the Job object here cause if we run the module on all sessions at once the status of the job
+        # will be set to 'started' and on the next check in the next session won't grab it from the queue
+        job_copy = copy.deepcopy(job)
+        self.jobs.insert(0, job_copy)
         if job.command:
             self.session.logger.info(f"Tasked session to run command: {job.command[0]} args: {job.command[1]}")
         else:
             self.session.logger.info(f"Tasked session to run module: {job.module.name} args: {job.module.options}")
 
     def decrypt(self, job_id, data):
-        job = self.find(job_id)
+        job = self.get_by_id(job_id)
         decrypted_job = json.loads(self.session.crypto.decrypt(data))
         output = decrypted_job['result']
         if job.module:

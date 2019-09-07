@@ -1,4 +1,4 @@
-[string[]]$ST_args = @($Url)
+[string[]]$ST_args = @($Guid, $Psk, $Url)
 
 $EncodedCompressedFile = @'
 BASE64_ENCODED_ASSEMBLY

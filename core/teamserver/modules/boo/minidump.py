@@ -63,4 +63,4 @@ class STModule(Module):
             else:
                 return f"Processed chunk {output['current_chunk_n']}/{output['chunk_n'] + 1}"
         except TypeError:
-            return "Minidump module completed"
+            return output

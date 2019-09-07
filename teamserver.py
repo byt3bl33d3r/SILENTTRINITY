@@ -180,7 +180,7 @@ async def server(stop):
         await stop
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='0.0.1dev')
+    args = docopt(__doc__, version='0.4.0dev')
 
     loop = asyncio.get_event_loop()
     teamserver_digest = hmac.new(args['<password>'].encode(), msg=b'silenttrinity', digestmod=sha512).hexdigest()

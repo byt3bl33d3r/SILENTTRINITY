@@ -8,6 +8,7 @@ from core.teamserver import ipc_server
 from core.teamserver.db import STDatabase
 from core.teamserver.crypto import gen_stager_psk
 from core.teamserver.session import Session
+from core.teamserver.job import Job
 #from core.teamserver.utils import subscribe, register_subscriptions
 
 """
@@ -160,6 +161,31 @@ class Sessions:
     
     def info(self, guid):
         return dict(self.get_session(guid))
+    
+    def kill(self, guid):
+        try:
+            session = self.get_session(guid)
+            session.jobs.add(Job(command=('Exit', [])))
+            return {'guid': guid, 'status': 'Tasked to exit'}
+        except IndexError:
+            raise CmdError(f"No session named: {guid}")
+    
+    def sleep(self, guid, interval):
+        try:
+            session = self.get_session(guid)
+            session.jobs.add(Job(command=('Sleep', [int(interval)])))
+        except IndexError:
+            raise CmdError(f"No session named: {guid}")
+
+    def jitter(self, guid, max, min):
+        try:
+            session = self.get_session(guid)
+            if min:
+                session.jobs.add(Job(command=('Jitter', [int(max), int(min)])))
+            else:
+                session.jobs.add(Job(command=('Jitter', [int(max)])))
+        except IndexError:
+            raise CmdError(f"No session named: {guid}")
 
     def __iter__(self):
         for session in self.sessions:

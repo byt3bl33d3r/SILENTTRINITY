@@ -13,10 +13,14 @@ class Job:
         payload = {'id': self.id}
 
         if self.command:
-            payload['cmd'], payload['args'] = self.command
+            payload['cmd'] = self.command[0]
+            payload['args'] = {'args': self.command[1]}
 
         elif self.module:
             payload['cmd'] = "CompileAndRun"
             payload['args'] = {"source": self.module.payload(), "references": self.module.references}
 
         return json.dumps(payload).encode()
+    
+    def __repr__(self):
+        return f"<Job id:{self.id} status: {self.status} command:{self.command} module: {self.module}>"

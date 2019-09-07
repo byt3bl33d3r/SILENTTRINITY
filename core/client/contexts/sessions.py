@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from core.utils import print_good
+from core.utils import print_good, print_info
 from core.client.utils import command, register_cli_commands
 from terminaltables import SingleTable
 from time import gmtime, strftime
@@ -70,6 +70,36 @@ class Sessions:
         table = SingleTable(table_data, title="Session Info")
         table.inner_row_border = True
         print(table.table)
+
+    @command
+    def kill(self, guid: str, response):
+        """
+        Kill a session
+
+        Usage: kill [-h] <guid>
+        """
+
+        print_info(f"Tasked session {guid} to exit")
+
+    @command
+    def sleep(self, guid: str, interval: int, response):
+        """
+        Modify a sessions check-in interval in ms
+
+        Usage: sleep [-h] <guid> <interval>
+        """
+
+        #print_good(f"Session {guid} will now check in every {interval}ms")
+
+    @command
+    def jitter(self, guid: str, max: int, min: int, response):
+        """
+        Modify a sessions jitter value in ms
+
+        Usage: jitter [-h] <guid> <max> [<min>]
+        """
+
+        #print_good(f"Session {guid} will now have a max jitter of {max}ms and a min jitter of {min}ms")
 
     @command
     def register(self, guid: str, psk: str, response):

