@@ -1,5 +1,7 @@
 -i https://pypi.org/simple
 aiofiles==0.4.0
+aiosqlite==0.10.0
+aiowinreg==0.0.1
 asn1crypto==0.24.0
 blinker==1.4
 certifi==2019.6.16
@@ -18,11 +20,17 @@ hyperframe==5.2.0
 idna==2.8
 itsdangerous==1.1.0
 jinja2==2.10.1
+ldap3==2.5.1
 markupsafe==1.1.1
+minidump==0.0.8
+minikerberos==0.0.11
+msldap==0.1.1
 multidict==4.5.2
 netifaces==0.10.9
 prompt-toolkit==2.0.9
+pyasn1==0.4.7
 pycparser==2.19
+pypykatz==0.1.1
 pytoml==0.1.21
 quart==0.9.1
 requests==2.22.0
@@ -34,4 +42,5 @@ typing-extensions==3.7.4
 urllib3==1.25.3
 wcwidth==0.1.7
 websockets==8.0.2
-wsproto==0.14.1
+winsspi==0.0.3
+wsproto==0.15.0
