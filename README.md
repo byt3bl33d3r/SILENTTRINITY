@@ -43,6 +43,27 @@ Finally you can start porting over post-ex modules from other C2 frameworks such
 
 If your running a *nix system that has an older version of Python installed it is *highly* reccommended to use [pyenv](https://github.com/pyenv/pyenv) to install Python >= 3.7.
 
+### Ubuntu 18.04 setup
+
+```bash
+sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev \
+libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev \
+xz-utils tk-dev libffi-dev liblzma-dev python-openssl git
+curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+cat <<'EOF' >> ~/.bashrc
+export PATH="$HOME/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+EOF
+source ~/.bashrc
+pyenv install 3.7-dev
+git clone https://github.com/byt3bl33d3r/SILENTTRINITY
+cd SILENTTRINITY
+pyenv local 3.7-dev
+pip3 install pipenv && pipenv install && pipenv shell
+pip3 install -r requirements.txt
+```
+
 For Mac's, use Homebrew to install Python 3:
 ```bash
 brew install python@3
@@ -53,6 +74,7 @@ Clone the repo and use [pipenv](https://github.com/pypa/pipenv) to install the d
 ```bash
 git clone https://github.com/byt3bl33d3r/SILENTTRINITY
 pip3 install pipenv && pipenv install && pipenv shell
+pip3 install -r requirements.txt
 ```
 
 Start a Teamserver, the default port is 5000:
