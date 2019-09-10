@@ -15,7 +15,7 @@ public static def IsHighIntegrity() as bool:
 
 public static def Start(job as duck):
     procname = "PROCESS_NAME"
-    file = "DUMPFILE_PATH"
+    file = `DUMPFILE_PATH`
 
     if IsHighIntegrity():
         print "[+] Running in high integrity process"

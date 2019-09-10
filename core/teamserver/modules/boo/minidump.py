@@ -21,7 +21,7 @@ class STModule(Module):
             'Dumpfile': {
                 'Description': 'The Path of the dumpfile',
                 'Required': False,
-                'Value': "C:\\\\WINDOWS\\\\Temp\\\\debug.bin"
+                'Value': r"C:\WINDOWS\Temp\debug.bin"
             },
             'ProcessName': {
                 'Description': 'Process name to dump',
