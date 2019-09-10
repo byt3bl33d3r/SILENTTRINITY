@@ -78,3 +78,4 @@ public static def Main():
     Beep(659,250)//E
     Beep(587,250)//D
     
+    print "Rick Rolled!"
