@@ -2,7 +2,6 @@ import System.Console
 import System.Threading
 
 
-
 public static def Main():
     Beep(440,150)//A
     Beep(493,150)//B
