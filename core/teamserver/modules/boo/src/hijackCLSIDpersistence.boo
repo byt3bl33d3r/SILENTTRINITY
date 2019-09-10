@@ -6,7 +6,7 @@ import Microsoft.Win32
 
 public static def Main():
     clsid = 'CLSD'
-    executablepath = 'EXECUTABLE_PATH'
+    executablepath = `EXECUTABLE_PATH`
     status = "STATUS"
 
     if not clsid or not executablepath or not status:

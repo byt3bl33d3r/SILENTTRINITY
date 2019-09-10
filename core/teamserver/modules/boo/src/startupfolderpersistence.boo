@@ -158,7 +158,7 @@ public def listPersistence():
 public static def Main():
     command = "COMMAND"
     commandArg = "ARGUMENTS"
-    fileName = "FILENAME"
+    fileName = `FILENAME`
     status = "STATUS"
 
     initialize(command, commandArg, fileName, status)

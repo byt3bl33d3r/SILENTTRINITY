@@ -226,7 +226,7 @@ public def checkPersistence(command as string, commandArg as string, filePath as
 public static def Main():
     command = "COMMAND"
     commandArg = "ARGUMENTS"
-    filePath = "FILEPATH"
+    filePath = `FILEPATH`
     status = "STATUS"
 
     initialize(command, commandArg, filePath, status)
