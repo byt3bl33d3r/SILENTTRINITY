@@ -17,7 +17,7 @@ class STModule(Module):
             'Path': {
                 'Description'   :   'The Path of the directory from which to execute the ShellCommand',
                 'Required'      :   False,
-                'Value'         :   "C:\\\\WINDOWS\\\\System32\\\\"
+                'Value'         :   r"C:\WINDOWS\System32"
             },
             'Username': {
                 'Description'   :   'Optional alternative username to execute ShellCommand as',

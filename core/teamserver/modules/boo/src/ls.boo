@@ -5,7 +5,7 @@ import System
 import System.IO
 
 public static def Main():
-    path = "PATH"
+    path = `PATH`
     if not path:
         path = Directory.GetCurrentDirectory()
     print "[*] Listing content of directory: " + path + "\r\n"
