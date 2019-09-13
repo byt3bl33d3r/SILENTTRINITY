@@ -15,8 +15,17 @@ class Stagers(Loader):
         self.teamserver = teamserver
         self.selected = None
 
-        ipc_server.attach(events.GET_STAGERS, self.get_stagers)
+        ipc_server.attach(events.GET_STAGERS, self._get_stagers)
         super().__init__(type="stager", paths=["core/teamserver/stagers/"])
+
+    def _get_stagers(self, name):
+        if name:
+            try:
+                return list(filter(lambda stager: stager.name == name, self.loaded))[0]
+            except IndexError:
+                return
+        else:
+            return self.loaded
 
     def list(self):
         return {s.name: dict(s) for s in self.loaded}
@@ -67,15 +76,6 @@ class Stagers(Loader):
     def get_selected(self):
         if self.selected:
             return dict(self.selected)
-
-    def get_stagers(self, name):
-        if name:
-            try:
-                return list(filter(lambda stager: stager.name == name, self.loaded))[0]
-            except IndexError:
-                return
-        else:
-            return self.loaded
 
     def reload(self):
         self.get_loadables()

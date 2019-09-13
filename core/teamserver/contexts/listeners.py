@@ -1,5 +1,7 @@
 import asyncio
+import core.events as events
 from copy import deepcopy
+from core.teamserver import ipc_server
 from core.teamserver.loader import Loader
 from core.utils import CmdError, gen_random_string
 
@@ -12,7 +14,18 @@ class Listeners(Loader):
         self.teamserver = teamserver
         self.listeners = []
         self.selected = None
+
+        ipc_server.attach(events.GET_LISTENERS, self._get_listeners)
         super().__init__(type="listener", paths=["core/teamserver/listeners/"])
+
+    def _get_listeners(self, name):
+        if name:
+            try:
+                return list(filter(lambda l: l.name == name, self.listeners))[0]
+            except IndexError:
+                return
+        else:
+            return self.listeners
 
     def list(self, name: str, running: bool, available: bool):
         if available:

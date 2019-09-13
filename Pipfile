@@ -22,6 +22,7 @@ defusedxml = "*"
 netifaces = "*"
 aiosqlite = "*"
 pypykatz = "*"
+donut-shellcode = "*"
 
 [requires]
 python_version = "3.7"

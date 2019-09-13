@@ -36,6 +36,15 @@ def convert_shellcode(shellcode):
 
     return ",".join(decis)
 
+def shellcode_to_boo_byte_array(shellcode):
+    byte_array = []
+    shellcode_hex = shellcode.hex()
+    for i in range(0, len(shellcode_hex), 2):
+        byte = shellcode_hex[i:i+2]
+        byte_array.append(f"0x{byte.upper()}")
+
+    return ', '.join(byte_array)
+
 class PastebinPaste:
     def __init__(self, paste_xml):
         paste_xml = "\n".join(paste_xml.strip().split('\r\n')) + "\n</paste>"

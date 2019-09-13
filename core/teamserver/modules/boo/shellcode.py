@@ -1,5 +1,5 @@
 import os
-from core.utils import to_byte_array
+from core.utils import shellcode_to_boo_byte_array
 from core.teamserver.module import Module
 
 
@@ -32,10 +32,9 @@ class STModule(Module):
         shellcode_path = os.path.expanduser(self.options['Shellcode']['Value'])
         if os.path.exists(shellcode_path):
             with open(shellcode_path, 'rb') as shellcode:
-
                 if self.options['InjectionMethod']['Value'] == 'InjectRemote':
                     with open('core/teamserver/modules/boo/src/injectremote.boo', 'r') as module_src:
-                        shellcode = ','.join(list(map(str, to_byte_array(shellcode.read()))))
+                        shellcode = shellcode_to_boo_byte_array(shellcode.read())
 
                         src = module_src.read()
                         src = src.replace('BYTES', shellcode)

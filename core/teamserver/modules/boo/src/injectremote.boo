@@ -44,5 +44,5 @@ public static def InjectRemote(sc as (byte), process as string):
     print "Injected\n"
 
 public static def Main():
-    shellcode = array(byte,(BYTES))
+    shellcode = array(byte, [BYTES])
     InjectRemote(shellcode, "PROCESS")
