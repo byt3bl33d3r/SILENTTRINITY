@@ -17,8 +17,17 @@ from cryptography.hazmat.primitives import serialization, hashes
 class CmdError(Exception):
     pass
 
-def to_byte_array(data):
-    return list(map(int, data))
+def shellcode_to_int_byte_array(data):
+    return  ','.join(list(map(str, map(int, data))))
+
+def shellcode_to_hex_byte_array(shellcode):
+    byte_array = []
+    shellcode_hex = shellcode.hex()
+    for i in range(0, len(shellcode_hex), 2):
+        byte = shellcode_hex[i:i+2]
+        byte_array.append(f"0x{byte.upper()}")
+
+    return ','.join(byte_array)
 
 # Stolen from https://github.com/zerosum0x0/koadic/blob/master/core/plugin.py
 def convert_shellcode(shellcode):
@@ -35,15 +44,6 @@ def convert_shellcode(shellcode):
             decis.append(str(deci))
 
     return ",".join(decis)
-
-def shellcode_to_boo_byte_array(shellcode):
-    byte_array = []
-    shellcode_hex = shellcode.hex()
-    for i in range(0, len(shellcode_hex), 2):
-        byte = shellcode_hex[i:i+2]
-        byte_array.append(f"0x{byte.upper()}")
-
-    return ', '.join(byte_array)
 
 class PastebinPaste:
     def __init__(self, paste_xml):

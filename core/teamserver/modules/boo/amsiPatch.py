@@ -5,8 +5,8 @@ class STModule(Module):
     def __init__(self):
         self.name = 'boo/amsiPatch'
         self.language = 'boo'
-        self.description = ''
-        self.author = '@byt3bl33d3r, @modexp, @daddycocoaman'
+        self.description = 'Disables AMSI in the current process'
+        self.author = 'Patch by @_xpn & @rasta_mouse. Module by @byt3bl33d3r, @modexp, @daddycocoaman'
         self.references = []
         self.options = {}
 
