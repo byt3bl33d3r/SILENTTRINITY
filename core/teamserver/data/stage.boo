@@ -385,7 +385,6 @@ class STJob:
                 using scriptOutput = StringWriter():
                     Console.SetOut(scriptOutput)
                     Console.SetError(scriptOutput)
-
                     #Call the Main function in the compiled assembly if available else call Start
                     try:
                         module.Main()
@@ -402,6 +401,10 @@ class STJob:
                 standardError = StreamWriter(Console.OpenStandardError())
                 standardError.AutoFlush = true
                 Console.SetError(standardError)
+
+    public def SendJobResults(output as string):
+        result = output
+        Client.SendJobResults(self)
 
 class STClient:
     public Jobs as List = []
