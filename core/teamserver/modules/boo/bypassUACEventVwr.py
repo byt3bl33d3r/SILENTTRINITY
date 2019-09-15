@@ -6,7 +6,7 @@ class STModule(Module):
         self.name = 'boo/bypassUACEventVwr'
         self.language = 'boo'
         self.description = 'Bypasses UAC by performing an image hijack on the .msc file extension'
-        self.author = '@Daudau'
+        self.author = '@byt3bl33d3r'
         self.references = []
         self.options = {
             'Command': {
