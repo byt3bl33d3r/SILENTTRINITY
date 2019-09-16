@@ -97,10 +97,10 @@ Marcello Salvati ([@byt3bl33d3r](https://twitter.com/byt3bl33d3r))
 
 **(In no particular order)**
 
+- [@devinmadewell](https://github.com/devinmadewell) for some awesome modules.
+- [@RemiEscourrou](https://github.com/RemiEscourrou) for some awesome modules.
 - [@nicolas_dbresse](https://twitter.com/nicolas_dbresse) a.k.a [@Daudau](https://github.com/Daudau) for contributing an insane amount of modules
 - [@C_Sto](https://twitter.com/C__Sto) for helping me with some of the .NET ECDHE implementation details and keeping my sanity
 - [@davidtavarez](https://twitter.com/davidtavarez) for making some amazing contributions including a cross-platform stager
 - [@mcohmi](https://twitter.com/mcohmi) a.k.a daddycocoaman, for being awesome and making code contributions including modules
 - [@cobbr_io](https://twitter.com/cobbr_io) for writing SharpSploit which was heavily used as a reference throughout building a lot of the implant code & modules.
-
-If I missed anyone I apologize, feel free to contact me via Twitter and/or Email and I'll get it sorted out asap.

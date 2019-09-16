@@ -45,7 +45,7 @@ class IPCServer(Thread):
     def publish_event(self, topic, msg):
         if topic in self.subscribers:
             for sub in self.subscribers[topic]:
-                return sub(msg)
+                return sub(*msg)
 
         """
         with Client(self.address), authkey=self.authkey) as client:

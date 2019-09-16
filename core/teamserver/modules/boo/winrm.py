@@ -45,8 +45,8 @@ class STModule(Module):
         }
 
     def payload(self):
-        stager = ipc_server.publish_event(events.GET_STAGERS, 'powershell')
-        listener = ipc_server.publish_event(events.GET_LISTENERS, self.options['Listener']['Value'])
+        stager = ipc_server.publish_event(events.GET_STAGERS, ('powershell',))
+        listener = ipc_server.publish_event(events.GET_LISTENERS, (self.options['Listener']['Value'],))
 
         if stager and listener:
             stager.options['AsFunction']['Value'] = False

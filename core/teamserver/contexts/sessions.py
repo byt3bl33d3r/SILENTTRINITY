@@ -35,7 +35,7 @@ class Sessions:
         ipc_server.attach(events.KEX, self.kex)
         ipc_server.attach(events.ENCRYPT_STAGE, self.gen_encrypted_stage)
         ipc_server.attach(events.SESSION_STAGED, self.notify_session_staged)
-        #ipc_server.attach(events.SESSION_REGISTER, self._register)
+        ipc_server.attach(events.SESSION_REGISTER, self._register)
         ipc_server.attach(events.SESSION_CHECKIN, self.session_checked_in)
         ipc_server.attach(events.NEW_JOB, self.add_job)
         ipc_server.attach(events.JOB_RESULT, self.job_result)
@@ -98,8 +98,7 @@ class Sessions:
         return session.jobs.get()
 
     #@subscribe(events.NEW_JOB)
-    def add_job(self, job_tuple):
-        guid, job = job_tuple
+    def add_job(self, guid, job):
         if guid.lower() == 'all':
             for session in self.sessions:
                 session.jobs.add(job)

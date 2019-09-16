@@ -517,7 +517,7 @@ public static def BypassUAC(binary as string, arguments as string, path as strin
 public static def Main():
     binary = "BINARY"
     arguments = "ARGUMENTS"
-    path = "PATH"
+    path = `PATH`
     processId = PROCESS_ID
 
     if IsHighIntegrity():

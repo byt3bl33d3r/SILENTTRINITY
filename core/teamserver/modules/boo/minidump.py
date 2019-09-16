@@ -21,7 +21,7 @@ class STModule(Module):
             'Dumpfile': {
                 'Description': 'The Path of the dumpfile',
                 'Required': False,
-                'Value': "C:\\\\WINDOWS\\\\Temp\\\\debug.bin"
+                'Value': r"C:\WINDOWS\Temp\debug.bin"
             },
             'ProcessName': {
                 'Description': 'Process name to dump',
@@ -40,7 +40,7 @@ class STModule(Module):
     def process(self, context, output):
         if self._new_dmp_file == True:
             self._new_dmp_file = False
-            self.gzip_file = f"./data/logs/{context.session.guid}/minidump_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}.gzip"
+            self.gzip_file = f"./data/logs/{context.session.guid}/minidump_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}.gz"
             self.decompressed_file = f"./data/logs/{context.session.guid}/minidump_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}.bin"
 
         try:

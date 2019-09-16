@@ -36,4 +36,4 @@ public static def ShellExecute(ShellCommand as string, Path as string, Username 
     return output
 
 public static def Main():
-    print ShellExecute(ShellCommand="COMMAND_TO_RUN", Path="C:\\WINDOWS\\System32\\", Username="USERNAME", Domain="DOMAIN", Password="PASSWORD")
+    print ShellExecute(ShellCommand="COMMAND_TO_RUN", Path=`PATH`, Username="USERNAME", Domain="DOMAIN", Password="PASSWORD")

@@ -18,7 +18,11 @@ class Job:
 
         elif self.module:
             payload['cmd'] = "CompileAndRun"
-            payload['args'] = {"source": self.module.payload(), "references": self.module.references}
+            payload['args'] = {
+                "source": self.module.payload(),
+                "references": self.module.references,
+                "run_in_thread": self.module.run_in_thread if hasattr(self.module, 'run_in_thread') else True
+            }
 
         return json.dumps(payload).encode()
     

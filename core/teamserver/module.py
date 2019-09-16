@@ -5,6 +5,7 @@ class Module:
         self.language = ''
         self.description = ''
         self.author = ''
+        self.run_in_thread = True
         self.references = []
         self.options = {}
 
