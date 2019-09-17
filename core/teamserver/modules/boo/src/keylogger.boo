@@ -1,3 +1,6 @@
+/*
+    This module is inspired from https://github.com/BlackVikingPro/Keylogger
+*/
 import System
 import System.Diagnostics
 import System.Windows

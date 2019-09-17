@@ -11,7 +11,7 @@ class STModule(Module):
         self.options = {
             'Duration': {
                 'Description'   :   'How long to log key strokes (in Minutes)',
-                'Required'      :   False,
+                'Required'      :   True,
                 'Value'         :   "2"
             }
         }
