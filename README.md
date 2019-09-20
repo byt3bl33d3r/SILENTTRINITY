@@ -93,14 +93,20 @@ I recommend making wild use the ```help``` command and the ```-h``` flag :)
 
 Marcello Salvati ([@byt3bl33d3r](https://twitter.com/byt3bl33d3r))
 
-## Acknowledgments & Contributors
+## Acknowledgments, Contributors & Involuntary Contributors
 
 **(In no particular order)**
 
 - [@devinmadewell](https://github.com/devinmadewell) for some awesome modules.
 - [@RemiEscourrou](https://github.com/RemiEscourrou) for some awesome modules.
-- [@nicolas_dbresse](https://twitter.com/nicolas_dbresse) a.k.a [@Daudau](https://github.com/Daudau) for contributing an insane amount of modules
-- [@C_Sto](https://twitter.com/C__Sto) for helping me with some of the .NET ECDHE implementation details and keeping my sanity
-- [@davidtavarez](https://twitter.com/davidtavarez) for making some amazing contributions including a cross-platform stager
-- [@mcohmi](https://twitter.com/mcohmi) a.k.a daddycocoaman, for being awesome and making code contributions including modules
+- [@nicolas_dbresse](https://twitter.com/nicolas_dbresse) a.k.a [@Daudau](https://github.com/Daudau) for contributing an insane amount of modules.
+- [@C_Sto](https://twitter.com/C__Sto) for helping me with some of the .NET ECDHE implementation details and keeping my sanity.
+- [@davidtavarez](https://twitter.com/davidtavarez) for making some amazing contributions including a cross-platform stager.
+- [@mcohmi](https://twitter.com/mcohmi) a.k.a daddycocoaman, for being awesome and making code contributions including modules.
 - [@cobbr_io](https://twitter.com/cobbr_io) for writing SharpSploit which was heavily used as a reference throughout building a lot of the implant code & modules.
+- [@harmjoy](https://twitter.com/harmj0y) for writing SeatBelt which I stole (won't be the least thing I'll steal either!) and ported over to Boolang and for being a general inspiration.
+- [@TheWover](https://twitter.com/TheRealWover) & Odzhan for writing [Donut](https://github.com/TheWover/donut) which SILENTTRINITY makes heavy use of.
+- [modexp](https://modexp.wordpress.com) for helping me with a bunch of low level windows stuff which one day I'll learn when I decide to grow up.
+- [@_xpn_](https://twitter.com/_xpn_) for making an AMSI Patch which I stole and for being a general inspiration.
+- [@_RastaMouse](https://twitter.com/_RastaMouse) for making an AMSI Patch which I stole and for being a general inspiration.
+- [@r3dQu1nn](https://twitter.com/r3dQu1nn) for writing his awesome [AggressorScripts](https://github.com/harleyQu1nn/AggressorScripts), decent amount of SILENTTRINITY modules are based off of those scripts.

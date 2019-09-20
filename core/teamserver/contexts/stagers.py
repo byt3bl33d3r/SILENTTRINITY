@@ -79,6 +79,9 @@ class Stagers(Loader):
 
     def reload(self):
         self.get_loadables()
+        if self.selected:
+            self.use(self.selected.name)
+
         asyncio.create_task(
             self.teamserver.update_available_loadables()
         )
