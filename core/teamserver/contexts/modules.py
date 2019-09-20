@@ -34,6 +34,11 @@ class Modules(Loader):
             raise CmdError("No module selected")
         return self.selected.options
 
+    def info(self):
+        if not self.selected:
+            raise CmdError("No module selected")
+        return dict(self.selected)
+
     def set(self, name: str, value: str):
         if not self.selected:
             raise CmdError("No module selected")

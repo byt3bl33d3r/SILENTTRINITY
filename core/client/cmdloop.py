@@ -56,7 +56,7 @@ class STCompleter(Completer):
                             if conn.alias.startswith(word_before_cursor):
                                 yield Completion(conn.alias, -len(word_before_cursor))
 
-                if self.cli_menu.teamservers.selected:
+                if hasattr(self.cli_menu.current_context, 'available') and self.cli_menu.teamservers.selected:
                     if cmd_line[0] == 'use':
                         for loadable in self.cli_menu.current_context.available:
                             if word_before_cursor in loadable:
@@ -88,7 +88,7 @@ class STCompleter(Completer):
 
                             return
 
-                        elif cmd_line[0] in ['run', 'info', 'sleep']:
+                        elif cmd_line[0] in ['run', 'info', 'sleep', 'kill', 'jitter']:
                             for session in self.cli_menu.teamservers.selected.stats.SESSIONS.values():
                                 if session['alias'].startswith(word_before_cursor):
                                     yield Completion(session['alias'], -len(word_before_cursor))

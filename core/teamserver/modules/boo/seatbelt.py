@@ -6,7 +6,7 @@ class STModule(Module):
         self.name = 'boo/seatbelt'
         self.language = 'boo'
         self.description = 'Performs a number of security oriented host-survey "safety checks" relevant from both offensive and defensive security perspectives.'
-        self.author = '@harmjoy (original C# version), @byt3bl33d3r (Boolang port)'
+        self.author = '@harmj0y (original C# version), @byt3bl33d3r (Boolang port)'
         self.references = ["System.Web.Extensions", "System.Management"]
         self.options = {
             'Arguments': {
