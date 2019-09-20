@@ -103,8 +103,8 @@ Marcello Salvati ([@byt3bl33d3r](https://twitter.com/byt3bl33d3r))
 - [@C_Sto](https://twitter.com/C__Sto) for helping me with some of the .NET ECDHE implementation details and keeping my sanity.
 - [@davidtavarez](https://twitter.com/davidtavarez) for making some amazing contributions including a cross-platform stager.
 - [@mcohmi](https://twitter.com/mcohmi) a.k.a daddycocoaman, for being awesome and making code contributions including modules.
-- [@cobbr_io](https://twitter.com/cobbr_io) for writing SharpSploit which was heavily used as a reference throughout building a lot of the implant code & modules.
-- [@harmjoy](https://twitter.com/harmj0y) for writing SeatBelt which I stole (won't be the least thing I'll steal either!) and ported over to Boolang and for being a general inspiration.
+- [@cobbr_io](https://twitter.com/cobbr_io) for writing [SharpSploit](https://github.com/cobbr/SharpSploit) which was heavily used as a reference throughout building a lot of the implant code & modules.
+- [@harmj0y](https://twitter.com/harmj0y) for writing [SeatBelt](https://github.com/GhostPack/Seatbelt) which I stole (won't be the least thing I'll steal from him either!) and ported over to Boolang and for being a general inspiration.
 - [@TheWover](https://twitter.com/TheRealWover) & Odzhan for writing [Donut](https://github.com/TheWover/donut) which SILENTTRINITY makes heavy use of.
 - [modexp](https://modexp.wordpress.com) for helping me with a bunch of low level windows stuff which one day I'll learn when I decide to grow up.
 - [@_xpn_](https://twitter.com/_xpn_) for making an AMSI Patch which I stole and for being a general inspiration.
