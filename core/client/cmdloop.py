@@ -67,33 +67,33 @@ class STCompleter(Completer):
                                     yield Completion(loadable, -len(word_before_cursor))
                         return
 
-                    if hasattr(self.cli_menu.current_context, 'selected') and self.cli_menu.current_context.selected:
-                        if cmd_line[0] == 'set':
-                            if len(cmd_line) >= 2 and cmd_line[1] == 'bindip':
-                                for ip in self.cli_menu.teamservers.selected.stats.IPS:
-                                    if ip.startswith(word_before_cursor):
-                                        yield Completion(ip, -len(word_before_cursor))
-
-                                return
-
-                            for option in self.cli_menu.current_context.selected['options'].keys():
-                                if option.lower().startswith(word_before_cursor.lower()):
-                                    yield Completion(option, -len(word_before_cursor))
-                            return
-
-                        elif cmd_line[0] == 'generate':
-                            for listener in self.cli_menu.teamservers.selected.stats.LISTENERS.keys():
-                                if listener.startswith(word_before_cursor):
-                                    yield Completion(listener, -len(word_before_cursor))
+                if hasattr(self.cli_menu.current_context, 'selected') and self.cli_menu.current_context.name == 'modules':
+                    if cmd_line[0] == 'set':
+                        if len(cmd_line) >= 2 and cmd_line[1] == 'bindip':
+                            for ip in self.cli_menu.teamservers.selected.stats.IPS:
+                                if ip.startswith(word_before_cursor):
+                                    yield Completion(ip, -len(word_before_cursor))
 
                             return
 
-                        elif cmd_line[0] in ['run', 'info', 'sleep', 'kill', 'jitter']:
-                            for session in self.cli_menu.teamservers.selected.stats.SESSIONS.values():
-                                if session['alias'].startswith(word_before_cursor):
-                                    yield Completion(session['alias'], -len(word_before_cursor))
+                        for option in self.cli_menu.current_context.selected['options'].keys():
+                            if option.lower().startswith(word_before_cursor.lower()):
+                                yield Completion(option, -len(word_before_cursor))
+                        return
 
-                            return
+                    if cmd_line[0] == 'generate':
+                        for listener in self.cli_menu.teamservers.selected.stats.LISTENERS.keys():
+                            if listener.startswith(word_before_cursor):
+                                yield Completion(listener, -len(word_before_cursor))
+
+                        return
+
+                if cmd_line[0] in ['run', 'info', 'sleep', 'kill', 'jitter']:
+                    for session in self.cli_menu.teamservers.selected.stats.SESSIONS.values():
+                        if session['alias'].startswith(word_before_cursor):
+                            yield Completion(session['alias'], -len(word_before_cursor))
+
+                    return
 
             if hasattr(self.cli_menu.current_context, "_cmd_registry"):
                 for cmd in self.cli_menu.current_context._cmd_registry:
