@@ -1,3 +1,7 @@
+/*
+Ported from @matterpreter's CredPhisher C# tool (https://github.com/matterpreter/OffensiveCSharp)
+*/
+
 import System
 import System.Net
 import System.Runtime.InteropServices
