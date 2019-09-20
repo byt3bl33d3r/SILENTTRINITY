@@ -49,7 +49,7 @@ class STModule(Module):
         for line in output:
             if line.find(str(context.session.info['ProcessId'])) > 0:
                 colored_output.write(colored(line, "yellow"))
-            elif len(list(filter(lambda p: line.startswith(p[:-4]), ["chrome.exe", "firefox.exe", "iexplorer.exe", "MicrosoftEdge.exe", "MicrosoftEdgeCP.exe"]))):
+            elif len(list(filter(lambda p: line.startswith(p[:-4]), ["chrome.exe", "firefox.exe", "iexplore.exe", "MicrosoftEdge.exe", "MicrosoftEdgeCP.exe"]))):
                 colored_output.write(colored(line, "magenta"))
             elif len(list(filter(lambda p: line.startswith(p[:-4]), ["explorer.exe", "winlogon.exe", "lsass.exe"]))):
                 colored_output.write(colored(line, "blue"))

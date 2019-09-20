@@ -111,3 +111,4 @@ Marcello Salvati ([@byt3bl33d3r](https://twitter.com/byt3bl33d3r))
 - [@_xpn_](https://twitter.com/_xpn_) for making an AMSI Patch which I stole and for being a general inspiration.
 - [@_RastaMouse](https://twitter.com/_RastaMouse) for making an AMSI Patch which I stole and for being a general inspiration.
 - [@r3dQu1nn](https://twitter.com/r3dQu1nn) for writing his awesome [AggressorScripts](https://github.com/harleyQu1nn/AggressorScripts), decent amount of SILENTTRINITY modules are based off of those scripts.
+- [@matterpreter](https://twitter.com/matterpreter) for stealing a bunch of stuff from hist [OffensiveCSharp](https://github.com/matterpreter/OffensiveCSharp) repository.
