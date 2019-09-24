@@ -1,13 +1,20 @@
 import System
 import System.Reflection
-import System.Text
 import System.IO
 
 
 public static def Main():
-    encoded_assembly = "ASSEMBLY_BASE64"
+    encodedCompressedAssembly = "B64_ENCODED_COMPRESSED_ASSEMBLY"
+    deflatedStream = Compression.DeflateStream(
+        MemoryStream(
+            Convert.FromBase64String(encodedCompressedAssembly)
+            ),
+        Compression.CompressionMode.Decompress
+    )
 
-    assembly = Assembly.Load(Convert.FromBase64String(encoded_assembly))
-    args = Array[Object]([Array[String](["ARGS"])])
+    uncompressedFileBytes  as (byte) = array(byte, DECOMPRESSED_ASSEMBLY_LENGTH)
+    deflatedStream.Read(uncompressedFileBytes, 0, DECOMPRESSED_ASSEMBLY_LENGTH)
 
-    assembly.EntryPoint.Invoke(null, args)
+    assembly = Assembly.Load(uncompressedFileBytes)
+    args as (string) = array(string, (ASSEMBLY_ARGS))
+    assembly.EntryPoint.Invoke(null, (of object: (args)))

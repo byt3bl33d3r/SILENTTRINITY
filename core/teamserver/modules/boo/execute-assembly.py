@@ -1,7 +1,8 @@
 import os
-from base64 import b64encode
 from shlex import split
 from core.teamserver.module import Module
+from core.teamserver.utils import dotnet_deflate_and_encode
+
 
 class STModule(Module):
     def __init__(self):
@@ -19,7 +20,7 @@ class STModule(Module):
             'Arguments': {
                 'Description'   :   'Arguments to pass to the assembly on runtime',
                 'Required'      :   False,
-                'Value'         :   ""
+                'Value'         :  r""
             }
         }
 
@@ -30,7 +31,9 @@ class STModule(Module):
             if not os.path.exists(assembly_path):
                 raise Exception("Assembly not found in specified path")
 
+            assembly_size = os.path.getsize(assembly_path)
             with open(assembly_path, 'rb') as assembly:
-                module = module.replace('ASSEMBLY_BASE64', b64encode(assembly.read()).decode())
-                module = module.replace('ARGS', ' '.join(split(self.options['Arguments']['Value'])))
+                module = module.replace("B64_ENCODED_COMPRESSED_ASSEMBLY", dotnet_deflate_and_encode(assembly))
+                module = module.replace("DECOMPRESSED_ASSEMBLY_LENGTH", str(assembly_size))
+                module = module.replace("ASSEMBLY_ARGS", r', '.join([fr"`{arg}`" for arg in split(self.options['Arguments']['Value']])))
                 return module
