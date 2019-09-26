@@ -2,6 +2,7 @@ import pytest
 import requests
 import sys
 import os
+import random
 
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
@@ -21,9 +22,9 @@ def test_listeners(listener_loader):
 
         if l.name in ['http', 'https']:
             l['BindIP'] = '127.0.0.1'
-            l['Port'] = '7676'
+            l['Port'] = str(random.randint(3000, 6000))
             l.start()
-            r = requests.get(f'{l.name}://127.0.0.1:7676/', verify=False)
+            r = requests.get(f"{l.name}://127.0.0.1:{l['Port']}/", verify=False)
             assert r.status_code == 404
             l.stop()
             assert l.running == False
