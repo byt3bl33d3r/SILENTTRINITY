@@ -60,4 +60,5 @@ class IPCClient:
 
     def stop(self):
         self.__thread.kill()
+        self.__thread.join()
         logging.debug(f"Stopping process pid: {self.__thread.pid}, name:{self.__thread.name}/{self.__thread.ident}")

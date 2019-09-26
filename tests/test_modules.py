@@ -5,6 +5,7 @@ import os
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
+from core.teamserver.module import Module
 from core.teamserver.contexts.listeners import Listeners
 from core.teamserver.contexts.stagers import Stagers
 from core.teamserver.loader import Loader
@@ -33,6 +34,8 @@ def test_module_payload_gen(module_loader, listener_context, stager_context):
 
     for m in module_loader.loaded:
         print(f"Testing module '{m.name}'")
+        assert isinstance(m, Module) == True
+
         if m.name == 'boo/inject':
             m['Listener'] = 'http'
             m['Processs'] = 'explorer.exe'

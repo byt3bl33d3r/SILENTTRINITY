@@ -7,6 +7,7 @@ root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
 from core.teamserver.loader import Loader
+from core.teamserver.stager import Stager
 from core.teamserver.contexts.listeners import Listeners
 from core.teamserver.contexts.stagers import Stagers
 
@@ -30,6 +31,8 @@ def test_stager_gen(stager_loader, listener_context):
 
     for s in stager_loader.loaded:
         print(f"Testing stager '{s.name}'")
+        assert isinstance(s, Stager) == True
+
         guid, psk, stager_code = s.generate(listener_context.selected)
 
         assert isinstance(guid, uuid.UUID) == True

@@ -1,4 +1,5 @@
 import pytest
+import requests
 import sys
 import os
 
@@ -17,3 +18,12 @@ def test_listeners(listener_loader):
     for l in listener_loader.loaded:
         print(f"Testing listener '{l.name}'")
         assert isinstance(l, Listener) == True
+
+        if l.name in ['http', 'https']:
+            l['BindIP'] = '127.0.0.1'
+            l['Port'] = '7676'
+            l.start()
+            r = requests.get(f'{l.name}://127.0.0.1:7676/', verify=False)
+            assert r.status_code == 404
+            l.stop()
+            assert l.running == False
