@@ -4,7 +4,8 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: Test on ${{ matrix.os }}
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 4
       python-version: 3.7
@@ -13,7 +14,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Setup on ${{ matrix.os }}
+    - name: Test on ${{ matrix.os }}
       uses: actions/setup-python@v1
       with:
         python-version: 3.7
