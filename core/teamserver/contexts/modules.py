@@ -51,7 +51,7 @@ class Modules(Loader):
     def run(self, guids):
         for guid in guids:
             ipc_server.publish_event(events.NEW_JOB, (guid, Job(module=self.selected)))
- 
+
     def reload(self):
         self.get_loadables()
         if self.selected:

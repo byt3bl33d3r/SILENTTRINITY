@@ -110,7 +110,6 @@ class STListener(Listener):
 
         self.app = Quart(__name__)
         self.app.register_blueprint(http_blueprint)
-        logging.debug(f"Started HTTPS listener {self['BindIP']}:{self['Port']}")
         asyncio.run(serve(self.app, config))
 
     async def check_if_naughty(self):

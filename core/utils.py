@@ -15,7 +15,9 @@ from cryptography.hazmat.primitives.asymmetric import rsa#, ec
 from cryptography.hazmat.primitives import serialization, hashes
 
 class CmdError(Exception):
-    pass
+    def __init__(self, message):
+        logging.error(message)
+        super().__init__(message)
 
 def shellcode_to_int_byte_array(data):
     return  ','.join(list(map(str, map(int, data))))

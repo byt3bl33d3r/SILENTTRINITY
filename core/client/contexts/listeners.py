@@ -2,6 +2,8 @@ import asyncio
 import logging
 from terminaltables import SingleTable
 from core.client.utils import command, register_cli_commands
+from core.utils import print_good, print_info
+
 
 @register_cli_commands
 class Listeners:
@@ -66,8 +68,8 @@ class Listeners:
             table_data = [["Name", "URL"]]
             for name,lst in listeners.items():
                 table_data.append([
-                    lst['options']['Name']['Value'],
-                    f"{name}://{lst['options']['BindIP']['Value']}:{lst['options']['Port']['Value']}"
+                    name,
+                    f"{lst['name']}://{lst['options']['BindIP']['Value']}:{lst['options']['Port']['Value']}"
                 ])
 
         table = SingleTable(table_data)
@@ -101,7 +103,9 @@ class Listeners:
 
        Usage: start [-h]
        """
-    
+       listener = response.result
+       print_good(f"Started listener \'{listener['options']['Name']['Value']}\'")
+
     @command
     def stop(self, response):
         """
@@ -109,6 +113,8 @@ class Listeners:
 
         Usage: stop <name> [-h]
         """
+        listener = response.result
+        print_info(f"Stopped listener \'{listener['options']['Name']['Value']}\'")
 
     @command
     def set(self, name: str, value: str, response):
