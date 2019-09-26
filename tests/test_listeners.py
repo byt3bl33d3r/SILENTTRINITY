@@ -16,4 +16,4 @@ def listener_loader():
 def test_listeners(listener_loader):
     for l in listener_loader.loaded:
         print(f"Testing listener '{l.name}'")
-        assert isinstance(l, Listener)
+        assert isinstance(l, Listener) == True
