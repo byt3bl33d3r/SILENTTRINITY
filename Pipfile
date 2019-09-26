@@ -6,6 +6,8 @@ verify_ssl = true
 [dev-packages]
 pylint = "*"
 ipython = "*"
+flake8 = "*"
+pytest = "*"
 
 [packages]
 prompt-toolkit = "*"

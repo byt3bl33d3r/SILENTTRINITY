@@ -33,7 +33,7 @@ class STModule(Module):
 
             assembly_size = os.path.getsize(assembly_path)
             with open(assembly_path, 'rb') as assembly:
-                module = module.replace("B64_ENCODED_COMPRESSED_ASSEMBLY", dotnet_deflate_and_encode(assembly))
+                module = module.replace("B64_ENCODED_COMPRESSED_ASSEMBLY", dotnet_deflate_and_encode(assembly.read()))
                 module = module.replace("DECOMPRESSED_ASSEMBLY_LENGTH", str(assembly_size))
                 module = module.replace(
                     "ASSEMBLY_ARGS",
