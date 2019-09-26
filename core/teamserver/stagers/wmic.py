@@ -1,3 +1,5 @@
+import uuid
+from core.teamserver.crypto import gen_stager_psk
 from core.teamserver.stager import Stager
 
 class STStager(Stager):
@@ -15,9 +17,12 @@ class STStager(Stager):
                 filter(None, [f"{listener.name}://{listener['BindIP']}:{listener['Port']}", listener['CallBackURls']])
             )
 
+            guid = uuid.uuid4()
+            psk = gen_stager_psk()
+
             template = template.read()
             template = template.replace("C2_URL", c2_urls)
-            return template
+            return guid, psk, template
 
             #print_good(f"Generated stager to {stager.name}")
             #print_info("Launch with:")

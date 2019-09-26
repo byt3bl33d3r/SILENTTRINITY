@@ -24,7 +24,7 @@ class STModule(Module):
             module = module.read()
             shellcode_path = os.path.expanduser(self.options['Shellcode']['Value'])
             if not os.path.exists(shellcode_path):
-                raise Exception("Assembly not found in specified path")
+                raise Exception("Shellcode not found in specified path")
 
             with open(shellcode_path, 'r') as shellcode:
                 module = module.replace('~SHELLCODEDECCSV~', convert_shellcode(shellcode.read()))

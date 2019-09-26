@@ -1,10 +1,10 @@
-name: Python package
+name: SILENTTRINITY Teamserver/Client Tests
 
 on: [push, pull_request]
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }}
+    name: Teamserver tests on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       max-parallel: 4
@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Test on ${{ matrix.os }}
+    - name: Teamserver tests on ${{ matrix.os }}
       uses: actions/setup-python@v1
       with:
         python-version: 3.7

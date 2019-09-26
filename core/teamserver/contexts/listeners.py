@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import core.events as events
-from time import sleep
 from copy import deepcopy
 from core.teamserver import ipc_server
 from core.teamserver.loader import Loader
@@ -74,8 +73,6 @@ class Listeners(Loader):
         for l in self.listeners:
             if l['Name'] == name:
                 l.stop()
-                while l.running:
-                    sleep(0.5)
                 logging.info(f"Stopped {self.selected.name} listener")
                 del self.listeners[self.listeners.index(l)]
                 return dict(l)

