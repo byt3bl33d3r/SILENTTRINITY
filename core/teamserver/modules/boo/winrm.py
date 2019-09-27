@@ -10,7 +10,7 @@ class STModule(Module):
         self.language = 'boo'
         self.description = 'Move laterally using winrm'
         self.author = '@byt3bl33d3r'
-        self.references = ["System.Management"]
+        self.references = ["System.Management.Automation"]
         self.options = {
             'Host': {
                 'Description'   :   'Target IP or Hostname',
@@ -61,7 +61,7 @@ class STModule(Module):
                 src = src.replace('DOMAIN', self.options['Domain']['Value'])
                 src = src.replace('PASSWORD', self.options['Password']['Value'])
                 src = src.replace('TRUSTED_HOSTS', str(self.options['AddToTrustedHosts']['Value']).lower())
-                src = src.replace('PAYLOAD', f'`{stage}`')
+                src = src.replace('PAYLOAD', stage)
                 return src
 
-        print_bad('Invalid listener selected')
+        print_bad('Invalid stager/listener selected')

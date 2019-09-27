@@ -1,4 +1,4 @@
-name: SILENTTRINITY Teamserver/Client Tests
+name: Teamserver/Client Tests
 
 on: [push, pull_request]
 
