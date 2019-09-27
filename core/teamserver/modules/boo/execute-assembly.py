@@ -20,7 +20,7 @@ class STModule(Module):
             'Arguments': {
                 'Description'   :   'Arguments to pass to the assembly on runtime',
                 'Required'      :   False,
-                'Value'         :   ''
+                'Value'         :   r""
             }
         }
 
