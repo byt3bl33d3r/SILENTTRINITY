@@ -6,19 +6,36 @@ class STModule(Module):
         self.name = 'boo/powershell'
         self.language = 'boo'
         self.description = 'Execute arbitrary PowerShell in an un-managed runspace'
-        self.author = '@byt3bl33d3r'
-        self.references = []
+        self.author = '@cobbr_io (Original C# Version), @byt3bl33d3r (Boolang Port)'
+        self.references = ["System.Management.Automation"]
         self.options = {
             'Command': {
-                'Description'   :   'The ShellCommand to execute, including any arguments',
+                'Description'   :   'PowerShell code to execute',
                 'Required'      :   True,
-                'Value'         :   ''
+                'Value'         :   '',
+            },
+            'OutString': {
+                'Description'   :   'If true, appends Out-String to the PowerShellCode to execute',
+                'Required'      :   False,
+                'Value'         :   True,
+            },
+            'BypassLogging': {
+                'Description'   :   'If true, bypasses ScriptBlock and Module logging',
+                'Required'      :   False,
+                'Value'         :   True,
+            },
+            'BypassAmsi': {
+                'Description'   :   'If true, bypasses AMSI',
+                'Required'      :   False,
+                'Value'         :   True,
             }
         }
 
     def payload(self):
         with open('core/teamserver/modules/boo/src/powershell.boo', 'r') as module_src:
             src = module_src.read()
-            src = src.replace("COMMAND_TO_RUN", self.options["Command"]["Value"])
-
+            src = src.replace("POWERSHELL_SCRIPT", self.options["Command"]["Value"])
+            src = src.replace("OUT_STRING", str(self.options["OutString"]["Value"]).lower())
+            src = src.replace("BYPASS_LOGGING", str(self.options["BypassLogging"]["Value"]).lower())
+            src = src.replace("BYPASS_AMSI", str(self.options["BypassAmsi"]["Value"]).lower())
             return src

@@ -1,3 +1,9 @@
+/*
+
+Stolen from SharpSploit 
+    - https://github.com/cobbr/SharpSploit/blob/871ab3ee664e87cdc400a53f804096d206ef559c/SharpSploit/Execution/Shell.cs#L32
+*/ 
+
 import System
 import System.Reflection
 import System.Diagnostics
@@ -22,10 +28,17 @@ public static def PowerShellExecute(PowerShellCode as string, OutString as bool,
         if OutString:
             ps.AddCommand("Out-String")
         results = ps.Invoke()
-        output = array(item.ToString().Replace("\n", '') for item in results)
-        ps.Commands.Clear()
+        output = [R.ToString().Trim() as string for R in results]
+        for R in output:
+            print R
 
-       return join(output)
+        ps.Commands.Clear()
+        #return output
 
 public static def Main():
-    print PowerShellExecute(PowerShellCode='POWERSHELL_SCRIPT', OutString=true, BypassLogging=true, BypassAmsi=true)
+    PowerShellExecute(
+        PowerShellCode=`POWERSHELL_SCRIPT`,
+        OutString=OUT_STRING,
+        BypassLogging=BYPASS_LOGGING,
+        BypassAmsi=BYPASS_AMSI
+    )
