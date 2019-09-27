@@ -16,5 +16,5 @@ public static def Main():
     deflatedStream.Read(uncompressedFileBytes, 0, DECOMPRESSED_ASSEMBLY_LENGTH)
 
     assembly = Assembly.Load(uncompressedFileBytes)
-    args as (string) = array(string, (ASSEMBLY_ARGS))
+    args as (string) ASSEMBLY_ARGS
     assembly.EntryPoint.Invoke(null, (of object: (args)))

