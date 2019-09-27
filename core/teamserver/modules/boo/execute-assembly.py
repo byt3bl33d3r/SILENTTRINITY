@@ -20,7 +20,7 @@ class STModule(Module):
             'Arguments': {
                 'Description'   :   'Arguments to pass to the assembly on runtime',
                 'Required'      :   False,
-                'Value'         :  r""
+                'Value'         :   ''
             }
         }
 
@@ -35,10 +35,12 @@ class STModule(Module):
             with open(assembly_path, 'rb') as assembly:
                 module = module.replace("B64_ENCODED_COMPRESSED_ASSEMBLY", dotnet_deflate_and_encode(assembly.read()))
                 module = module.replace("DECOMPRESSED_ASSEMBLY_LENGTH", str(assembly_size))
-                module = module.replace(
-                    "ASSEMBLY_ARGS",
-                    r', '.join(
-                        [fr"`{arg}`" for arg in split(self.options['Arguments']['Value'])]
-                    )
-                )
+
+                boolang_string_array = ''
+                if self.options['Arguments']['Value']:
+                    formatted_arguments = r', '.join([fr"`{arg}`" for arg in split(self.options['Arguments']['Value'])])
+                    boolang_string_array = f"= array(string, ({formatted_arguments}))"
+
+                module = module.replace("ASSEMBLY_ARGS", boolang_string_array)
+                print(module)
                 return module
