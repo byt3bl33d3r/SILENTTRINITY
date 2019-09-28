@@ -4,9 +4,7 @@ import System.Net
 import System.Net.Sockets
 import System.Threading
 
-#public static def PortScann(binary as string, arguments as string, path as string):
-public static def PortScan (portstart as string, portstop as string, ctrthread as string, host as string):
-	
+public static def PortScan (portstart as string, portstop as string, ctrthread as string, host as string):	
 		
 		ctrThread = int.Parse(ctrthread);
 		portStart = int.Parse(portstart);
