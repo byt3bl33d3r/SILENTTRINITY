@@ -13,15 +13,6 @@ public static def PortScan (portstart as string, portstop as string, ctrthread a
 		ps = PortScanner(host, portStart, portStop)
 		ps.start(ctrThread)
 
-	private static def printUsage():
-		Console.WriteLine('Usage: PortScanner target-name [starting-port ending-port] [no-threads]\n')
-		Console.WriteLine('Where\n\tstarting-port\tStarting port number. Default is 1')
-		Console.WriteLine('\tending-port\tEnding port number. Default is 65535.')
-		Console.WriteLine('\tno-threads\tNumber of threads. Default is 200')
-		Console.WriteLine('\ttarget-name\tTarget host.\n')
-		Console.WriteLine('Example 1: "PortScanner 127.0.0.1 1 10000" will scan for open TCP ports from port 0 to port 10000.\n')
-		Console.WriteLine('Example 2: "PortScanner 127.0.0.1" will scan for open TCP ports from port 1 to port 65535.\n')
-
 public class PortScanner:
 
 	private host as string
