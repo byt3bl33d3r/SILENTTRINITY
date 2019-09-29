@@ -7,7 +7,7 @@ import System.Text.RegularExpressions
 import System.Threading
 
 public static def PortScan (portstart as string, portstop as string, ctrthread as string, host as string, timeOut as string):
-#private static def Main(args as (string)):
+
 		ctrThread = int.Parse(ctrthread);
 		portStart = int.Parse(portstart);
 		portStop = int.Parse(portstop);
@@ -58,16 +58,15 @@ public class PortScanner:
 		while (port = portList.NextPort()) != (-1):
 			count = port
 			Thread.Sleep(1)
-			#Console.Title = ('Current Port Count : ' + count.ToString())
 			try:
-				#Connect(host, port, tcpTimeout)
+
 				tcp = TcpClient(host, port)
 			except :
 				continue 
 			Console.ForegroundColor = ConsoleColor.Green
 			Console.WriteLine()
 			Console.WriteLine('TCP Port {0} is open ', port)
-			#Console.WriteLine((('TCP Port ' + port) + ' is open'))
+
 			try:
 				Console.ForegroundColor = ConsoleColor.Yellow
 				Console.WriteLine(BannerGrab(host, port, tcpTimeout))
@@ -84,11 +83,6 @@ public class PortScanner:
 				Console.WriteLine(((('Maybe A Login popup or a Service Login Found @ :: ' + host) + ':') + port.ToString()))
 				Console.ResetColor()
 			Console.ResetColor()
-		#if turnOff == true:
-		#	turnOff = false
-		#	Console.WriteLine()
-		#	Console.WriteLine('Scan Complete !!!')
-			#Console.ReadKey()
 
 	public def BannerGrab(hostName as string, port as int, timeout as int) as string:
 		newClient = TcpClient(hostName, port)
