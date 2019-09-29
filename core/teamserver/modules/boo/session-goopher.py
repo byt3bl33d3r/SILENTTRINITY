@@ -1,4 +1,3 @@
-#Not working yet
 from core.teamserver.module import Module
 
 
