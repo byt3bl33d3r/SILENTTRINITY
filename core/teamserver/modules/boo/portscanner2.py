@@ -20,9 +20,9 @@ class STModule(Module):
                 'Value': ''
             },
             'CTRTHREAD': {
-                'Description': 'How many threads to use, more is faster, default 200',
+                'Description': 'How many threads to use, more is faster, default 700',
                 'Required': True,
-                'Value': '200'
+                'Value': '700'
             },
             'HOST': {
                 'Description': 'IP address of the host to scan',
