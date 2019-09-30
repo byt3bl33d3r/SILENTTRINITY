@@ -12,7 +12,7 @@ public static def Main():
         Compression.CompressionMode.Decompress
     )
 
-    uncompressedFileBytes as (byte) = array(byte, DECOMPRESSED_ASSEMBLY_LENGTH)
+    uncompressedFileBytes  as (byte) = array(byte, DECOMPRESSED_ASSEMBLY_LENGTH)
     deflatedStream.Read(uncompressedFileBytes, 0, DECOMPRESSED_ASSEMBLY_LENGTH)
 
     assembly = Assembly.Load(uncompressedFileBytes)
