@@ -7,7 +7,7 @@ import System.Net.Sockets
 
 // Enable RDP and Remote Assistance on remote machine via Registry
 
-public static def enabled():
+public static def enable():
 		key as Microsoft.Win32.RegistryKey
 		key = Microsoft.Win32.Registry.LocalMachine.CreateSubKey('SYSTEM\\CurrentControlSet\\Control\\Terminal Server')
 		key.SetValue('fDenyTSConnections', '0', RegistryValueKind.DWord)
@@ -23,7 +23,7 @@ public static def enabled():
 				Console.WriteLine('3389/tcp closed ms-wbt-server')
 			Console.WriteLine('Remote Desktop has been enabled')
 	
-public static def disabled():
+public static def disable():
 		key as Microsoft.Win32.RegistryKey
 		try:
 			key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey('SYSTEM\\CurrentControlSet\\Control\\Terminal Server', true)

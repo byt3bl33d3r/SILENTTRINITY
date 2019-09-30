@@ -6,7 +6,7 @@ class STModule(Module):
         self.name = 'boo/portscanner'
         self.language = 'boo'
         self.description = 'Scan for open ports on local or remote machine'
-        self.author = '@hackabean, @munirusman'
+        self.author = '@hackabean, @PhilipMur'
         self.references = []
         self.options = {
             'PORTSTART': {
@@ -20,14 +20,19 @@ class STModule(Module):
                 'Value': ''
             },
             'CTRTHREAD': {
-                'Description': 'How many threads to use, more is faster',
-                'Required': False,
-                'Value': ''
+                'Description': 'How many threads to use, more is faster, default 700',
+                'Required': True,
+                'Value': '700'
             },
             'HOST': {
                 'Description': 'IP address of the host to scan',
                 'Required': True,
                 'Value': ''
+                            },
+            'TIMEOUT': {
+                'Description': 'How long to wait before giving up. Default 50, higher number gives more accurate readings',
+                'Required': True,
+                'Value': '50'
             }
 
 
@@ -40,4 +45,5 @@ class STModule(Module):
             src = src.replace('PORTEND', str(self.options['PORTEND']['Value']))
             src = src.replace('CTRTHREAD', str(self.options['CTRTHREAD']['Value']))
             src = src.replace('HOST', str(self.options['HOST']['Value']))
+            src = src.replace('TIMEOUT', str(self.options['TIMEOUT']['Value']))
             return src
