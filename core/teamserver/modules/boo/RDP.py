@@ -10,7 +10,7 @@ class STModule(Module):
         self.references = []
         self.options = {
             'RDP_Status': {
-                'Description': 'Enter value "enable" or "disable" to set RDP status (Requires Admin)',
+                'Description': 'Enter value "enabled" or "disabled" to set RDP status (Requires Admin)',
                 'Required': True,
                 'Value': ''
 
