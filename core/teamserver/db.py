@@ -60,8 +60,8 @@ class STDatabase:
         with self.db:
             query = self.db.execute("SELECT psk FROM sessions WHERE guid=(?)", [str(guid)])
             result = query.fetchone()
-            return result[0]
-    
+            return result[0] if result else None
+
     def get_sessions(self):
         with self.db:
             query = self.db.execute("SELECT * FROM sessions")

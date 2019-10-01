@@ -24,7 +24,8 @@ class Modules(Loader):
     def use(self, name: str):
         for m in self.loaded:
             if m.name.lower() == name.lower():
-                self.selected = deepcopy(m)
+                #self.selected = deepcopy(m)
+                self.selected = m
                 return dict(self.selected)
 
         raise CmdError(f"No module available named '{name.lower()}'")

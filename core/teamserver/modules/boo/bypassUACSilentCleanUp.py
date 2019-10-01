@@ -24,7 +24,6 @@ class STModule(Module):
                 'Required': True,
                 'Value': ""
             }
-
         }
 
     def payload(self):

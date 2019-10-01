@@ -4,6 +4,7 @@ import os
 import logging
 import core.events as events
 from core.teamserver.listener import Listener
+from core.ipcclient import IPCException
 from core.utils import get_ipaddress, gen_random_string
 from quart import Quart, Blueprint, request, Response
 #from quart.logging import default_handler, serving_handler
@@ -107,32 +108,36 @@ class STListener(Listener):
         return '', 404
 
     async def key_exchange(self, GUID):
-        data = await request.data
-        pub_key = self.dispatch_event(events.KEX, (GUID, request.remote_addr, data))
-        if pub_key:
+        try:
+            data = await request.data
+            pub_key = self.dispatch_event(events.KEX, (GUID, request.remote_addr, data))
             return Response(pub_key, content_type='application/octet-stream')
-        return '', 400
+        except IPCException:
+            return '', 400
 
     async def stage(self, GUID):
-        stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (GUID, request.remote_addr, self["Comms"]))
-
-        if stage_file:
+        try:
+            stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (GUID, request.remote_addr, self["Comms"]))
             self.dispatch_event(events.SESSION_STAGED, f'Sending stage ({sys.getsizeof(stage_file)} bytes) ->  {request.remote_addr} ...')
             return Response(stage_file, content_type='application/octet-stream')
-
-        return '', 400
+        except IPCException:
+            return '', 400
 
     async def jobs(self, GUID):
         #self.app.logger.debug(f"Session {GUID} ({request.remote_addr}) checked in")
-        job = self.dispatch_event(events.SESSION_CHECKIN, (GUID, request.remote_addr))
-        if job:
-            return Response(job, content_type='application/octet-stream')
-
-        #self.app.logger.debug(f"No jobs to give {GUID}")
-        return '', 200
+        try:
+            job = self.dispatch_event(events.SESSION_CHECKIN, (GUID, request.remote_addr))
+            if job:
+                return Response(job, content_type='application/octet-stream')
+            #self.app.logger.debug(f"No jobs to give {GUID}")
+            return '', 200
+        except IPCException:
+            return '', 400
 
     async def job_result(self, GUID, job_id):
-        data = await request.data
-        #self.app.logger.debug(f"Session {GUID} posted results of job {job_id}")
-        self.dispatch_event(events.JOB_RESULT, (GUID, job_id, data))
-        return '', 200
+        try:
+            data = await request.data
+            self.dispatch_event(events.JOB_RESULT, (GUID, request.remote_addr, job_id, data))
+            return '', 200
+        except IPCException:
+            return '', 400

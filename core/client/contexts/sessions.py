@@ -40,9 +40,11 @@ class Sessions:
         for guid,session in response.result.items():
             if session['info']:
                 try:
-                    username = f"*{session['info']['Username']}@{session['info']['Domain']}" if session['info']['HighIntegrity'] else f"{session['info']['Username']}@{session['info']['Domain']}"
+                    username = f"{session['info']['Domain']}\\{session['info']['Username']}@{session['info']['Hostname']}"
+                    if session['info']['HighIntegrity']:
+                        username = f"*{username}"
                 except KeyError:
-                    username = ''
+                    username = 'N/A'
 
                 table_data.append([
                     guid,
@@ -110,3 +112,21 @@ class Sessions:
         """
 
         print_good(f"Registered new session (guid: {response.result['guid']} psk: {response.result['psk']})")
+
+    @command
+    def checkin(self, guid: str, response):
+        """
+        Force a session to checkin
+
+        Usage: checkin [-h] <guid>
+        """
+        pass
+
+    @command
+    def rename(self, guid: str, name: str, response):
+        """
+        Give a session a friendly name
+
+        Usage: rename [-h] <guid> <name>
+        """
+        pass

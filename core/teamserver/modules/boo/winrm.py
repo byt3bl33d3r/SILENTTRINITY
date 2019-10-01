@@ -41,15 +41,21 @@ class STModule(Module):
                 'Description'   :    'Add target host to the TrustedHost list before executing',
                 'Required'      :    False,
                 'Value'         :    False,
+            },
+            'Stager': {
+                'Description'   :    'Stager to use (Obviously only PowerShell based stagers will work)',
+                'Required'      :    False,
+                'Value'         :    'powershell',
             }
         }
 
     def payload(self):
-        stager = ipc_server.publish_event(events.GET_STAGERS, ('powershell',))
+        stager = ipc_server.publish_event(events.GET_STAGERS, (self.options['Stager']['Value'],))
         listener = ipc_server.publish_event(events.GET_LISTENERS, (self.options['Listener']['Value'],))
 
         if stager and listener:
-            stager.options['AsFunction']['Value'] = False
+            if self.options['Stager']['Value'] == 'powershell':
+                stager.options['AsFunction']['Value'] = False
 
             with open('core/teamserver/modules/boo/src/winrm.boo', 'r') as module_src:
                 guid, psk, stage = stager.generate(listener)

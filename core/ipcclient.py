@@ -1,11 +1,15 @@
 import logging
 import sys
 import traceback
+import core.events as events
 from core.teamserver import ipc_server
 from collections import defaultdict
 from multiprocessing import Process, Pipe
 from multiprocessing.connection import Client
 from threading import Thread
+
+class IPCException(Exception):
+    pass
 
 class IPCClient:
 
@@ -52,8 +56,12 @@ class IPCClient:
     def dispatch_event(self, event, msg):
         self.__conn.send((event, msg))
         try:
-            data = self.__conn.recv()
-            logging.debug(f"Received data back from event: {event} {f'data-len: {len(data)}' if data else ''}")
+            topic, data = self.__conn.recv()
+            if topic == events.EXCEPTION:
+                logging.debug(f"Received data back from event: {event} - ERROR - {data}")
+                raise IPCException(data)
+
+            logging.debug(f"Received data back from event: {event} - OK")
             return data
         except EOFError:
             pass

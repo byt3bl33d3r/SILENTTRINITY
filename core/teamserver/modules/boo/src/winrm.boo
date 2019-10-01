@@ -47,7 +47,7 @@ public static def StartPSRemoting(target as string, payload as string, username 
         rs.Open()
 
         pipe = rs.CreatePipeline(payload.Trim())
-        pipe.Invoke()
+        pipe.InvokeAsync()
     except e as Exception:
         print e
     ensure:
