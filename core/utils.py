@@ -219,7 +219,7 @@ def print_banner(codename, version):
     """
     version = f"""
                                Codename : {colored(codename, "yellow")}
-                                   Version  : {colored(version, "yellow")}
+                               Version  : {colored(version, "yellow")}
     """
 
     print(logo)
