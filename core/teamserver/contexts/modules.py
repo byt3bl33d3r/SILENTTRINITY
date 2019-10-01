@@ -1,7 +1,7 @@
 import types
 import asyncio
 import core.events as events
-from copy import deepcopy
+#from copy import deepcopy
 from core.teamserver import ipc_server
 from core.teamserver.loader import Loader
 from core.utils import CmdError

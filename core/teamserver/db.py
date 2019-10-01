@@ -8,6 +8,9 @@ import uuid
 
 class AsyncSTDatabase:
 
+    def __init__(self, db_path="./data/st.db"):
+        self.db_path = db_path
+
     @staticmethod
     async def create_db_and_schema(db_path="./data/st.db"):
         async with aiosqlite.connect(db_path) as db:
@@ -31,8 +34,8 @@ class AsyncSTDatabase:
         async with self.db.execute("SELECT * FROM sessions") as cursor:
             return cursor.fetchall()
 
-    async def __aenter__(self, db_path="./data/st.db"):
-        self.db = await aiosqlite.connect(db_path)
+    async def __aenter__(self):
+        self.db = await aiosqlite.connect(self.db_path)
         return self
 
     async def __aexit__(self, exec_type, exc, tb):
@@ -40,6 +43,9 @@ class AsyncSTDatabase:
         await self.db.close()
 
 class STDatabase:
+
+    def __init__(self, db_path="./data/st.db"):
+        self.db_path = db_path
 
     @staticmethod
     def create_db_and_schema(db_path="./data/st.db"):
@@ -70,8 +76,8 @@ class STDatabase:
             query = self.db.execute("SELECT * FROM sessions")
             return query.fetchall()
 
-    def __enter__(self, db_path="./data/st.db"):
-        self.db = sqlite3.connect(db_path)
+    def __enter__(self):
+        self.db = sqlite3.connect(self.db_path)
         return self
 
     def __exit__(self, exec_type, exc, tb):

@@ -4,7 +4,6 @@ from copy import deepcopy
 from core.utils import CmdError
 from core.teamserver import ipc_server
 from core.teamserver.loader import Loader
-from core.teamserver.db import STDatabase
 
 
 class Stagers(Loader):
