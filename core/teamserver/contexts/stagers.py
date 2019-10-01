@@ -60,9 +60,6 @@ class Stagers(Loader):
         for l in self.teamserver.contexts['listeners'].listeners:
             if l['Name'] == listener_name:
                 guid, psk, generated_stager = self.selected.generate(l)
-
-                with STDatabase() as db:
-                    db.add_session(guid, psk)
                 self.teamserver.contexts['sessions']._register(guid, psk)
 
                 return {

@@ -53,8 +53,11 @@ class STDatabase:
 
     def add_session(self, guid, psk: str):
         with self.db:
-            self.db.execute("INSERT INTO sessions (guid, psk) VALUES (?,?)", [str(guid), psk])
-            return psk
+            try:
+                self.db.execute("INSERT INTO sessions (guid, psk) VALUES (?,?)", [str(guid), psk])
+                return psk
+            except sqlite3.IntegrityError:
+                logging.debug(f"Session with guid {guid} already present in database")
 
     def get_session_psk(self, guid):
         with self.db:
