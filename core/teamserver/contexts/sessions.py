@@ -66,8 +66,10 @@ class Sessions:
 
     def _register(self, guid, psk):
         session = Session(guid, psk)
-        logging.info(f"Registering session: {session}")
         self.sessions.add(session)
+        with STDatabase() as db:
+            db.add_session(guid, psk)
+        logging.info(f"Registering session: {session}")
 
     def register(self, guid, psk):
         if not guid:
@@ -80,10 +82,7 @@ class Sessions:
         except ValueError:
             raise CmdError("Invalid Guid")
 
-        with STDatabase() as db:
-            db.add_session(guid, psk)
         self._register(guid, psk)
-
         return {"guid": str(guid), "psk": psk}
 
     #@subscribe(events.KEX)

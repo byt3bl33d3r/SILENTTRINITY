@@ -88,7 +88,7 @@ class STCompleter(Completer):
 
                             return
 
-                        elif cmd_line[0] in ['run', 'info', 'sleep', 'kill', 'jitter']:
+                        elif cmd_line[0] in ['run', 'info', 'sleep', 'kill', 'jitter', 'checkin', 'rename']:
                             for session in self.cli_menu.teamservers.selected.stats.SESSIONS.values():
                                 if session['alias'].startswith(word_before_cursor):
                                     yield Completion(session['alias'], -len(word_before_cursor))
