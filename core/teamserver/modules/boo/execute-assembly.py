@@ -8,7 +8,7 @@ class STModule(Module):
     def __init__(self):
         self.name = 'boo/execute-assembly'
         self.language = 'boo'
-        self.description = 'Execute a .NET assembly in memory'
+        self.description = 'Execute local .NET assembly in memory'
         self.author = '@byt3bl33d3r'
         self.references = []
         self.options = {
