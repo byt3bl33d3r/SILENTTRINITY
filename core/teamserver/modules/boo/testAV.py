@@ -3,7 +3,7 @@ from core.teamserver.module import Module
 
 class STModule(Module):
     def __init__(self):
-        self.name = 'boo/testAV'
+        self.name = 'boo/testav'
         self.language = 'boo'
         self.description = 'Test if an antivirus is installed via the resolution of the service virtual SID.'
         self.author = '@remiescourrou'

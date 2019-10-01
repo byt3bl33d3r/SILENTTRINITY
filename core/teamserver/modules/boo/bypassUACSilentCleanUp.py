@@ -3,7 +3,7 @@ from core.teamserver.module import Module
 
 class STModule(Module):
     def __init__(self):
-        self.name = 'boo/bypassUACSilentCleanUp'
+        self.name = 'boo/uacsilentcleanup'
         self.language = 'boo'
         self.description = 'Bypasses UAC using task in Windows Task Scheduler called "SilentCleanup".'
         self.author = '@hackabean, @JulioUrena, @rootm0s'

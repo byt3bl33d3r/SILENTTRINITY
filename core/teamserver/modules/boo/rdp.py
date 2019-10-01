@@ -3,7 +3,7 @@ from core.teamserver.module import Module
 
 class STModule(Module):
     def __init__(self):
-        self.name = 'boo/RDP'
+        self.name = 'boo/rdp'
         self.language = 'boo'
         self.description = 'Enable or disable Remote Desktop Protocol on a localhost via registry key'
         self.author = '@hackabean'

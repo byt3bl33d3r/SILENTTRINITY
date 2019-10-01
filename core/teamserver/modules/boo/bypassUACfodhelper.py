@@ -3,7 +3,7 @@ from core.teamserver.module import Module
 
 class STModule(Module):
     def __init__(self):
-        self.name = 'boo/bypassUACFodhelper'
+        self.name = 'boo/uacfodhelper'
         self.language = 'boo'
         self.description = 'Bypasses UAC using Manage Optional Features in Windows Settings.'
         self.author = '@hackabean, @JulioUrena, rootm0s'

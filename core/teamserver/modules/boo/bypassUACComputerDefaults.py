@@ -3,7 +3,7 @@ from core.teamserver.module import Module
 
 class STModule(Module):
     def __init__(self):
-        self.name = 'boo/bypassUACComputerDefaults'
+        self.name = 'boo/uaccomputerdefaults'
         self.language = 'boo'
         self.description = 'Bypasses UAC using Device Manager through Management Console.'
         self.author = '@hackabean, @JulioUrena, rootm0s'
