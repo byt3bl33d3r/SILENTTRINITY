@@ -9,6 +9,8 @@ from core.teamserver.jobs import Jobs
 from core.teamserver.comms.utils import gen_stager_code
 from core.teamserver.crypto import ECDHE
 
+class SessionNotFoundError(Exception):
+    pass
 
 class Session:
     def __init__(self, guid, psk):

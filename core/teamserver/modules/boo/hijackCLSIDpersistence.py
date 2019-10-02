@@ -3,7 +3,7 @@ from core.teamserver.module import Module
 
 class STModule(Module):
     def __init__(self):
-        self.name = 'boo/hijackCLSIDpersistence'
+        self.name = 'boo/hijackclsidpersistence'
         self.language = 'boo'
         self.description = 'Hijacks a CLSID key to execute a payload.'
         self.author = '@Daudau'

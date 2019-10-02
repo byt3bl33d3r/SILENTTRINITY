@@ -2,6 +2,7 @@ import json
 import os
 import logging
 import copy
+import traceback
 from core.teamserver.job import Job
 
 
@@ -16,7 +17,7 @@ class Jobs:
             return list(filter(lambda job: job.status == 'initialized', self.jobs))[-1]
         except IndexError:
             logging.error(f"No jobs available")
-    
+
     def get_by_id(self, job_id):
         try:
             return list(filter(lambda job: job.id == job_id, self.jobs))[0]
@@ -26,8 +27,14 @@ class Jobs:
     def get(self, job_id=None):
         job = self.next_job()
         if job:
-            job.status = 'started'
-            return self.session.crypto.encrypt(job.payload())
+            try:
+                job_payload = job.payload()
+                job.status = 'started'
+                return self.session.crypto.encrypt(job_payload)
+            except Exception as e:
+                self.jobs.remove(job)
+                logging.error(f"Error generating payload for module '{job.module.name}': {e}")
+                traceback.print_exc()
 
     def add(self, job):
         # We have to make a copy of the Job object here cause if we run the module on all sessions at once the status of the job

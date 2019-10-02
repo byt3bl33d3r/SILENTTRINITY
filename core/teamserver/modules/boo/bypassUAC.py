@@ -3,7 +3,7 @@ from core.teamserver.module import Module
 
 class STModule(Module):
     def __init__(self):
-        self.name = 'boo/bypassUAC'
+        self.name = 'boo/uactokenmagic'
         self.language = 'boo'
         self.description = 'Bypasses UAC through token duplication and spawns a specified process. (Requires Admin)'
         self.author = '@Daudau'

@@ -3,10 +3,10 @@ from core.teamserver.module import Module
 
 class STModule(Module):
     def __init__(self):
-        self.name = 'boo/amsiPatch'
+        self.name = 'boo/amsipatch'
         self.language = 'boo'
         self.description = 'Disables AMSI in the current process'
-        self.author = 'Patch by @_xpn & @rasta_mouse. Module by @byt3bl33d3r, @modexp, @daddycocoaman'
+        self.author = 'AMSI patch by @_xpn_ & @_RastaMouse. Module by @byt3bl33d3r, @modexp, @daddycocoaman'
         self.references = []
         self.options = {}
 

@@ -1,7 +1,7 @@
 import types
 import asyncio
 import core.events as events
-from copy import deepcopy
+#from copy import deepcopy
 from core.teamserver import ipc_server
 from core.teamserver.loader import Loader
 from core.utils import CmdError
@@ -24,7 +24,8 @@ class Modules(Loader):
     def use(self, name: str):
         for m in self.loaded:
             if m.name.lower() == name.lower():
-                self.selected = deepcopy(m)
+                #self.selected = deepcopy(m)
+                self.selected = m
                 return dict(self.selected)
 
         raise CmdError(f"No module available named '{name.lower()}'")
@@ -33,6 +34,11 @@ class Modules(Loader):
         if not self.selected:
             raise CmdError("No module selected")
         return self.selected.options
+
+    def info(self):
+        if not self.selected:
+            raise CmdError("No module selected")
+        return dict(self.selected)
 
     def set(self, name: str, value: str):
         if not self.selected:
@@ -46,9 +52,12 @@ class Modules(Loader):
     def run(self, guids):
         for guid in guids:
             ipc_server.publish_event(events.NEW_JOB, (guid, Job(module=self.selected)))
- 
+
     def reload(self):
         self.get_loadables()
+        if self.selected:
+            self.use(self.selected.name)
+
         asyncio.create_task(
             self.teamserver.update_available_loadables()
         )

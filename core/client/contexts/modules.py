@@ -75,6 +75,25 @@ class Modules:
         print(table.table)
 
     @command
+    def info(self, response):
+        """
+        Show detailed information of the selected module
+
+        Usage: options [-h]
+        """
+        print(f"Author(s): {response.result['author']}")
+        print(f"Description: {response.result['description']}")
+        print(f"Language: {response.result['language']}\n")
+
+        table_data = [["Option Name", "Required", "Value", "Description"]]
+        for k, v in response.result['options'].items():
+            table_data.append([k, v["Required"], v["Value"], v["Description"]])
+
+        table = SingleTable(table_data, title=self.selected['name'])
+        table.inner_row_border = True
+        print(table.table)
+
+    @command
     def run(self, guids: List[str], response):
         """
         Run a module

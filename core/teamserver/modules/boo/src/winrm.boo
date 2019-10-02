@@ -46,9 +46,8 @@ public static def StartPSRemoting(target as string, payload as string, username 
         rs = RunspaceFactory.CreateRunspace(connectionInfo)
         rs.Open()
 
-        ps_code = "Start-Job {$(payload)}"
-        pipe = rs.CreatePipeline(ps_code)
-        pipe.Invoke()
+        pipe = rs.CreatePipeline(payload.Trim())
+        pipe.InvokeAsync()
     except e as Exception:
         print e
     ensure:
@@ -62,9 +61,9 @@ public static def StartPSRemoting(target as string, payload as string, username 
             ps.Invoke()
 
 public static def Main():
-    payload = """
+    payload = `
 PAYLOAD
-"""
+`
 
     StartPSRemoting(
         target="TARGET",

@@ -3,6 +3,9 @@
 *.rc
 .vscode/
 
+#Ignore st.db created by tests
+tests/st.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

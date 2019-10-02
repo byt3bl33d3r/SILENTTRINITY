@@ -1,6 +1,8 @@
 import logging
 import functools
 import random
+import traceback
+import core.events as events
 from time import sleep
 from secrets import token_bytes
 from collections import defaultdict
@@ -62,9 +64,14 @@ class IPCServer(Thread):
                 continue
             else:
                 topic, msg = data
-                logging.debug(f"Got event: {topic} {f'msg-len: {len(msg)}' if msg else ''}")
+                logging.debug(f"Got event: {topic} {f'- msg-len: {len(msg)}' if msg else ''}")
                 if topic in self.subscribers:
                     for sub in self.subscribers[topic]:
-                        client.send(sub(msg))
+                        try:
+                            client.send((topic, sub(msg)))
+                        except Exception as e:
+                            logging.error(f"Error occured in subscriber function to {topic} event, printing traceback")
+                            traceback.print_exc()
+                            client.send((events.EXCEPTION, str(e)))
                 else:
                     logging.warning(f"Got event: {topic}, but there's nothing subscribed")

@@ -3,10 +3,10 @@ from core.teamserver.module import Module
 
 class STModule(Module):
     def __init__(self):
-        self.name = 'boo/bypassUACEventVwr'
+        self.name = 'boo/uaceventvwr'
         self.language = 'boo'
         self.description = 'Bypasses UAC by performing an image hijack on the .msc file extension'
-        self.author = '@byt3bl33d3r'
+        self.author = '@enigma0x3, @byt3bl33d3r'
         self.references = []
         self.options = {
             'Command': {
