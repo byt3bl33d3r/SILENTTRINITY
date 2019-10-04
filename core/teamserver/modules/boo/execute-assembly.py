@@ -15,23 +15,23 @@ class STModule(Module):
             'Local-Assembly': {
                 'Description'   :   'Path to local assembly',
                 'Required'      :   True,
-                'Value'         :   'eg /tmp/Seatbelt.exe'
+                'Value'         :   'eg. /tmp/Seatbelt.exe'
             },
             'Remote-Assemebly': {
                 'Description'   :   'Path to remote assembly to load from URL',
                 'Required'      :   True,
-                'Value'         :   ''
+                'Value'         :   'eg. http://url//Seatbelt.exe'
             },
             'Remote-Project': {
                 'Description'   :   'Path to remote project to load from URL (csproj or xml)',
                 'Required'      :   True,
-                'Value'         :   ''
+                'Value'         :   'eg. http://url//EvilProj.xml'
             },
 
             'Arguments': {
                 'Description'   :   'Arguments to pass to the assembly on runtime',
                 'Required'      :   False,
-                'Value'         :   ''
+                'Value'         :   'eg. user'
             }
         }
 
