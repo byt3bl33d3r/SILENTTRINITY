@@ -43,7 +43,7 @@ class STModule(Module):
                     assembly_path = os.path.expanduser(self.options['Local-Assembly']['Value'])
 
                     if not os.path.exists(assembly_path):
-                        raise Exception("Assembly not found in specified path")
+                        raise Exception("Local-Assembly not found in specified path")
 
                     assembly_size = os.path.getsize(assembly_path)
                     with open(assembly_path, 'rb') as assembly:
