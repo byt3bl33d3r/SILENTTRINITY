@@ -65,12 +65,12 @@ class STModule(Module):
         elif self.options['Remote-Assemebly']['Value']: 
     	    with open('core/teamserver/modules/boo/src/remote-assembly.boo', 'r') as module_src:
                 src = module_src.read()
-                src = src.replace('BINARY', str(self.options['RemoteAssemebly']['Value']))
+                src = src.replace('BINARY', str(self.options['Remote-Assemebly']['Value']))
                 src = src.replace('ASSEMBLY_ARGS', str(self.options['Arguments']['Value']))
                 return src
 
         elif self.options['Remote-Project']['Value']: 
     	    with open('core/teamserver/modules/boo/src/remote-project.boo', 'r') as module_src:
                 src = module_src.read()
-                src = src.replace('PROJECT', str(self.options['RemoteProject']['Value']))
+                src = src.replace('PROJECT', str(self.options['Remote-Project']['Value']))
                 return src      	
