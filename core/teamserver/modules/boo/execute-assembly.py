@@ -37,7 +37,7 @@ class STModule(Module):
 
     def payload(self):
 
-        if self.options['Local-Assembly']['Value']: 
+        if self.options['LocalAssembly']['Value']: 
         	with open('core/teamserver/modules/boo/src/local-assembly.boo') as module:
                     module = module.read()          
                     assembly_path = os.path.expanduser(self.options['LocalAssembly']['Value'])
