@@ -15,7 +15,7 @@ class STModule(Module):
             'Local-Assembly': {
                 'Description'   :   'Path to local assembly',
                 'Required'      :   True,
-                'Value'         :   ''
+                'Value'         :   'eg /tmp/Seatbelt.exe'
             },
             'Remote-Assemebly': {
                 'Description'   :   'Path to remote assembly to load from URL',
