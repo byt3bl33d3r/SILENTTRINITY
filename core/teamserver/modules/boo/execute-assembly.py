@@ -12,17 +12,17 @@ class STModule(Module):
         self.author = '@byt3bl33d3r, @anthemtotheego (Csharp project), @hackabean(BooLang port)'
         self.references = []
         self.options = {
-            'LocalAssembly': {
+            'Local-Assembly': {
                 'Description'   :   'Path to local assembly',
                 'Required'      :   True,
                 'Value'         :   'eg. /tmp/Seatbelt.exe'
             },
-            'RemoteAssemebly': {
+            'Remote-Assemebly': {
                 'Description'   :   'Path to remote assembly to load from URL',
                 'Required'      :   True,
                 'Value'         :   'eg. http://url//Seatbelt.exe'
             },
-            'RemoteProject': {
+            'Remote-Project': {
                 'Description'   :   'Path to remote project to load from URL (csproj or xml)',
                 'Required'      :   True,
                 'Value'         :   'eg. http://url//EvilProj.xml'
@@ -37,13 +37,12 @@ class STModule(Module):
 
     def payload(self):
 
-        if self.options['LocalAssembly']['Value']: 
+        if self.options['Local-Assembly']['Value']: 
         	with open('core/teamserver/modules/boo/src/local-assembly.boo') as module:
                     module = module.read()          
-                    assembly_path = os.path.expanduser(self.options['LocalAssembly']['Value'])
-
+                    assembly_path = os.path.expanduser(self.options['Local-Assembly']['Value'])
                     if not os.path.exists(assembly_path):
-                        raise Exception("LocalAssembly not found in specified path")
+                        raise Exception("Local-Assembly not found in specified path")
 
                     assembly_size = os.path.getsize(assembly_path)
                     with open(assembly_path, 'rb') as assembly:
