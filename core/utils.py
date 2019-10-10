@@ -33,6 +33,7 @@ def shellcode_to_hex_byte_array(shellcode):
 
 # Stolen from https://github.com/zerosum0x0/koadic/blob/master/core/plugin.py
 def convert_shellcode(shellcode):
+    shellcode = shellcode.rstrip('\n')
     decis = []
     count = 0
     for i in range(0, len(shellcode), 2):
