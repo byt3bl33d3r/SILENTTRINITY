@@ -31,8 +31,9 @@ def shellcode_to_hex_byte_array(shellcode):
 
     return ','.join(byte_array)
 
-# Stolen from https://github.com/zerosum0x0/koadic/blob/master/core/plugin.py
+# Stolen and adapted from https://github.com/zerosum0x0/koadic/blob/master/core/plugin.py
 def convert_shellcode(shellcode):
+    shellcode = shellcode.translate({ord(c): None for c in '\\x'}).rstrip('\n')
     decis = []
     count = 0
     for i in range(0, len(shellcode), 2):

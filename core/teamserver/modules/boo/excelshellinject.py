@@ -13,7 +13,7 @@ class STModule(Module):
         self.references = ["Microsoft.Office.Interop.Excel"]
         self.options = {
             'Shellcode': {
-                'Description'   :   'Path to shellcode in ASCII hex format (e.g.: 31c0c3)',
+                'Description'   :   'Path to shellcode in ASCII hex format (e.g.: 31c0c3 or \\x31\\xc0\\xc3)',
                 'Required'      :   True,
                 'Value'         :   ''
             }
