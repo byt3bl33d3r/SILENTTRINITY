@@ -58,14 +58,13 @@ class STCompleter(Completer):
 
                 if self.cli_menu.teamservers.selected:
                     if cmd_line[0] == 'use':
-                        if hasattr(self.cli_menu.current_context, 'available'):
-                            for loadable in self.cli_menu.current_context.available:
-                                if word_before_cursor in loadable:
-                                    # Apperently document.get_word_before_cursor() breaks if there's a forward slash in the command line ?
-                                    try:
-                                        yield Completion(loadable, -len(cmd_line[1]))
-                                    except IndexError:
-                                        yield Completion(loadable, -len(word_before_cursor))
+                        for loadable in self.cli_menu.current_context.available:
+                            if word_before_cursor in loadable:
+                                # Apperently document.get_word_before_cursor() breaks if there's a forward slash in the command line ?
+                                try:
+                                    yield Completion(loadable, -len(cmd_line[1]))
+                                except IndexError:
+                                    yield Completion(loadable, -len(word_before_cursor))
                         return
 
                     if hasattr(self.cli_menu.current_context, 'selected') and self.cli_menu.current_context.selected:
