@@ -18,6 +18,8 @@ import Boo.Lang.Compiler.IO
 import Boo.Lang.Compiler.Pipelines
 import Microsoft.VisualBasic.Devices
 import Microsoft.Win32
+#Need to import it independently to fix: https://github.com/byt3bl33d3r/SILENTTRINITY/issues/105#issuecomment-535854887
+import System.Management.Automation
 
 ASSEMBLY_RESOLVE_EVENT_HANDLER_GOES_HERE
 
