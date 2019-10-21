@@ -17,9 +17,14 @@ class STModule(Module):
                 'Value'         :   ''
             },
             'Process': {
-                'Description'   :   'Process to inject into',
+                'Description'   :   'Process to inject into. [Not used if PID is set to value other than 0]',
                 'Required'      :   False,
                 'Value'         :   'explorer'
+            },
+            'PID': {
+                'Description'   :   'PID to inject into. [Will use ProcessName if 0]',
+                'Required'      :   False,
+                'Value'         :   '0' 
             },
             'InjectionMethod': {
                 'Description'   :   'Injection Method',
@@ -38,6 +43,7 @@ class STModule(Module):
                         src = module_src.read()
                         src = src.replace('BYTES', shellcode)
                         src = src.replace('PROCESS', self.options['Process']['Value'])
+                        src = src.replace('PID', self.options['PID']['Value'])
                         return src
 
                 elif self.options['InjectionMethod']['Value'] == 'QueueUserAPC':
