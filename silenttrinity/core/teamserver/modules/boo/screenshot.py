@@ -1,8 +1,9 @@
 import gzip
 import logging
 import json
+import os
 from base64 import b64decode
-from silenttrinity.core.utils import get_path_in_package
+from silenttrinity.core.utils import get_path_in_package, get_path_in_data_folder
 from silenttrinity.core.teamserver.module import Module
 
 
@@ -23,8 +24,14 @@ class STModule(Module):
     def process(self, context, output):
         try:
             filename = output['filename']
-            self.gzip_file = f"./data/logs/{context.session.guid}/screenshot_{filename}.gz"
-            self.decompressed_file = f"./data/logs/{context.session.guid}/screenshot_{filename}.jpg"
+            self.gzip_file = os.path.join(
+                get_path_in_data_folder("logs"),
+                f"{context.session.guid}/screenshot_{filename}.gz"
+            )
+            self.decompressed_file = os.path.join(
+                get_path_in_data_folder("logs"),
+                f"{context.session.guid}/screenshot_{filename}.jpg"
+            )
 
             file_chunk = output['data']
             with open(self.gzip_file, 'ab+') as reassembled_gzip_data:

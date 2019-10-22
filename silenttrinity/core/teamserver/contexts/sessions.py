@@ -2,8 +2,8 @@ import os
 import logging
 import asyncio
 import uuid
-import silenttrinity.core.events as events
 from termcolor import colored
+from silenttrinity.core.events import Events
 from silenttrinity.core.utils import gen_random_string, CmdError
 from silenttrinity.core.teamserver import ipc_server
 from silenttrinity.core.teamserver.db import STDatabase
@@ -33,13 +33,13 @@ class Sessions:
         self.selected = None
         self.sessions = set()
 
-        ipc_server.attach(events.KEX, self.kex)
-        ipc_server.attach(events.ENCRYPT_STAGE, self.gen_encrypted_stage)
-        ipc_server.attach(events.SESSION_STAGED, self.notify_session_staged)
-        ipc_server.attach(events.SESSION_REGISTER, self._register)
-        ipc_server.attach(events.SESSION_CHECKIN, self.session_checked_in)
-        ipc_server.attach(events.NEW_JOB, self.add_job)
-        ipc_server.attach(events.JOB_RESULT, self.job_result)
+        ipc_server.attach(Events.KEX, self.kex)
+        ipc_server.attach(Events.ENCRYPT_STAGE, self.gen_encrypted_stage)
+        ipc_server.attach(Events.SESSION_STAGED, self.notify_session_staged)
+        ipc_server.attach(Events.SESSION_REGISTER, self._register)
+        ipc_server.attach(Events.SESSION_CHECKIN, self.session_checked_in)
+        ipc_server.attach(Events.NEW_JOB, self.add_job)
+        ipc_server.attach(Events.JOB_RESULT, self.job_result)
 
         with STDatabase() as db:
             for registered_session in db.get_sessions():
@@ -150,7 +150,7 @@ class Sessions:
                     #Since these methods get called from a seperate OS thread in ipc_server, we must use asyncio.run_coroutine_threadsafe()
                     asyncio.run_coroutine_threadsafe(
                             self.teamserver.users.broadcast_event(
-                                events.NEW_SESSION, 
+                                Events.NEW_SESSION, 
                                 f"New session {session.guid} connected! ({session.address})"
                         ),
                         loop=self.teamserver.loop
@@ -164,7 +164,7 @@ class Sessions:
                     session.info = job_output
                     asyncio.run_coroutine_threadsafe(
                             self.teamserver.users.broadcast_event(
-                                events.JOB_RESULT, 
+                                Events.JOB_RESULT, 
                                 {'id': job_id, 'output': 'Reporting for duty comrade! ☭', 'session': session.guid, 'address': session.address}
                         ),
                         loop=self.teamserver.loop
@@ -174,7 +174,7 @@ class Sessions:
 
                 asyncio.run_coroutine_threadsafe(
                         self.teamserver.users.broadcast_event(
-                            events.JOB_RESULT, 
+                            Events.JOB_RESULT, 
                             {'id': job_id, 'output': job_output, 'session': session.guid, 'address': session.address}
                     ),
                     loop=self.teamserver.loop
@@ -185,7 +185,7 @@ class Sessions:
         #Since these methods get called from a seperate OS thread in ipc_server, we must use asyncio.run_coroutine_threadsafe()
         asyncio.run_coroutine_threadsafe(
                 self.teamserver.users.broadcast_event(
-                    events.SESSION_STAGED, 
+                    Events.SESSION_STAGED, 
                     msg
             ),
             loop=self.teamserver.loop

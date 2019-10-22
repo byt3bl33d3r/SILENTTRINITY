@@ -3,7 +3,7 @@ import asyncio
 import os
 import logging
 #import core.state as state
-import silenttrinity.core.events as events
+from silenttrinity.core.events import Events
 from silenttrinity.core.utils import create_self_signed_cert, get_ipaddress, gen_random_string, get_path_in_data_folder
 from silenttrinity.core.teamserver.listener import Listener
 from silenttrinity.core.ipcclient import IPCException
@@ -78,7 +78,7 @@ class STListener(Listener):
 
         config = Config()
         config.ciphers = 'ALL'
-        config.accesslog = './data/logs/access.log'
+        config.accesslog = os.path.join(get_path_in_data_folder("logs"), "access.log")
         config.bind = f"{self['BindIP']}:{self['Port']}"
         config.certfile = os.path.expanduser(self['Cert'])
         config.keyfile= os.path.expanduser(self['Key'])
@@ -131,15 +131,15 @@ class STListener(Listener):
     async def key_exchange(self, GUID):
         try:
             data = await request.data
-            pub_key = self.dispatch_event(events.KEX, (GUID, request.remote_addr, data))
+            pub_key = self.dispatch_event(Events.KEX, (GUID, request.remote_addr, data))
             return Response(pub_key, content_type='application/octet-stream')
         except IPCException:
             return '', 400
 
     async def stage(self, GUID):
         try:
-            stage_file = self.dispatch_event(events.ENCRYPT_STAGE, (GUID, request.remote_addr, self["Comms"]))
-            self.dispatch_event(events.SESSION_STAGED, f'Sending stage ({sys.getsizeof(stage_file)} bytes) ->  {request.remote_addr} ...')
+            stage_file = self.dispatch_event(Events.ENCRYPT_STAGE, (GUID, request.remote_addr, self["Comms"]))
+            self.dispatch_event(Events.SESSION_STAGED, f'Sending stage ({sys.getsizeof(stage_file)} bytes) ->  {request.remote_addr} ...')
             return Response(stage_file, content_type='application/octet-stream')
         except IPCException:
             return '', 400
@@ -147,7 +147,7 @@ class STListener(Listener):
     async def jobs(self, GUID):
         #self.app.logger.debug(f"Session {GUID} ({request.remote_addr}) checked in")
         try:
-            job = self.dispatch_event(events.SESSION_CHECKIN, (GUID, request.remote_addr))
+            job = self.dispatch_event(Events.SESSION_CHECKIN, (GUID, request.remote_addr))
             if job:
                 return Response(job, content_type='application/octet-stream')
             #self.app.logger.debug(f"No jobs to give {GUID}")
@@ -158,7 +158,7 @@ class STListener(Listener):
     async def job_result(self, GUID, job_id):
         try:
             data = await request.data
-            self.dispatch_event(events.JOB_RESULT, (GUID, request.remote_addr, job_id, data))
+            self.dispatch_event(Events.JOB_RESULT, (GUID, request.remote_addr, job_id, data))
             return '', 200
         except IPCException:
             return '', 400

@@ -1,7 +1,7 @@
 import types
 import asyncio
-import silenttrinity.core.events as events
 #from copy import deepcopy
+from silenttrinity.core.events import Events
 from silenttrinity.core.teamserver import ipc_server
 from silenttrinity.core.teamserver.loader import Loader
 from silenttrinity.core.utils import CmdError, get_path_in_package
@@ -51,7 +51,7 @@ class Modules(Loader):
 
     def run(self, guids):
         for guid in guids:
-            ipc_server.publish_event(events.NEW_JOB, (guid, Job(module=self.selected)))
+            ipc_server.publish_event(Events.NEW_JOB, (guid, Job(module=self.selected)))
 
     def reload(self):
         self.get_loadables()

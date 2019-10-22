@@ -22,13 +22,13 @@ class CmdError(Exception):
         super().__init__(message)
 
 def get_path_in_package(path):
-    return os.path.join(os.path.dirname(silenttrinity.__file__), path)
+    return os.path.join(os.path.dirname(silenttrinity.__file__), path.lstrip('/'))
 
 def get_data_folder():
     return os.path.expanduser("~/.st")
 
 def get_path_in_data_folder(path):
-    return os.path.join(get_data_folder(), path)
+    return os.path.join(get_data_folder(), path.lstrip('/'))
 
 def shellcode_to_int_byte_array(data):
     return  ','.join(list(map(str, map(int, data))))

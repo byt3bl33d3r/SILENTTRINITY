@@ -1,7 +1,7 @@
 import logging
 import sys
 import traceback
-import silenttrinity.core.events as events
+from silenttrinity.core.events import Events
 from silenttrinity.core.teamserver import ipc_server
 from collections import defaultdict
 from multiprocessing import Process, Pipe
@@ -57,7 +57,7 @@ class IPCClient:
         self.__conn.send((event, msg))
         try:
             topic, data = self.__conn.recv()
-            if topic == events.EXCEPTION:
+            if topic == Events.EXCEPTION:
                 logging.debug(f"Received data back from event: {event} - ERROR - {data}")
                 raise IPCException(data)
 

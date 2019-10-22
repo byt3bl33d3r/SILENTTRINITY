@@ -2,12 +2,12 @@ import logging
 import functools
 import random
 import traceback
-import silenttrinity.core.events as events
 from time import sleep
 from secrets import token_bytes
 from collections import defaultdict
 from multiprocessing.connection import Listener, Client
 from threading import Thread
+from silenttrinity.core.events import Events
 
 
 class IPCServer(Thread):
@@ -72,6 +72,6 @@ class IPCServer(Thread):
                         except Exception as e:
                             logging.error(f"Error occured in subscriber function to {topic} event, printing traceback")
                             traceback.print_exc()
-                            client.send((events.EXCEPTION, str(e)))
+                            client.send((Events.EXCEPTION, str(e)))
                 else:
                     logging.warning(f"Got event: {topic}, but there's nothing subscribed")

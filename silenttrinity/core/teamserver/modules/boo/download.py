@@ -1,12 +1,13 @@
-from silenttrinity.core.utils import get_path_in_package
 import gzip
 import logging
 import json
-from datetime import datetime
-from base64 import b64decode
-from silenttrinity.core.teamserver.module import Module
 import ntpath
 import os
+from datetime import datetime
+from base64 import b64decode
+from silenttrinity.core.utils import get_path_in_data_folder, get_path_in_package
+from silenttrinity.core.teamserver.module import Module
+
 
 class STModule(Module):
     def __init__(self):
@@ -35,18 +36,23 @@ class STModule(Module):
         if self._new_dmp_file == True:
             self._new_dmp_file = False
             self.fname = ntpath.basename(self.options['Src']['Value'])
-            self.gzip_file = f"./data/logs/{context.session.guid}/downloader_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}.gz"
-            self.decompressed_file = f"./data/logs/{context.session.guid}/downloader_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}_{self.fname}"
-            #self.decompressed_file = f"./data/logs/{context.session.guid}/downloader_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}.bin"
+            self.gzip_file = os.path.join(
+                get_path_in_data_folder("logs"), 
+                f"{context.session.guid}/downloader_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}.gz"
+            )
+            self.decompressed_file = os.path.join(
+                get_path_in_data_folder("logs"),
+                f"{context.session.guid}/downloader_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}_{self.fname}"
+            )
 
         try:
             file_chunk = output['data']
-            with open(get_path_in_package(self.gzip_file, 'ab+')) as reassembled_gzip_file:
+            with open(self.gzip_file, 'ab+') as reassembled_gzip_file:
                 reassembled_gzip_file.write(b64decode(file_chunk))
 
             if output['current_chunk_n'] == (output['chunk_n'] + 1):
                 try:
-                    with open(get_path_in_package(self.decompressed_file, 'wb')) as reassembled_file:
+                    with open(self.decompressed_file, 'wb') as reassembled_file:
                         with gzip.open(self.gzip_file) as compressed_file:
                             reassembled_file.write(compressed_file.read())
                     os.remove(self.gzip_file)

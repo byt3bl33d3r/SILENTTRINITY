@@ -1,7 +1,7 @@
 import asyncio
 import logging
-import silenttrinity.core.events as events
 from copy import deepcopy
+from silenttrinity.core.events import Events
 from silenttrinity.core.teamserver import ipc_server
 from silenttrinity.core.teamserver.loader import Loader
 from silenttrinity.core.utils import CmdError, gen_random_string, get_path_in_package
@@ -16,7 +16,7 @@ class Listeners(Loader):
         self.listeners = []
         self.selected = None
 
-        ipc_server.attach(events.GET_LISTENERS, self._get_listeners)
+        ipc_server.attach(Events.GET_LISTENERS, self._get_listeners)
         super().__init__(type="listener", paths=[get_path_in_package("core/teamserver/listeners/")])
 
     def _get_listeners(self, name):

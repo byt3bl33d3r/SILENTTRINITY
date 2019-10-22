@@ -1,9 +1,10 @@
 import gzip
 import logging
 import json
+import os
 from datetime import datetime
 from base64 import b64decode
-from silenttrinity.core.utils import get_path_in_package
+from silenttrinity.core.utils import get_path_in_package, get_path_in_data_folder
 from silenttrinity.core.teamserver.module import Module
 from pypykatz.pypykatz import pypykatz
 from pypykatz.commons.common import UniversalEncoder
@@ -41,8 +42,14 @@ class STModule(Module):
     def process(self, context, output):
         if self._new_dmp_file == True:
             self._new_dmp_file = False
-            self.gzip_file = f"./data/logs/{context.session.guid}/minidump_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}.gz"
-            self.decompressed_file = f"./data/logs/{context.session.guid}/minidump_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}.bin"
+            self.gzip_file = os.path.join(
+                get_path_in_data_folder("logs"),
+                f"{context.session.guid}/minidump_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}.gz"
+            )
+            self.decompressed_file = os.path.join(
+                get_path_in_data_folder("logs"),
+                f"{context.session.guid}/minidump_{datetime.now().strftime('%Y_%m_%d_%H%M%S')}.bin"
+            )
 
         try:
             file_chunk = output['data']

@@ -1,6 +1,7 @@
 import logging
 import os
 from io import StringIO
+from silenttrinity.core.utils import get_path_in_package
 
 assemblyresolve_event_handler = """public static def MyResolveEventHandler(sender as object, args as ResolveEventArgs) as Assembly:
     #print("Trying to resolve $(args.Name).dll")
@@ -14,16 +15,16 @@ def get_comms(comms):
     comms_section = StringIO()
     comm_classes = []
     for channel in comms:
-        for comm_file in os.listdir('./core/teamserver/comms/'):
+        for comm_file in os.listdir(get_path_in_package("core/teamserver/comms/")):
             if comm_file.endswith('.boo') and channel.strip().lower() == comm_file[:-4].lower():
                 comm_classes.append(f"{channel.strip().upper()}()")
-                with open(os.path.join('./core/teamserver/comms/', comm_file)) as channel_code:
+                with open(os.path.join(get_path_in_package("core/teamserver/comms/"), comm_file)) as channel_code:
                     comms_section.write(channel_code.read())
 
     return ", ".join(comm_classes), comms_section.getvalue()
 
 def gen_stager_code(comms, hook_assemblyresolve_event=False):
-    with open('./core/teamserver/data/stage.boo') as stage:
+    with open(get_path_in_package("core/teamserver/data/stage.boo")) as stage:
         comm_classes, comms_section = get_comms(comms)
         stage = stage.read()
         stage = stage.replace("PUT_COMMS_HERE", comms_section)

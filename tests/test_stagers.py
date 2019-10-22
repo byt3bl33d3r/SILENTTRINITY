@@ -8,6 +8,7 @@ sys.path.append(root_dir)
 
 from silenttrinity.core.teamserver.loader import Loader
 from silenttrinity.core.teamserver.stager import Stager
+from silenttrinity.core.teamserver.comms.utils import gen_stager_code
 from silenttrinity.core.teamserver.contexts.listeners import Listeners
 from silenttrinity.core.teamserver.contexts.stagers import Stagers
 
@@ -22,6 +23,10 @@ def listener_context():
 def stager_loader():
     ''' Load all of the listeners'''
     return Loader(type="stager", paths=["silenttrinity/core/teamserver/stagers/"])
+
+def test_stager_code_gen():
+    stager_code = gen_stager_code(['http', 'https'], hook_assemblyresolve_event=True)
+    assert len(stager_code) > 0 and stager_code is not None
 
 def test_stager_gen(stager_loader, listener_context):
     listener_context.use('http')

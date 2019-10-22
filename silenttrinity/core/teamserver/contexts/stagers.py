@@ -1,6 +1,6 @@
 import asyncio
-import silenttrinity.core.events as events
 from copy import deepcopy
+from silenttrinity.core.events import Events
 from silenttrinity.core.utils import CmdError, get_path_in_package
 from silenttrinity.core.teamserver import ipc_server
 from silenttrinity.core.teamserver.loader import Loader
@@ -14,7 +14,7 @@ class Stagers(Loader):
         self.teamserver = teamserver
         self.selected = None
 
-        ipc_server.attach(events.GET_STAGERS, self._get_stagers)
+        ipc_server.attach(Events.GET_STAGERS, self._get_stagers)
         super().__init__(type="stager", paths=[get_path_in_package("core/teamserver/stagers/")])
 
     def _get_stagers(self, name):

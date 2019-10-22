@@ -1,3 +1,7 @@
+.PHONY: tests
+
+default: build
+
 clean:
 	rm -f -r build/
 	rm -f -r bin/
@@ -18,3 +22,7 @@ build:
 	shiv --site-packages build -E --compressed -e 'silenttrinity.__main__:run' -o bin/st -p "/usr/bin/env python3 -sE"
 
 rebuild: clean build
+
+tests:
+	flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+	pytest

@@ -1,7 +1,7 @@
 import asyncio
 import json
 import logging
-import silenttrinity.core.events as events
+from silenttrinity.core.events import Events
 from silenttrinity.core.utils import decode_auth_header
 
 class UsernameAlreadyPresentError(Exception):
@@ -67,7 +67,7 @@ class Users:
 
         user = User(name, websocket)
         self.users.add(user)
-        await self.broadcast_event(events.USER_LOGIN, f"{user.name} has joined!", exclude=[user])
+        await self.broadcast_event(Events.USER_LOGIN, f"{user.name} has joined!", exclude=[user])
         return user
 
     def __len__(self):
