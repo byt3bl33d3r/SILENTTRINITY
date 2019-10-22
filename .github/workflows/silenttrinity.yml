@@ -1,4 +1,4 @@
-name: Teamserver/Client Tests
+name: SILENTTRINITY Tests
 
 on: [push, pull_request]
 
@@ -32,3 +32,12 @@ jobs:
       run: |
         pip install pytest
         pytest
+    - name: Build binary with Shiv
+      run: |
+        pip install shiv
+        make build
+    - name: Upload artifact
+      uses: actions/upload-artifact@master
+      with:
+        name: st
+        path: bin/st

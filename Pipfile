@@ -8,6 +8,7 @@ pylint = "*"
 ipython = "*"
 flake8 = "*"
 pytest = "*"
+shiv = "*"
 
 [packages]
 prompt-toolkit = "*"

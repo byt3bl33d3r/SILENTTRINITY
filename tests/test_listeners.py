@@ -9,13 +9,30 @@ from requests.adapters import HTTPAdapter
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from core.teamserver.loader import Loader
-from core.teamserver.listener import Listener
+from silenttrinity.core.teamserver.loader import Loader
+from silenttrinity.core.teamserver.listener import Listener
+from silenttrinity.core.utils import create_self_signed_cert
+
+CERT_PATH = "./tests/cert.pem"
+KEY_PATH = "./tests/key.pem"
+CHAIN_PATH = "./tests/chain.pem"
+
+for f in list(filter(lambda x: os.path.exists(x) == True, [CERT_PATH, KEY_PATH, CHAIN_PATH])):
+    os.remove(f)
 
 @pytest.fixture
 def listener_loader():
     ''' Load all of the listeners'''
-    return Loader(type="listener", paths=["core/teamserver/listeners/"])
+    return Loader(type="listener", paths=["silenttrinity/core/teamserver/listeners/"])
+
+def test_self_signed_cert_creation():
+    create_self_signed_cert(
+        key_file = KEY_PATH,
+        cert_file = CERT_PATH,
+        chain_file = CHAIN_PATH
+    )
+
+    assert len(list(filter(lambda x: os.path.exists(x) == True, [CERT_PATH, KEY_PATH, CHAIN_PATH]))) == 3
 
 def test_listeners(listener_loader):
     s = requests.Session()
@@ -34,6 +51,9 @@ def test_listeners(listener_loader):
         if l.name in ['http', 'https']:
             l['BindIP'] = '127.0.0.1'
             l['Port'] = str(random.randint(3000, 6000))
+            if l.name == 'https':
+                l['Cert'] = CERT_PATH
+                l['key'] = KEY_PATH
             l.start()
             r = s.get(f"{l.name}://127.0.0.1:{l['Port']}/")
             assert r.status_code == 404
