@@ -23,7 +23,7 @@ class STModule(Module):
 
     def payload(self):
         if self.options['Src']['Value'] is None:
-            print_bad("Selected file do not exists.")
+            print_bad("Selected file does not exists.")
             return None
 
         import os
