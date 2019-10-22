@@ -32,7 +32,7 @@ class STModule(Module):
 
         if not os.path.exists(self.options['Src']['Value']):
             from core.utils import print_bad
-            print_bad("Selected file do not exists.")
+            print_bad("Selected file does not exists.")
             return None
 
         basename = os.path.basename(self.options['Src']['Value'])
