@@ -1,4 +1,5 @@
 from core.teamserver.module import Module
+from core.utils import print_bad
 
 class STModule(Module):
     def __init__(self):
