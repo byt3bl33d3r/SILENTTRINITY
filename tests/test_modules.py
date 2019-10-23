@@ -5,10 +5,10 @@ import os
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from core.teamserver.module import Module
-from core.teamserver.contexts.listeners import Listeners
-from core.teamserver.contexts.stagers import Stagers
-from core.teamserver.loader import Loader
+from silenttrinity.core.teamserver.module import Module
+from silenttrinity.core.teamserver.contexts.listeners import Listeners
+from silenttrinity.core.teamserver.contexts.stagers import Stagers
+from silenttrinity.core.teamserver.loader import Loader
 
 class MockTeamserver:
     pass
@@ -24,7 +24,7 @@ def stager_context():
 @pytest.fixture
 def module_loader():
     ''' Load all of the modules'''
-    return Loader(type="module", paths=["core/teamserver/modules/boo"])
+    return Loader(type="module", paths=["silenttrinity/core/teamserver/modules/boo"])
 
 def test_module_payload_gen(module_loader, listener_context, stager_context):
     listener_context.use('http')
@@ -47,7 +47,7 @@ def test_module_payload_gen(module_loader, listener_context, stager_context):
         elif m.name == 'boo/shellcode':
             m['Shellcode'] = './tests/shellcode.bin'
         elif m.name == 'boo/execute-assembly':
-            m['Assembly'] = './core/teamserver/data/naga.exe'
+            m['Assembly'] = './silenttrinity/core/teamserver/data/naga.exe'
         elif m.name == 'boo/winrm':
             m['Listener'] = 'http'
             m['Host'] = '192.168.1.1'

@@ -6,10 +6,11 @@ import uuid
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from core.teamserver.loader import Loader
-from core.teamserver.stager import Stager
-from core.teamserver.contexts.listeners import Listeners
-from core.teamserver.contexts.stagers import Stagers
+from silenttrinity.core.teamserver.loader import Loader
+from silenttrinity.core.teamserver.stager import Stager
+from silenttrinity.core.teamserver.comms.utils import gen_stager_code
+from silenttrinity.core.teamserver.contexts.listeners import Listeners
+from silenttrinity.core.teamserver.contexts.stagers import Stagers
 
 class MockTeamserver:
     pass
@@ -21,7 +22,11 @@ def listener_context():
 @pytest.fixture
 def stager_loader():
     ''' Load all of the listeners'''
-    return Loader(type="stager", paths=["core/teamserver/stagers/"])
+    return Loader(type="stager", paths=["silenttrinity/core/teamserver/stagers/"])
+
+def test_stager_code_gen():
+    stager_code = gen_stager_code(['http', 'https'], hook_assemblyresolve_event=True)
+    assert len(stager_code) > 0 and stager_code is not None
 
 def test_stager_gen(stager_loader, listener_context):
     listener_context.use('http')

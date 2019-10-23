@@ -1,3 +1,5 @@
+![](https://github.com/byt3bl33d3r/SILENTTRINITY/workflows/SILENTTRINITY%20Tests/badge.svg)
+
 # SILENTTRINITY
 
 <p align="center">

@@ -6,8 +6,8 @@ import uuid
 root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(root_dir)
 
-from core.teamserver.crypto import gen_stager_psk
-from core.teamserver.db import STDatabase, AsyncSTDatabase
+from silenttrinity.core.teamserver.crypto import gen_stager_psk
+from silenttrinity.core.teamserver.db import STDatabase, AsyncSTDatabase
 
 TEST_DB_PATH = './tests/st.db'
 if os.path.exists(TEST_DB_PATH):

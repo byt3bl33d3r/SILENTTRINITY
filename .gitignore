@@ -3,8 +3,9 @@
 *.rc
 .vscode/
 
-#Ignore st.db created by tests
+#Ignore artifacts created by tests
 tests/st.db
+tests/*.pem
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -17,6 +18,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+bin/
 develop-eggs/
 dist/
 downloads/
