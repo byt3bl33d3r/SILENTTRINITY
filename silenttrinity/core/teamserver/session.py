@@ -5,7 +5,7 @@ import uuid
 from time import time
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED
-from silenttrinity.core.utils import get_path_in_data_folder
+from silenttrinity.core.utils import get_path_in_data_folder, get_path_in_package
 from silenttrinity.core.teamserver.jobs import Jobs
 from silenttrinity.core.teamserver.comms.utils import gen_stager_code
 from silenttrinity.core.teamserver.crypto import ECDHE
@@ -72,10 +72,10 @@ class Session:
     def gen_encrypted_stage(self, comms):
         stage = gen_stager_code(comms)
         stage_file = BytesIO()
-        with open('./core/teamserver/data/Boo.Lang.dll', 'rb') as boolangdll:
-            with open('./core/teamserver/data/Boo.Lang.Compiler.dll', 'rb') as boolangcompilerdll:
-                with open('./core/teamserver/data/Boo.Lang.Parser.dll', 'rb') as boolangparserdll:
-                    with open('./core/teamserver/data/Boo.Lang.Extensions.dll', 'rb') as boolangextensionsdll:
+        with open(get_path_in_package('core/teamserver/data/Boo.Lang.dll'), 'rb') as boolangdll:
+            with open(get_path_in_package('core/teamserver/data/Boo.Lang.Compiler.dll'), 'rb') as boolangcompilerdll:
+                with open(get_path_in_package('core/teamserver/data/Boo.Lang.Parser.dll'), 'rb') as boolangparserdll:
+                    with open(get_path_in_package('core/teamserver/data/Boo.Lang.Extensions.dll'), 'rb') as boolangextensionsdll:
                         with ZipFile(stage_file, 'a', compression=ZIP_DEFLATED, compresslevel=9) as zip_file:
                             zip_file.writestr("Boo.Lang.dll", boolangdll.read())
                             zip_file.writestr("Boo.Lang.Compiler.dll", boolangcompilerdll.read())

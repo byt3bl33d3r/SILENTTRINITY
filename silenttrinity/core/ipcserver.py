@@ -38,7 +38,7 @@ class IPCServer(Thread):
                 t.start()
 
     def attach(self, event, func):
-        logging.debug(f"Attaching event: {event} -> {func.__qualname__}")
+        logging.debug(f"Attaching event: {event.name} -> {func.__qualname__}")
         self.subscribers[event].add(func)
 
     def detach(self, event, func):

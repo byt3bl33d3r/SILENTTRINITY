@@ -43,14 +43,14 @@ class Users:
     def __init__(self):
         self.users = set()
 
-    async def broadcast_event(self, name, data, exclude=[]):
-        event = {
+    async def broadcast_event(self, event, data, exclude=[]):
+        message = {
             'type': 'event', 
-            'name': name,
+            'name': event.name,
             'data': data
         }
         try:
-            await asyncio.wait([user.send(event) for user in self.users if user not in exclude])
+            await asyncio.wait([user.send(message) for user in self.users if user not in exclude])
         except ValueError:
             logging.warning(f"Attempted to send broadcast event to {len(self.users)} user(s) but they were also part of the exclude list: {exclude}")
 
