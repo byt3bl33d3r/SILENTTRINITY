@@ -38,56 +38,11 @@ To do this, you're going to have to learn the Boo programming language (the Boo 
 Check out some of the existing [modules](../master/core/teamserver/modules/boo), if you've written an [Empire](https://github.com/EmpireProject/Empire) module before you'll see its very similar.
 Finally you can start porting over post-ex modules from other C2 frameworks such as [Empire](https://github.com/EmpireProject/Empire).
 
-## Setup & Requirements
-
-- Python >= 3.7 is required.
-- Client & Teamserver have only been tested on Mac & Linux systems, however they *should* work on Windows as well.
-
-If your running a *nix system that has an older version of Python installed it is *highly* reccommended to use [pyenv](https://github.com/pyenv/pyenv) to install Python >= 3.7.
-
-For Mac's, use Homebrew to install Python 3:
-```bash
-brew install python@3
-```
-
-Clone the repo and use [pipenv](https://github.com/pypa/pipenv) to install the dependencies for the Client & Teamserver:
-
-```bash
-git clone https://github.com/byt3bl33d3r/SILENTTRINITY
-pip3 install pipenv && pipenv install && pipenv shell
-```
-
-Start a Teamserver, the default port is 5000:
-```bash
-python3 teamserver.py <teamserver_ip> <teamserver_password>
-```
-
-Connect to a Teamserver:
-
-**Note the wss:// (two s's) in the URL which indicates an encrypted websocket connection (TLS), without this all traffic from the client to the teamserver will be in cleartext!**
-
-```bash
-python3 st.py wss://username:<teamserver_password>@<teamserver_ip>:5000
-```
-
-Alternatively, run ```st.py``` without any arguments and connect to a Teamserver manually using the CLI menu:
-```
-~# python3 st.py
-[0] ST ≫ teamservers
-[0] ST (teamservers) ≫ connect -h
-Connect to the specified teamserver(s)
-
-Usage: connect [-h] <URL>...
-
-Arguments:
-    URL   teamserver url(s)
-
-[0] ST (teamservers) ≫ connect wss://username:<teamserver_password>@<teamserver_ip>:5000
-```
-
 ## Documentation
 
-The documentation is a work in progress but some is already available in the [Wiki](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki)
+The documentation is a work in progress but some is already available in the [Wiki](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki).
+
+See [here](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki/Installation) for install instructions and [here](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki/Basic-Usage) for basic usage.
 
 I recommend making wild use the ```help``` command and the ```-h``` flag :)
 
