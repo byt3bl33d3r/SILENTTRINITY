@@ -54,12 +54,19 @@ Clone the repo and use [pipenv](https://github.com/pypa/pipenv) to install the d
 
 ```bash
 git clone https://github.com/byt3bl33d3r/SILENTTRINITY
+cd SILENTTRINITY
 pip3 install pipenv && pipenv install && pipenv shell
+make
+```
+
+On a fresh install of Kali it may be necessary to install shiv before running the make command
+```bash
+pip3 install shiv
 ```
 
 Start a Teamserver, the default port is 5000:
 ```bash
-python3 teamserver.py <teamserver_ip> <teamserver_password>
+python3 st.py  teamserver <teamserver_ip> <teamserver_password>
 ```
 
 Connect to a Teamserver:
@@ -67,12 +74,12 @@ Connect to a Teamserver:
 **Note the wss:// (two s's) in the URL which indicates an encrypted websocket connection (TLS), without this all traffic from the client to the teamserver will be in cleartext!**
 
 ```bash
-python3 st.py wss://username:<teamserver_password>@<teamserver_ip>:5000
+python3 st.py client wss://username:<teamserver_password>@<teamserver_ip>:5000
 ```
 
 Alternatively, run ```st.py``` without any arguments and connect to a Teamserver manually using the CLI menu:
 ```
-~# python3 st.py
+~# python3 st.py client
 [0] ST ≫ teamservers
 [0] ST (teamservers) ≫ connect -h
 Connect to the specified teamserver(s)
