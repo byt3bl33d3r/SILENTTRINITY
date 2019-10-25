@@ -1,0 +1,16 @@
+version: "3"
+services:
+  team_and_st:
+    environment:
+      - HOST_IP=your_ip
+      - USER=test
+      - PASSWORD=toor
+    build: ./
+    network_mode: host
+    ports:
+      - 80:80
+      - 443:443
+      - 5000:5000
+      - 8080:8080
+    stdin_open: true
+    tty: true
