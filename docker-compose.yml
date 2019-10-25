@@ -1,10 +1,6 @@
 version: "3"
 services:
-  team_and_st:
-    environment:
-      - HOST_IP=your_ip
-      - USER=test
-      - PASSWORD=toor
+  server:
     build: ./
     network_mode: host
     ports:
@@ -12,5 +8,9 @@ services:
       - 443:443
       - 5000:5000
       - 8080:8080
+    entrypoint: ["python3.7", "st.py", "teamserver", "${HOST_IP}", "${PASSWORD}"]
+  client:
+    build: ./
     stdin_open: true
     tty: true
+    entrypoint: ["python3.7", "st.py", "client", "wss://${USER}:${PASSWORD}@${HOST_IP}:5000"]
