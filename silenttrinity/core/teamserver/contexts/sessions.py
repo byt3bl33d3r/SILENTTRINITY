@@ -10,6 +10,7 @@ from silenttrinity.core.teamserver.db import STDatabase
 from silenttrinity.core.teamserver.crypto import gen_stager_psk
 from silenttrinity.core.teamserver.session import Session, SessionNotFoundError
 from silenttrinity.core.teamserver.job import Job
+from time import gmtime, strftime
 #from core.teamserver.utils import subscribe, register_subscriptions
 
 """
@@ -64,6 +65,12 @@ class Sessions:
 
             raise SessionNotFoundError(f"Session with guid {guid} was not found")
 
+    def guidchk(self, guid):
+        try:
+            uuid.UUID(str(guid))
+        except ValueError:
+            raise CmdError("Invalid Guid")
+
     def _register(self, guid, psk):
         session = Session(guid, psk)
         self.sessions.add(session)
@@ -77,10 +84,7 @@ class Sessions:
         if not psk:
             psk = gen_stager_psk()
 
-        try:
-            uuid.UUID(str(guid))
-        except ValueError:
-            raise CmdError("Invalid Guid")
+        self.guidchk(guid)
 
         self._register(guid, psk)
         return {"guid": str(guid), "psk": psk}
@@ -238,6 +242,38 @@ class Sessions:
             session.guid = name
         except SessionNotFoundError:
             raise CmdError(f"No session with guid: {guid}")
+
+    def unregister(self, guid):
+        self.guidchk(guid)
+        with STDatabase() as db:
+            psk = db.get_session_psk(guid)
+        session = Session(guid, psk)
+        self.sessions.add(session)
+
+        if (session in self.sessions):
+            return {"message": "You can't kill an active session. Kill and purge first."}
+        with STDatabase() as db:
+            db.remove_session(guid)
+        logging.info(f"Unregistering session: {guid}")
+
+        return {"guid": str(guid)}
+
+    def getpsk(self, guid):
+        self.guidchk(guid)
+
+        with STDatabase() as db:
+            psk = db.get_session_psk(guid)
+        return {"psk": psk}
+
+    def purge(self):
+        counter = 0
+        s = {s.guid: dict(s) for s in self.sessions if s.info}
+        for guid, session in s.items():
+            if session['info']:
+                if (gmtime(session['lastcheckin'])[5] > int(session['info']['Sleep']/1000)):
+                    self.sessions.remove(guid)
+                    counter += 1
+        return counter
 
     def __iter__(self):
         for session in self.sessions:

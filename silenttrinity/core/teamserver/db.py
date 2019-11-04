@@ -66,6 +66,14 @@ class STDatabase:
             except sqlite3.IntegrityError:
                 logging.debug(f"Session with guid {guid} already present in database")
 
+    def remove_session(self, guid):
+        with self.db:
+            try:
+                self.db.execute(f"DELETE FROM sessions WHERE guid = '{guid}'")
+                return
+            except sqlite3.IntegrityError:
+                logging.debug(f"Could not remove {guid} from the database")
+
     def get_session_psk(self, guid):
         with self.db:
             query = self.db.execute("SELECT psk FROM sessions WHERE guid=(?)", [str(guid)])
