@@ -196,7 +196,7 @@ class Sessions:
         )
 
     def list(self):
-        return {s.guid: dict(s) for s in self.sessions if s.info}
+        return {s.name: dict(s) for s in self.sessions if s.info}
 
     def info(self, guid):
         try:
@@ -239,7 +239,7 @@ class Sessions:
     def rename(self, guid, name):
         try:
             session = self.get_session(guid)
-            session.guid = name
+            session.name = name
         except SessionNotFoundError:
             raise CmdError(f"No session with guid: {guid}")
 
