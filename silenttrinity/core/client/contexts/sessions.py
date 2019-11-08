@@ -140,13 +140,14 @@ class Sessions:
     @command
     def unregister(self, guid: str, response):
         """
-        Unregister a session with the server
+        Unregister a session with the server. You will need to register the session manually to reuse it again.
 
         Usage: unregister [-h] [<guid>]
         """
         try:
             if (response.result['guid']):
                 print_good(f"Unregistered session (guid: {response.result['guid']})")
+                print_good(f"If you wish to reuse the session you must manually register it.")
         except KeyError:
             print_bad(f"{response.result['message']}")
 

@@ -248,10 +248,9 @@ class Sessions:
         with STDatabase() as db:
             psk = db.get_session_psk(guid)
         session = Session(guid, psk)
-        self.sessions.add(session)
 
         if (session in self.sessions):
-            return {"message": "You can't kill an active session. Kill and purge first."}
+            return {"message": "You can't unregister an active session. Kill then purge the session first."}
         with STDatabase() as db:
             db.remove_session(guid)
         logging.info(f"Unregistering session: {guid}")
