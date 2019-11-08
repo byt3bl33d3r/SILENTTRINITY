@@ -42,6 +42,15 @@ def shellcode_to_hex_byte_array(shellcode):
 
     return ','.join(byte_array)
 
+def shellcode_to_hex_string(shellcode):
+    byte_array = []
+    shellcode_hex = shellcode.hex()
+    for i in range(0, len(shellcode_hex), 2):
+        byte = shellcode_hex[i:i + 2]
+        byte_array.append(f"\\x{byte.upper()}")
+
+    return ''.join(byte_array)
+
 # Stolen and adapted from https://github.com/zerosum0x0/koadic/blob/master/core/plugin.py
 def convert_shellcode(shellcode):
     shellcode = shellcode.translate({ord(c): None for c in '\\x'}).rstrip('\n')
