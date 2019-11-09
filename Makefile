@@ -19,7 +19,7 @@ build:
 	cp -r silenttrinity build/
 	python3 -m pip install -r requirements.txt -t build
 	rm -rf build/__pycache__ build/*.dist-info
-	shiv --site-packages build -E --compressed -e 'silenttrinity.__main__:run' -o bin/st -p "/usr/bin/env python3 -sE"
+	shiv --site-packages build -E --compressed -e 'silenttrinity.__main__:run' -o bin/st -p "/usr/bin/env -S python3 -s -E"
 
 rebuild: clean build
 
