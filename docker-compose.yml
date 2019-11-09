@@ -1,4 +1,4 @@
-version: "3"
+on: "3"
 services:
   server:
     build: ./
@@ -9,8 +9,3 @@ services:
       - 5000:5000
       - 8080:8080
     entrypoint: ["python3.7", "st.py", "teamserver", "${HOST_IP}", "${PASSWORD}"]
-  client:
-    build: ./
-    stdin_open: true
-    tty: true
-    entrypoint: ["python3.7", "st.py", "client", "wss://${USER}:${PASSWORD}@${HOST_IP}:5000"]
