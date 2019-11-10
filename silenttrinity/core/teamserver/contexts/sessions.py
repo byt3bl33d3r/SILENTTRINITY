@@ -107,30 +107,12 @@ class Sessions:
             logging.error(f"Got staging request from {remote_addr} but no sessions registered with guid {guid}")
             raise
 
-    def hit_pwn(self, address):
-        try:
-            import requests
-            import json
-            import sys
-            host = "http://pwnboard.win/generic"
-            data = {"ip": str(address), "type": "silent_trinity"}
-            try:
-                requests.post(host, json=data, timeout=2)
-            except:
-                pass
-        except:
-            pass
-
     #@subscribe(events.SESSION_CHECKIN)
     def session_checked_in(self, checkin_tuple):
         guid, remote_addr = checkin_tuple
         try:
             session = self.get_session(guid)
             session.address = remote_addr
-            try:
-                self.hit_pwn(address=session.address)
-            except:
-                pass
             session.checked_in()
             return session.jobs.get()
         except SessionNotFoundError:
