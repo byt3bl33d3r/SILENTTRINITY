@@ -5,13 +5,12 @@ verify_ssl = true
 
 [dev-packages]
 pylint = "*"
-ipython = "*"
 flake8 = "*"
 pytest = "*"
 shiv = "*"
 
 [packages]
-prompt-toolkit = "*"
+prompt-toolkit = ">=3.0"
 cryptography = "*"
 websockets = "*"
 docopt = "*"
@@ -20,12 +19,8 @@ termcolor = "*"
 requests = "*"
 quart = "==0.9.1"
 hypercorn = "==0.6.0"
-dnslib = "*"
 defusedxml = "*"
 netifaces = "*"
 aiosqlite = "*"
 pypykatz = "*"
 donut-shellcode = "*"
-
-[requires]
-python_version = "3.7"

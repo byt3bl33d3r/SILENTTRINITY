@@ -7,7 +7,6 @@ from docopt import docopt, DocoptExit
 from terminaltables import SingleTable
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import Completer, Completion, PathCompleter
-from prompt_toolkit.eventloop import use_asyncio_event_loop
 from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
@@ -126,8 +125,6 @@ class STShell:
     _remote = False
 
     def __init__(self, args):
-        use_asyncio_event_loop()
-
         self.args = args
         self.current_context = self
 
@@ -241,7 +238,7 @@ class STShell:
             for cmd in resource_file:
                 with patch_stdout():
                     try:
-                        text = await self.prompt_session.prompt(accept_default=True, default=cmd.strip(), async_=True)
+                        text = await self.prompt_session.prompt_async(accept_default=True, default=cmd.strip())
                     except AssertionError:
                         text = cmd.strip()
                     await self.parse_command_line(text)
@@ -257,7 +254,7 @@ class STShell:
 
         while True:
             with patch_stdout():
-                text = await self.prompt_session.prompt(async_=True)
+                text = await self.prompt_session.prompt_async()
                 if len(text):
                     if text.lower() == 'exit':
                         break
