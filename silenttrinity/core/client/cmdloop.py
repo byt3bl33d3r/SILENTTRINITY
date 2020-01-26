@@ -157,6 +157,21 @@ class STShell:
             return list(filter(lambda c: c.name == ctx_name, cli_menus))[0]
         return cli_menus
 
+    def patch_badchar(self, args, flag=None):
+        if flag:
+            for key, value in args.items():
+                if key == '<value>':
+                    args[key] = "-" + value
+                    return args
+        else:
+            try:
+                if (args[2][0] == '-'):
+                    args[2] = args[2][1:]
+                    return True, args
+                return False, args
+            except IndexError:
+                return False, args
+
     async def update_prompt(self, ctx):
         self.prompt_session.message = HTML(
             ("[<ansiyellow>"
@@ -188,11 +203,13 @@ class STShell:
             try:
                 command = shlex.split(text)
                 logging.debug(f"command: {command[0]} args: {command[1:]} ctx: {self.current_context.name}")
-
+                patch_badchar, command = self.patch_badchar(command)
                 args = docopt(
                     getattr(self.current_context if hasattr(self.current_context, command[0]) else self, command[0]).__doc__,
                     argv=command[1:]
                 )
+                if patch_badchar:
+                    args = self.patch_badchar(args, patch_badchar)
             except ValueError as e:
                 print_bad(f"Error parsing command: {e}")
             except AttributeError as e:
@@ -211,7 +228,7 @@ class STShell:
                 elif self.current_context._remote is True:
                     response = await self.teamservers.send(
                             ctx=self.current_context.name,
-                            cmd=command[0], 
+                            cmd=command[0],
                             args=args
                         )
 
@@ -249,7 +266,7 @@ class STShell:
                 # We sleep for one second to allow for the connection to complete
                 # As of writing there isn't a way to wait until the initial connection is successfull
                 #e.g. await self.teamservers.selected.connected
-                await asyncio.sleep(1) 
+                await asyncio.sleep(1)
                 await self.run_resource_file(self.args['--resource-file'])
 
         while True:
