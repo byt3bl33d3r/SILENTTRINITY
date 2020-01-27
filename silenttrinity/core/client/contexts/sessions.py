@@ -140,16 +140,13 @@ class Sessions:
     @command
     def unregister(self, guid: str, response):
         """
-        Unregister a session with the server. You will need to register the session manually to reuse it again.
+        Unregister a session with the server. You will need to register the session manually to reuse it again
 
         Usage: unregister [-h] [<guid>]
         """
-        try:
-            if (response.result['guid']):
-                print_good(f"Unregistered session (guid: {response.result['guid']})")
-                print_good(f"If you wish to reuse the session you must manually register it.")
-        except KeyError:
-            print_bad(f"{response.result['message']}")
+
+        print_good(f"Unregistered session (guid: {response.result['guid']})")
+        print_info(f"If you wish to reuse the session you must manually register it")
 
     @command
     def getpsk(self, guid: str, response):
@@ -159,7 +156,7 @@ class Sessions:
         Usage: getpsk [-h] [<guid>]
         """
 
-        print_good(f"psk: {response.result['psk']}")
+        print_good(f"PSK: {response.result['psk']}")
 
     @command
     def purge(self, response):
@@ -169,4 +166,4 @@ class Sessions:
         Usage: purge [-h]
         """
 
-        print_good(f"Purged {response.result} sessions.")
+        print_good(f"Purged {response.result['purged']} session(s)")

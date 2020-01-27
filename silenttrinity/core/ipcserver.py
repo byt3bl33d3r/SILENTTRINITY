@@ -3,10 +3,10 @@ import functools
 import random
 import traceback
 from time import sleep
+from threading import Thread
 from secrets import token_bytes
 from collections import defaultdict
 from multiprocessing.connection import Listener, Client
-from threading import Thread
 from silenttrinity.core.events import Events
 
 

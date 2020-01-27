@@ -391,6 +391,10 @@ class STJob:
         parameters.Pipeline = CompileToMemory()
         parameters.Ducky = true
 
+        parameters.AddAssembly(Assembly.LoadWithPartialName("Boo.Lang"))
+        parameters.AddAssembly(Assembly.LoadWithPartialName("Boo.Lang.Extensions"))
+        parameters.AddAssembly(Assembly.LoadWithPartialName("Boo.Lang.Parser"))
+        parameters.AddAssembly(Assembly.LoadWithPartialName("Boo.Lang.Compiler"))
         parameters.AddAssembly(Assembly.LoadWithPartialName("mscorlib"))
         parameters.AddAssembly(Assembly.LoadWithPartialName("System"))
         parameters.AddAssembly(Assembly.LoadWithPartialName("System.Core"))

@@ -6,33 +6,34 @@ from silenttrinity.core.teamserver import ipc_server
 from collections import defaultdict
 from multiprocessing import Process, Pipe
 from multiprocessing.connection import Client
-from threading import Thread
+
 
 class IPCException(Exception):
     pass
+
 
 class IPCClient:
 
     def __init__(self):
         self.subscribers = defaultdict(set)
-        self.__conn = None
-        self.__thread = None
+        self.conn = None
+        self.thread = None
 
     @property
     def running(self):
-        if self.__thread:
-            return self.__thread.is_alive()
+        if self.thread:
+            return self.thread.is_alive()
         return False
 
     def run(self):
         return
 
-    def __run(self, pipe):
-        self.__conn = Client(ipc_server.address, authkey=ipc_server.authkey)
+    def start_in_seperate_process(self, pipe):
+        self.conn = Client(ipc_server.address, authkey=ipc_server.authkey)
         try:
             self.run()
         except Exception:
-            self.__conn.close()
+            self.conn.close()
             #Cause traceback objects aren't pickle'able, whytho.jpg
             pipe.send("".join(traceback.format_exception(*sys.exc_info())))
 
@@ -41,25 +42,26 @@ class IPCClient:
 
     def start(self):
         recv_pipe, send_pipe = Pipe()
-        self.__thread = Process(target=self.__run, args=(send_pipe,), daemon=True)
-        self.__thread.start()
+        self.thread = Process(target=self.start_in_seperate_process, daemon=True, args=(send_pipe,))
+        self.thread.start()
+
         try:
             if recv_pipe.poll(0.5):
                 exc_info = recv_pipe.recv()
                 logging.error(f'Error starting process, got exception:\n{exc_info}')
-                self.__thread.join()
+                self.thread.join()
                 raise Exception(exc_info.splitlines()[-1])
         finally:
             recv_pipe.close()
             send_pipe.close()
 
     def dispatch_event(self, event, msg):
-        self.__conn.send((event, msg))
+        self.conn.send((event, msg))
         try:
-            topic, data = self.__conn.recv()
+            topic, data = self.conn.recv()
             if topic == Events.EXCEPTION:
                 logging.debug(f"Received data back from event: {event} - ERROR - {data}")
-                raise IPCException(data)
+                raise Exception(data)
 
             logging.debug(f"Received data back from event: {event} - OK")
             return data
@@ -67,6 +69,6 @@ class IPCClient:
             pass
 
     def stop(self):
-        self.__thread.kill()
-        self.__thread.join()
-        logging.debug(f"Stopping process pid: {self.__thread.pid}, name:{self.__thread.name}/{self.__thread.ident}")
+        self.thread.kill()
+        self.thread.join()
+        logging.debug(f"Stopping process pid: {self.thread.pid}, name:{self.thread.name}/{self.thread.ident}")
