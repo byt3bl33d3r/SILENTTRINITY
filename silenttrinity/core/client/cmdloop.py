@@ -184,12 +184,13 @@ class STShell:
             if text.lower() == ctx.name:
                 if ctx._remote is True:
                     try:
-                        response = await self.teamservers.send(
-                                ctx=ctx.name,
-                                cmd="get_selected"
-                            )
-                        if response.result:
-                            ctx.selected = response.result
+                        if ctx.name != "sessions":
+                            response = await self.teamservers.send(
+                                    ctx=ctx.name,
+                                    cmd="get_selected"
+                                )
+                            if response.result:
+                                ctx.selected = response.result
                     except AttributeError:
                         break
 
