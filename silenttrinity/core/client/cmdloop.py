@@ -218,7 +218,9 @@ class STShell:
                 print_bad(f"Error parsing command: {e}")
             except AttributeError as e:
                 print_bad(f"Unknown command '{command[0]}'")
-            except (DocoptExit, SystemExit):
+            except DocoptExit:
+                print_bad("Check command usage")
+            except SystemExit:
                 pass
             else:
                 if command[0] in self._cmd_registry or self.current_context._remote is False:
