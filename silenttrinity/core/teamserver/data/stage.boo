@@ -386,16 +386,26 @@ class STJob:
 
     public def CompileAndRun(source as string, references as List) as string:
         #print("Received source: \n $source")
-        booC = BooCompiler()
-        booC.Parameters.Input.Add( StringInput("$(id).boo", source) )
-        booC.Parameters.Pipeline = CompileToMemory()
-        booC.Parameters.Ducky = true
+        parameters = CompilerParameters(false)
+        parameters.Input.Add( StringInput("$(id).boo", source) )
+        parameters.Pipeline = CompileToMemory()
+        parameters.Ducky = true
+
+        parameters.AddAssembly(Assembly.LoadWithPartialName("Boo.Lang"))
+        parameters.AddAssembly(Assembly.LoadWithPartialName("Boo.Lang.Extensions"))
+        parameters.AddAssembly(Assembly.LoadWithPartialName("Boo.Lang.Parser"))
+        parameters.AddAssembly(Assembly.LoadWithPartialName("Boo.Lang.Compiler"))
+        parameters.AddAssembly(Assembly.LoadWithPartialName("mscorlib"))
+        parameters.AddAssembly(Assembly.LoadWithPartialName("System"))
+        parameters.AddAssembly(Assembly.LoadWithPartialName("System.Core"))
 
         #https://github.com/boo-lang/boo/blob/10cfbf08e0f5568220bc621606a3e49d48dc69a5/src/booc/CommandLineParser.cs#L834-L839
         for r in references:
-            booC.Parameters.References.Add(booC.Parameters.LoadAssembly(r, true))
+            parameters.AddAssembly(Assembly.LoadWithPartialName(r))
 
-        context = booC.Run()
+        compiler = BooCompiler(parameters)
+        context = compiler.Run()
+
         if context.GeneratedAssembly is null:
             error = true
             return "Error compiling source:\n$(join(e for e in context.Errors, '\n'))"

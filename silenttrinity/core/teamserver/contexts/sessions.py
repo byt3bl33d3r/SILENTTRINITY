@@ -65,7 +65,7 @@ class Sessions:
 
             raise SessionNotFoundError(f"Session with guid {guid} was not found")
 
-    def guidchk(self, guid):
+    def guid_is_valid(self, guid):
         try:
             uuid.UUID(str(guid))
         except ValueError:
@@ -84,7 +84,7 @@ class Sessions:
         if not psk:
             psk = gen_stager_psk()
 
-        self.guidchk(guid)
+        self.guid_is_valid(guid)
 
         self._register(guid, psk)
         return {"guid": str(guid), "psk": psk}
@@ -244,25 +244,24 @@ class Sessions:
             raise CmdError(f"No session with guid: {guid}")
 
     def unregister(self, guid):
-        self.guidchk(guid)
-        with STDatabase() as db:
-            psk = db.get_session_psk(guid)
-        session = Session(guid, psk)
+        self.guid_is_valid(guid)
 
-        if (session in self.sessions):
-            return {"message": "You can't unregister an active session. Kill then purge the session first."}
+        if guid in self.sessions:
+            raise CmdError("You can't unregister an active session. Kill then purge the session first.")
+
         with STDatabase() as db:
             db.remove_session(guid)
+
         logging.info(f"Unregistering session: {guid}")
 
         return {"guid": str(guid)}
 
     def getpsk(self, guid):
-        self.guidchk(guid)
+        self.guid_is_valid(guid)
 
         with STDatabase() as db:
             psk = db.get_session_psk(guid)
-        return {"psk": psk}
+            return {"psk": psk}
 
     def purge(self):
         counter = 0
@@ -272,7 +271,8 @@ class Sessions:
                 if (gmtime(session['lastcheckin'])[5] > int(session['info']['Sleep']/1000)):
                     self.sessions.remove(guid)
                     counter += 1
-        return counter
+
+        return {'purged': counter}
 
     def __iter__(self):
         for session in self.sessions:
