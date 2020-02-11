@@ -163,9 +163,9 @@ public static class ProcessInspector:
 
     public static def IsCLRLoaded(process as Process) as bool:
         try:
-            modules as List
+            modules as (ProcessModule)
 
-            modules = [module for module in process.Modules.OfType[of ProcessModule]()]
+            modules = [module for module in process.Modules.OfType[of ProcessModule]()].ToArray(ProcessModule)
 
             return modules.Any({ pm as duck| return pm.ModuleName.Contains('mscor')})
         //Access was denied
