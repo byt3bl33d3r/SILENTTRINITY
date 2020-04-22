@@ -448,8 +448,8 @@ class STJob:
         Client.SendJobResults(self)
 
 class STClient:
-    public Jobs as List = []
-    public Channels as List = [PUT_COMM_CLASSES_HERE]
+    public Jobs = []
+    public Channels = [PUT_COMM_CLASSES_HERE]
     public Sleep as int = 5000
     public MaxJitter as int = 0
     public MinJitter as int = 0
