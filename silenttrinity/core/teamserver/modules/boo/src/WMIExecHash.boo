@@ -756,7 +756,7 @@ public static def Main():
     return Enumerable.Range(0, hex.Length).Where({ x | return ((x % 2) == 0) }).Select({ x | return Convert.ToByte(hex.Substring(x, 2), 16) }).ToArray()
 
   private static def ConvertFromPacketOrderedDictionary(packet_ordered_dictionary as OrderedDictionary) as (byte):
-    byte_list as List[of (byte)] = List[of (byte)]()
+    byte_list [of (byte)] = List[of (byte)]()
     for de as DictionaryEntry in packet_ordered_dictionary:
       byte_list.Add((de.Value as (byte)))
     flattenedList = byte_list.SelectMany({ bytes | return bytes })

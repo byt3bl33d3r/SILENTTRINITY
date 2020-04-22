@@ -34,7 +34,7 @@ public static def GetModifiableServiceRegistry() as void:
 
     // rights that signify modifiable access
     // https://docs.microsoft.com/fr-fr/dotnet/api/system.security.accesscontrol.registryrights?view=netframework-4.8
-    ModifyRights as List = [RegistryRights.ChangePermissions, RegistryRights.FullControl, RegistryRights.TakeOwnership, RegistryRights.SetValue, RegistryRights.WriteKey]
+    ModifyRights = [RegistryRights.ChangePermissions, RegistryRights.FullControl, RegistryRights.TakeOwnership, RegistryRights.SetValue, RegistryRights.WriteKey]
 
     print "\r\n=== Modifiable Registry Services  ===\r\n"
 

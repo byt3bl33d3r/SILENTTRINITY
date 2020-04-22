@@ -34,7 +34,7 @@ public static def CheckModifiableAccess(Path as string) as bool:
     // TODO: check if file exists, check file's parent folder
 
     // rights that signify modiable access
-    ModifyRights as List = [
+    ModifyRights = [
         FileSystemRights.ChangePermissions,
         FileSystemRights.FullControl,
         FileSystemRights.Modify,
@@ -45,7 +45,7 @@ public static def CheckModifiableAccess(Path as string) as bool:
         FileSystemRights.CreateFiles
     ]
 
-    paths as List = [Path]
+    paths = [Path]
 
     try:
         attr as FileAttributes = System.IO.File.GetAttributes(Path)
@@ -83,7 +83,7 @@ public static def GetRegValue(path as string, value as string) as string:
 public static def GetModifiableRegistryAutoRuns() as void:
     print "\r\n=== Modifiable Registry Autoruns ===\r\n"
 
-    autorunLocations as List = [
+    autorunLocations = [
         "SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run",
         "SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce",
         "SOFTWARE\\\\Wow6432Node\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run",

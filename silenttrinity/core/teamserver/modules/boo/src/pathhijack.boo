@@ -42,7 +42,7 @@ public static def CheckModifiableAccess(Path as string) as bool:
     // TODO: check if file exists, check file's parent folder
 
     // rights that signify modiable access
-    ModifyRights as List = [
+    ModifyRights = [
         FileSystemRights.ChangePermissions,
         FileSystemRights.FullControl,
         FileSystemRights.Modify,
@@ -53,7 +53,7 @@ public static def CheckModifiableAccess(Path as string) as bool:
         FileSystemRights.CreateFiles
     ]
 
-    paths as List = [Path]
+    paths = [Path]
 
     try:
         attr as FileAttributes = System.IO.File.GetAttributes(Path)

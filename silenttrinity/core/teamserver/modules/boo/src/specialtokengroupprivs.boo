@@ -77,7 +77,7 @@ public static def GetSpecialTokenGroupPrivs() as void:
 
     print "\r\n=== *Special* User Privileges ===\r\n"
 
-    SpecialPrivileges as List = [
+    SpecialPrivileges = [
         "SeSecurityPrivilege",
         "SeTakeOwnershipPrivilege",
         "SeLoadDriverPrivilege",

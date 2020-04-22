@@ -163,7 +163,7 @@ public static class ProcessInspector:
 
     public static def IsCLRLoaded(process as Process) as bool:
         try:
-            modules as List
+            modules = []
 
             modules = [module for module in process.Modules.OfType[of ProcessModule]()]
 

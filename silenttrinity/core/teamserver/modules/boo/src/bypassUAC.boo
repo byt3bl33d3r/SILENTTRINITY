@@ -372,8 +372,8 @@ public def TokenIsElevated(hToken as IntPtr) as bool:
         return true
 
 
-public def GetElevatedProcessTokens() as List:
-    result as List = []
+public def GetElevatedProcessTokens():
+    result = []
     IsElevated as bool
     hProcessToken as IntPtr
     hProcess as IntPtr
@@ -417,7 +417,7 @@ public static def BypassUAC(binary as string, arguments as string, path as strin
     SE_GROUP_INTEGRITY_32 as UInt32 = 0x00000020
 
     Username as string = WindowsIdentity.GetCurrent().Name
-    processes as List = []
+    processes = []
     if processId == 0:
         processes = GetElevatedProcessTokens()
     else:
