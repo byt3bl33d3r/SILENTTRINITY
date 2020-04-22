@@ -71,7 +71,7 @@ class Requests:
 
 class HTTP:
     public Name as string = 'http'
-    public CallBackUrls as List = []
+    public CallBackUrls = []
     private _guid as Guid
     private Requests as Requests = Requests()
 
