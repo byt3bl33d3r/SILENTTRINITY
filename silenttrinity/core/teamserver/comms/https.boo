@@ -71,7 +71,7 @@ class Requests:
 
 class HTTPS:
     public Name as string = 'https'
-    public CallBackUrls as List = []
+    public CallBackUrls = []
     private _guid as Guid
     private Requests as Requests = Requests()
 
