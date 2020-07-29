@@ -54,9 +54,9 @@ class CompilationException(Exception):
         super(message)
 
 class Args:
-    public args as List
+    public args = []
     public source as string
-    public references as List
+    public references = []
     public run_in_thread as bool = true
 
 class JsonJob:
@@ -384,7 +384,7 @@ class STJob:
         Client.SendJobResults(self)
         return "Sent File"
 
-    public def CompileAndRun(source as string, references as List) as string:
+    public def CompileAndRun(source as string, references) as string:
         #print("Received source: \n $source")
         parameters = CompilerParameters(false)
         parameters.Input.Add( StringInput("$(id).boo", source) )
@@ -448,8 +448,8 @@ class STJob:
         Client.SendJobResults(self)
 
 class STClient:
-    public Jobs as List = []
-    public Channels as List = [PUT_COMM_CLASSES_HERE]
+    public Jobs = []
+    public Channels = [PUT_COMM_CLASSES_HERE]
     public Sleep as int = 5000
     public MaxJitter as int = 0
     public MinJitter as int = 0

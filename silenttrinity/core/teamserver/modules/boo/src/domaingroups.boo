@@ -65,14 +65,14 @@ private static def ConvertLDAPProperty(Properties as ResultPropertyCollection, P
     if (PropertyName == "objectsid"):
         value = SecurityIdentifier(Properties["objectsid"][0], 0).Value
     elif (PropertyName == "sidhistory"):
-        historyListTemp as List = []
+        historyListTemp = []
         for bytes in Properties["sidhistory"]:
             historyListTemp.Add(SecurityIdentifier(bytes, 0).Value)
         value = historyListTemp.Join(", ")
     elif (PropertyName == "grouptype"):
         try:
             value = Properties["grouptype"][0] + " => "
-            gtactivated as List = []
+            gtactivated = []
             for gt in System.Enum.GetValues(GroupTypeEnum):
                 if Properties["grouptype"][0] % gt cast int:
                     gtactivated.Add(gt)
@@ -92,7 +92,7 @@ private static def ConvertLDAPProperty(Properties as ResultPropertyCollection, P
     elif (PropertyName == "useraccountcontrol"):
         try:
             value = Properties["useraccountcontrol"][0] + " => "
-            uacactivated as List = []
+            uacactivated = []
             for uac in System.Enum.GetValues(UACEnum):
                 if Properties["useraccountcontrol"][0] % uac cast int:
                     uacactivated.Add(uac)
@@ -129,7 +129,7 @@ private static def ConvertLDAPProperty(Properties as ResultPropertyCollection, P
             low = comobj.GetType().InvokeMember("LowPart", System.Reflection.BindingFlags.GetProperty, null, comobj, null)
             property = int.Parse("0x" + high + "" + low, System.Globalization.NumberStyles.HexNumber).ToString()
         else:
-            propertyList as List = []
+            propertyList = []
             for prop as object in Properties[PropertyName]:
                 propertyList.Add(prop.ToString())
             property = propertyList.Join(", ")
@@ -191,7 +191,7 @@ public static def Main():
 
     print "[*] Creating DirectorySearcher with filter: " + Filter
     directorysearcher as DirectorySearcher = DirectorySearcher(Filter)
-    value as List
+    value = []
     directoryentry as DirectoryEntry
     try:
         if findone:

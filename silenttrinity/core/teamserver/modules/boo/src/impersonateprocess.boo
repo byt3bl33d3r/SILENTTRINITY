@@ -260,7 +260,7 @@ public def GetCurrentProcessToken() as IntPtr:
 
 
 public def EnableTokenPrivilege(ref hToken as IntPtr, Privilege as string) as bool:
-    Privileges as List = ["SeAssignPrimaryTokenPrivilege",
+    Privileges = ["SeAssignPrimaryTokenPrivilege",
         "SeAuditPrivilege", "SeBackupPrivilege", "SeChangeNotifyPrivilege", "SeCreateGlobalPrivilege",
         "SeCreatePagefilePrivilege", "SeCreatePermanentPrivilege", "SeCreateSymbolicLinkPrivilege",
         "SeCreateTokenPrivilege", "SeDebugPrivilege", "SeEnableDelegationPrivilege",

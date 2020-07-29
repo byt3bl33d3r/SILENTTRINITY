@@ -466,8 +466,8 @@ public def ImpersonateProcess(ProcessID as UInt32) as bool:
         return false
 
 
-public def GetUserProcessTokensForUser(Username as string) as List:
-    result as List = []
+public def GetUserProcessTokensForUser(Username as string):
+    result = []
     IsElevated as bool
     hProcessToken as IntPtr
     hProcess as IntPtr
@@ -492,7 +492,7 @@ public def GetUserProcessTokensForUser(Username as string) as List:
 
 
 public def ImpersonateUser(Username as string):
-    userProcessTokens as List
+    userProcessTokens = []
     userProcessTokens = GetUserProcessTokensForUser(Username)
     print "Processes for " + Username + ": " + userProcessTokens.Count
     print "Attempting to impersonate: " + Username
@@ -531,7 +531,7 @@ public def GetCurrentProcessToken() as IntPtr:
 
 
 public def EnableTokenPrivilege(ref hToken as IntPtr, Privilege as string) as bool:
-    Privileges as List = ["SeAssignPrimaryTokenPrivilege",
+    Privileges = ["SeAssignPrimaryTokenPrivilege",
         "SeAuditPrivilege", "SeBackupPrivilege", "SeChangeNotifyPrivilege", "SeCreateGlobalPrivilege",
         "SeCreatePagefilePrivilege", "SeCreatePermanentPrivilege", "SeCreateSymbolicLinkPrivilege",
         "SeCreateTokenPrivilege", "SeDebugPrivilege", "SeEnableDelegationPrivilege",
