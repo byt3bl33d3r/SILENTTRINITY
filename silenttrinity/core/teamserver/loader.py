@@ -1,6 +1,6 @@
 import os
+import importlib
 import logging
-from importlib import util as importlib
 
 class Loader:
     def __init__(self, type="module", paths=[]):
@@ -14,8 +14,8 @@ class Loader:
         return True
 
     def load(self, path):
-        module_spec = importlib.spec_from_file_location(self.type, path)
-        module = importlib.module_from_spec(module_spec)
+        module_spec = importlib.util.spec_from_file_location(self.type, path)
+        module = importlib.util.module_from_spec(module_spec)
         module_spec.loader.exec_module(module)
         self.is_sane(module)
         return module
@@ -24,7 +24,7 @@ class Loader:
         self.loaded = []
         for path in self.paths:
             for module in os.listdir(path):
-                if module[-3:] == '.py' and not module.startswith("example"):
+                if module[-3:] == '.py' and not module.startswith("example") and module != '__init__.py':
                     try:
                         m = self.load(os.path.join(path, module))
                         if self.type == 'listener':

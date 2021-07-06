@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import traceback
 from copy import deepcopy
 from silenttrinity.core.events import Events
 from silenttrinity.core.teamserver import ipc_server
@@ -58,6 +59,7 @@ class Listeners(Loader):
             self.selected.start()
             logging.info(f"Started {self.selected.name} listener ({self.selected['BindIP']}:{self.selected['Port']})")
         except Exception as e:
+            traceback.print_exc()
             raise CmdError(f"Failed to start {self.selected.name} listener: {e}")
         else:
             self.listeners.append(self.selected)

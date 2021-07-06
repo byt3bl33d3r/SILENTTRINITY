@@ -10,6 +10,7 @@ from silenttrinity.core.teamserver.db import STDatabase
 from silenttrinity.core.teamserver.crypto import gen_stager_psk
 from silenttrinity.core.teamserver.session import Session, SessionNotFoundError
 from silenttrinity.core.teamserver.job import Job
+from time import gmtime, strftime
 #from core.teamserver.utils import subscribe, register_subscriptions
 
 """
@@ -64,6 +65,12 @@ class Sessions:
 
             raise SessionNotFoundError(f"Session with guid {guid} was not found")
 
+    def guid_is_valid(self, guid):
+        try:
+            uuid.UUID(str(guid))
+        except ValueError:
+            raise CmdError("Invalid Guid")
+
     def _register(self, guid, psk):
         session = Session(guid, psk)
         self.sessions.add(session)
@@ -77,10 +84,7 @@ class Sessions:
         if not psk:
             psk = gen_stager_psk()
 
-        try:
-            uuid.UUID(str(guid))
-        except ValueError:
-            raise CmdError("Invalid Guid")
+        self.guid_is_valid(guid)
 
         self._register(guid, psk)
         return {"guid": str(guid), "psk": psk}
@@ -192,7 +196,7 @@ class Sessions:
         )
 
     def list(self):
-        return {s.guid: dict(s) for s in self.sessions if s.info}
+        return {s.name: dict(s) for s in self.sessions if s.info}
 
     def info(self, guid):
         try:
@@ -235,9 +239,40 @@ class Sessions:
     def rename(self, guid, name):
         try:
             session = self.get_session(guid)
-            session.guid = name
+            session.name = name
         except SessionNotFoundError:
             raise CmdError(f"No session with guid: {guid}")
+
+    def unregister(self, guid):
+        self.guid_is_valid(guid)
+
+        if guid in self.sessions:
+            raise CmdError("You can't unregister an active session. Kill then purge the session first.")
+
+        with STDatabase() as db:
+            db.remove_session(guid)
+
+        logging.info(f"Unregistering session: {guid}")
+
+        return {"guid": str(guid)}
+
+    def getpsk(self, guid):
+        self.guid_is_valid(guid)
+
+        with STDatabase() as db:
+            psk = db.get_session_psk(guid)
+            return {"psk": psk}
+
+    def purge(self):
+        counter = 0
+        s = {s.guid: dict(s) for s in self.sessions if s.info}
+        for guid, session in s.items():
+            if session['info']:
+                if (gmtime(session['lastcheckin'])[5] > int(session['info']['Sleep']/1000)):
+                    self.sessions.remove(guid)
+                    counter += 1
+
+        return {'purged': counter}
 
     def __iter__(self):
         for session in self.sessions:

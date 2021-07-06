@@ -19,9 +19,19 @@ Some of the main features that distinguish SILENTTRINITY are:
 - **Extensive logging** - Every action is logged to a file.
 - **Future proof** - HTTPS/HTTP listeners are built on [Quart](https://gitlab.com/pgjones/quart) & [Hypercorn](https://gitlab.com/pgjones/hypercorn) which also support HTTP2 & Websockets.
 
-## Getting Involved
+## Sponsors
+[<img src="https://www.blackhillsinfosec.com/wp-content/uploads/2016/03/BHIS-logo-L-300x300.png" width="130" height="130"/>](https://www.blackhillsinfosec.com/)
+[<img src="https://handbook.volkis.com.au/assets/img/Volkis_Logo_Brandpack.svg" width="130" hspace="10"/>](https://volkis.com.au)
+[<img src="https://user-images.githubusercontent.com/5151193/85817125-875e0880-b743-11ea-83e9-764cd55a29c5.png" width="200" vspace="21"/>](https://qomplx.com/blog/cyber/)
+[<img src="https://user-images.githubusercontent.com/5151193/86521020-9f0f4e00-be21-11ea-9256-836bc28e9d14.png" width="250" hspace="20"/>](https://ledgerops.com)
+[<img src="https://user-images.githubusercontent.com/5151193/87607538-ede79e00-c6d3-11ea-9fcf-a32d314eb65e.png" width="170" hspace="20"/>](https://www.guidepointsecurity.com/)
+[<img src="https://user-images.githubusercontent.com/5151193/95542303-a27f1c00-09b2-11eb-8682-e10b3e0f0710.jpg" width="200" hspace="20"/>](https://lostrabbitlabs.com/)
 
-Join the #silenttrinity channel in the [BloodHoundGang](https://bloodhoundgang.herokuapp.com/) Slack!
+## Official Discord Channel
+
+Come hang out on discord!
+
+[![Porchetta Industries](https://discordapp.com/api/guilds/736724457258745996/widget.png?style=banner3)](https://discord.gg/6smqwDT)
 
 ## Call for Contributions
 
@@ -38,56 +48,11 @@ To do this, you're going to have to learn the Boo programming language (the Boo 
 Check out some of the existing [modules](../master/core/teamserver/modules/boo), if you've written an [Empire](https://github.com/EmpireProject/Empire) module before you'll see its very similar.
 Finally you can start porting over post-ex modules from other C2 frameworks such as [Empire](https://github.com/EmpireProject/Empire).
 
-## Setup & Requirements
+## Documentation, Setup & Basic Usage
 
-- Python >= 3.7 is required.
-- Client & Teamserver have only been tested on Mac & Linux systems, however they *should* work on Windows as well.
+The documentation is a work in progress but some is already available in the [Wiki](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki).
 
-If your running a *nix system that has an older version of Python installed it is *highly* reccommended to use [pyenv](https://github.com/pyenv/pyenv) to install Python >= 3.7.
-
-For Mac's, use Homebrew to install Python 3:
-```bash
-brew install python@3
-```
-
-Clone the repo and use [pipenv](https://github.com/pypa/pipenv) to install the dependencies for the Client & Teamserver:
-
-```bash
-git clone https://github.com/byt3bl33d3r/SILENTTRINITY
-pip3 install pipenv && pipenv install && pipenv shell
-```
-
-Start a Teamserver, the default port is 5000:
-```bash
-python3 teamserver.py <teamserver_ip> <teamserver_password>
-```
-
-Connect to a Teamserver:
-
-**Note the wss:// (two s's) in the URL which indicates an encrypted websocket connection (TLS), without this all traffic from the client to the teamserver will be in cleartext!**
-
-```bash
-python3 st.py wss://username:<teamserver_password>@<teamserver_ip>:5000
-```
-
-Alternatively, run ```st.py``` without any arguments and connect to a Teamserver manually using the CLI menu:
-```
-~# python3 st.py
-[0] ST ≫ teamservers
-[0] ST (teamservers) ≫ connect -h
-Connect to the specified teamserver(s)
-
-Usage: connect [-h] <URL>...
-
-Arguments:
-    URL   teamserver url(s)
-
-[0] ST (teamservers) ≫ connect wss://username:<teamserver_password>@<teamserver_ip>:5000
-```
-
-## Documentation
-
-The documentation is a work in progress but some is already available in the [Wiki](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki)
+See [here](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki/Installation) for install instructions and [here](https://github.com/byt3bl33d3r/SILENTTRINITY/wiki/Basic-Usage) for basic usage.
 
 I recommend making wild use the ```help``` command and the ```-h``` flag :)
 

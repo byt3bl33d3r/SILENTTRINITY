@@ -1,8 +1,9 @@
 import asyncio
 import logging
-from silenttrinity.core.utils import print_good, print_info
+from silenttrinity.core.utils import print_good, print_info, print_bad
 from silenttrinity.core.client.utils import command, register_cli_commands
 from terminaltables import SingleTable
+from termcolor import colored
 from time import gmtime, strftime
 
 @register_cli_commands
@@ -46,11 +47,16 @@ class Sessions:
                 except KeyError:
                     username = 'N/A'
 
+                if (gmtime(session['lastcheckin'])[5] > int(session['info']['Sleep']/1000)):
+                    timestamp = colored(strftime("%Hh %Mm %Ss", gmtime(session['lastcheckin'])), "red", attrs=['bold'])
+                else:
+                    timestamp = colored(strftime("%Hh %Mm %Ss", gmtime(session['lastcheckin'])), "green", attrs=['bold'])
+
                 table_data.append([
                     guid,
                     username,
                     session['address'],
-                    strftime("h %H m %M s %S", gmtime(session['lastcheckin']))
+                    timestamp
                 ])
 
         table = SingleTable(table_data, title="Sessions")
@@ -130,3 +136,34 @@ class Sessions:
         Usage: rename [-h] <guid> <name>
         """
         pass
+
+    @command
+    def unregister(self, guid: str, response):
+        """
+        Unregister a session with the server. You will need to register the session manually to reuse it again
+
+        Usage: unregister [-h] [<guid>]
+        """
+
+        print_good(f"Unregistered session (guid: {response.result['guid']})")
+        print_info(f"If you wish to reuse the session you must manually register it")
+
+    @command
+    def getpsk(self, guid: str, response):
+        """
+        Get psk of a session via guid
+
+        Usage: getpsk [-h] [<guid>]
+        """
+
+        print_good(f"PSK: {response.result['psk']}")
+
+    @command
+    def purge(self, response):
+        """
+        Purge expired sessions (remove sessions that haven't checked in)
+
+        Usage: purge [-h]
+        """
+
+        print_good(f"Purged {response.result['purged']} session(s)")

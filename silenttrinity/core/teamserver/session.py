@@ -42,12 +42,20 @@ class Session:
 
     @property
     def guid(self):
-        if self._alias is not None:
-            return self._alias
         return self._guid
 
     @guid.setter
     def guid(self, value):
+        self._guid = value
+
+    @property
+    def name(self):
+        if self._alias is not None:
+            return self._alias
+        return self._guid
+
+    @name.setter
+    def name(self, value):
         self._alias = value
 
     @property
