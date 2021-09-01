@@ -17,6 +17,7 @@ from prompt_toolkit.document import Document
 from silenttrinity.core.client.contexts.teamservers import TeamServers
 from silenttrinity.core.client.utils import command, register_cli_commands
 from silenttrinity.core.utils import print_bad, print_good, print_info
+from pathlib import Path
 
 example_style = Style.from_dict({
     'rprompt': 'bg:#ff0066 #ffffff',
@@ -171,6 +172,11 @@ class STShell:
                 return False, args
             except IndexError:
                 return False, args
+    def filter_comments(self, rc_file: str) -> str:
+        with Path(rc_file).open('r') as rc:
+            for cmd in rc:
+                if not cmd.startswith('#'):
+                    yield cmd
 
     async def update_prompt(self, ctx):
         self.prompt_session.message = HTML(
@@ -212,6 +218,9 @@ class STShell:
 
                 if needs_patch:
                     args = self.patch_badchar(args, patch=True)
+            except IndexError:
+                # This occurs when an empty line is given
+                pass
             except ValueError as e:
                 print_bad(f"Error parsing command: {e}")
             except AttributeError as e:
@@ -253,14 +262,19 @@ class STShell:
                     await self.update_prompt(self.current_context)
 
     async def run_resource_file(self, rc_file):
-        with open(rc_file) as resource_file:
-            for cmd in resource_file:
-                with patch_stdout():
-                    try:
-                        text = await self.prompt_session.prompt_async(accept_default=True, default=cmd.strip())
-                    except AssertionError:
-                        text = cmd.strip()
-                    await self.parse_command_line(text)
+
+        # Filter out cmds in resource file that are comments
+        for cmd in self.filter_comments(rc_file):
+            # Ignore empty commands
+            if not cmd:
+                continue
+
+            with patch_stdout():
+                try:
+                    text = await self.prompt_session.prompt_async(accept_default=True, default=cmd.strip())
+                except AssertionError:
+                    text = cmd.strip()
+                await self.parse_command_line(text)
 
     async def cmdloop(self):
         if self.args['--resource-file']:
