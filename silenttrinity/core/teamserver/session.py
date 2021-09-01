@@ -9,6 +9,8 @@ from silenttrinity.core.utils import get_path_in_data_folder, get_path_in_packag
 from silenttrinity.core.teamserver.jobs import Jobs
 from silenttrinity.core.teamserver.comms.utils import gen_stager_code
 from silenttrinity.core.teamserver.crypto import ECDHE
+from json import dumps
+from pathlib import Path
 
 
 class SessionNotFoundError(Exception):
@@ -92,6 +94,18 @@ class Session:
                             zip_file.writestr("Main.boo", stage)
 
         return self.crypto.encrypt(stage_file.getvalue())
+
+    def save_job_result(self, job_id, data):
+
+        results_path = Path(get_path_in_data_folder("logs"), f"{self._guid}", "job_results")
+        if not results_path.exists():
+            results_path.mkdir(parents=True)
+        res_file = results_path.joinpath(f"{job_id}.res")
+        output = dict()
+        output['job_id'] = job_id
+        output['results'] = data
+
+        res_file.write_text(dumps(output, indent=4))
 
     def __str__(self):
         return f"<Session {self._guid}{f' alias: {self._alias}' if self._alias else ''}>"
