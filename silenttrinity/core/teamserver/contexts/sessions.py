@@ -44,8 +44,8 @@ class Sessions:
 
         with STDatabase() as db:
             for registered_session in db.get_sessions():
-                _, guid, psk = registered_session
-                self._register(guid, psk)
+                _, guid, psk, alias = registered_session
+                self._register(guid, psk, alias)
 
     def get_session(self, guid, attempt_auto_reg=True):
         try:
@@ -71,14 +71,14 @@ class Sessions:
         except ValueError:
             raise CmdError("Invalid Guid")
 
-    def _register(self, guid, psk):
-        session = Session(guid, psk)
+    def _register(self, guid, psk, alias=''):
+        session = Session(guid, psk, alias)
         self.sessions.add(session)
         with STDatabase() as db:
             db.add_session(guid, psk)
         logging.info(f"Registering session: {session}")
 
-    def register(self, guid, psk):
+    def register(self, guid, psk, alias=''):
         if not guid:
             guid = uuid.uuid4()
         if not psk:
@@ -86,7 +86,7 @@ class Sessions:
 
         self.guid_is_valid(guid)
 
-        self._register(guid, psk)
+        self._register(guid, psk, alias)
         return {"guid": str(guid), "psk": psk}
 
     #@subscribe(events.KEX)
@@ -240,6 +240,10 @@ class Sessions:
         try:
             session = self.get_session(guid)
             session.name = name
+            with STDatabase() as db:
+                db.rename_session(guid, name)
+
+
         except SessionNotFoundError:
             raise CmdError(f"No session with guid: {guid}")
 

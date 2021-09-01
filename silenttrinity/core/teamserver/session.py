@@ -16,9 +16,9 @@ class SessionNotFoundError(Exception):
 
 
 class Session:
-    def __init__(self, guid, psk):
+    def __init__(self, guid, psk, alias=''):
         self._guid = str(guid)
-        self._alias = str(guid)
+        self._alias = str(alias) if alias else str(guid) 
         self._info = None
         self.address = None
         self.checkin_time = None
