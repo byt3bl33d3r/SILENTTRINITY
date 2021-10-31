@@ -59,6 +59,8 @@ class Jobs:
         elif job.command:
             self.session.logger.info(f"{self.session.guid} returned command result (id: {job_id}): {output}")
 
+        self.session.save_job_result(job_id, output)
+
         #job.status = 'completed'
         return decrypted_job, output
 
