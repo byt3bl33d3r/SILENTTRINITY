@@ -55,6 +55,7 @@ class STDatabase:
                             "id" integer PRIMARY KEY,
                             "guid" text,
                             "psk" text,
+                            "alias" text,
                             UNIQUE(guid,psk)
                         )''')
 
@@ -79,6 +80,11 @@ class STDatabase:
             query = self.db.execute("SELECT psk FROM sessions WHERE guid=(?)", [str(guid)])
             result = query.fetchone()
             return result[0] if result else None
+
+    def rename_session(self, guid, alias):
+        with self.db:
+            self.db.execute("UPDATE sessions set alias=(?) WHERE guid=(?)", [str(alias), str(guid)])
+            
 
     def get_sessions(self):
         with self.db:

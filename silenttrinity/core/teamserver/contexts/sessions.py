@@ -4,13 +4,15 @@ import asyncio
 import uuid
 from termcolor import colored
 from silenttrinity.core.events import Events
-from silenttrinity.core.utils import gen_random_string, CmdError
+from silenttrinity.core.utils import gen_random_string, CmdError, get_path_in_data_folder
 from silenttrinity.core.teamserver import ipc_server
 from silenttrinity.core.teamserver.db import STDatabase
 from silenttrinity.core.teamserver.crypto import gen_stager_psk
 from silenttrinity.core.teamserver.session import Session, SessionNotFoundError
 from silenttrinity.core.teamserver.job import Job
 from time import gmtime, strftime
+from pathlib import Path
+from json import dumps
 #from core.teamserver.utils import subscribe, register_subscriptions
 
 """
@@ -44,8 +46,8 @@ class Sessions:
 
         with STDatabase() as db:
             for registered_session in db.get_sessions():
-                _, guid, psk = registered_session
-                self._register(guid, psk)
+                _, guid, psk, alias = registered_session
+                self._register(guid, psk, alias)
 
     def get_session(self, guid, attempt_auto_reg=True):
         try:
@@ -71,14 +73,14 @@ class Sessions:
         except ValueError:
             raise CmdError("Invalid Guid")
 
-    def _register(self, guid, psk):
-        session = Session(guid, psk)
+    def _register(self, guid, psk, alias=''):
+        session = Session(guid, psk, alias)
         self.sessions.add(session)
         with STDatabase() as db:
             db.add_session(guid, psk)
         logging.info(f"Registering session: {session}")
 
-    def register(self, guid, psk):
+    def register(self, guid, psk, alias=''):
         if not guid:
             guid = uuid.uuid4()
         if not psk:
@@ -86,7 +88,7 @@ class Sessions:
 
         self.guid_is_valid(guid)
 
-        self._register(guid, psk)
+        self._register(guid, psk, alias)
         return {"guid": str(guid), "psk": psk}
 
     #@subscribe(events.KEX)
@@ -118,6 +120,15 @@ class Sessions:
             session = self.get_session(guid)
             session.address = remote_addr
             session.checked_in()
+
+            # Save a copy of the session information if it is newly seen
+            if session not in self.sessions:
+                session_path = Path(get_path_in_data_folder("logs"), f"{guid}")
+                if not session_path.exists():
+                    session_path.mkdir(parents=True)
+                
+                session_path.joinpath('info.json').write_text(dumps(dict(session), indent=4))
+
             return session.jobs.get()
         except SessionNotFoundError:
             logging.error(f"Got checkin request from {remote_addr} but no sessions registered with guid {guid}")
@@ -240,6 +251,10 @@ class Sessions:
         try:
             session = self.get_session(guid)
             session.name = name
+            with STDatabase() as db:
+                db.rename_session(guid, name)
+
+
         except SessionNotFoundError:
             raise CmdError(f"No session with guid: {guid}")
 
