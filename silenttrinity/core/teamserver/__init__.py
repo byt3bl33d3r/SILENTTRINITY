@@ -2,8 +2,8 @@ import logging
 import multiprocessing
 from silenttrinity.core.ipcserver import IPCServer
 logging.basicConfig(
-    format="%(asctime)s %(process)d %(threadName)s - [%(levelname)s] %(filename)s: %(funcName)s - %(message)s",
-    level=logging.DEBUG
+    format="[%(levelname)s] %(message)s",
+    level=logging.INFO
 )
 
 # disable all loggers from different files

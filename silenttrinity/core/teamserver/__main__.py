@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 """
-Usage: teamserver [-h] [--port <PORT>] [--insecure] <host> <password>
+Usage: teamserver [-h] [--port <PORT>] [--insecure][--debug] <host> <password>
 
 optional arguments:
     -h, --help          Show this help message and exit
     -p, --port <PORT>   Port to bind to [default: 5000]
     --insecure          Start server without TLS
+    --debug             Enable debug logging
 """
 
 import asyncio
@@ -197,5 +198,13 @@ def start(args):
 
     if args['--insecure']:
         logging.warning('SECURITY WARNING: --insecure flag passed, communication between client and server will be in cleartext!')
+
+    if args['--debug']:
+        logger = logging.getLogger()
+        logger_handler = logging.StreamHandler()  # Handler for the logger
+        logger.addHandler(logger_handler)
+        logger_handler.setFormatter(logging.Formatter(
+            '[%(levelname)s] %(process)d %(threadName)s - %(filename)s: %(funcName)s - %(message)s'))
+        logging.getLogger().setLevel(logging.DEBUG)
 
     loop.run_until_complete(server(stop, args, teamserver_digest))
