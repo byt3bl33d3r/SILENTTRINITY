@@ -9,7 +9,7 @@ blinker==1.4
 certifi==2019.11.28
 cffi==1.13.2
 chardet==3.0.4
-click==7.0
+click==6.7
 cryptography==2.8
 defusedxml==0.6.0
 docopt==0.6.2
@@ -20,6 +20,7 @@ hpack==3.0.0
 hypercorn==0.9.0
 hyperframe==5.2.0
 idna==2.8
+impacket==0.9.20
 itsdangerous==1.1.0
 jinja2==2.10.3
 ldap3==2.5.1
